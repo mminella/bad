@@ -1,0 +1,10 @@
+result/bandwidth_4_2/54_218_0_41 total outgoing bandwidth: 10065.92
+result/bandwidth_4_2/54_218_0_52 total outgoing bandwidth: 9994.24
+result/bandwidth_4_2/54_213_251_202 total outgoing bandwidth: 9267.2
+result/bandwidth_4_2/54_218_0_57 total outgoing bandwidth: 10065.92
+average outgoing bandwidth 9848.32
+bandwidth matrix:
+    0  3522  3502  3041
+ 3276     0  3246  3471
+ 2580  3143     0  3543
+ 3409  3368  3287     0

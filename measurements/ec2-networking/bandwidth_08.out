@@ -1,0 +1,18 @@
+result/bandwidth_8_2/54_218_0_48 total outgoing bandwidth: 9578.8
+result/bandwidth_8_2/54_218_0_41 total outgoing bandwidth: 9728.0
+result/bandwidth_8_2/54_218_0_52 total outgoing bandwidth: 9963.52
+result/bandwidth_8_2/54_213_255_118 total outgoing bandwidth: 10028.64
+result/bandwidth_8_2/54_213_251_202 total outgoing bandwidth: 9926.28
+result/bandwidth_8_2/54_213_236_243 total outgoing bandwidth: 10055.68
+result/bandwidth_8_2/54_218_0_57 total outgoing bandwidth: 9634.64
+result/bandwidth_8_2/54_218_0_50 total outgoing bandwidth: 9370.48
+average outgoing bandwidth 9785.755
+bandwidth matrix:
+    0  2375  1259   926  1290  1351  1177  1198
+ 2488     0  1280  1167  1218  1126  1228  1218
+ 1290  1177     0  1146  2457  1484  1239  1167
+ 1310  1474   956     0  1392  2007  1443  1443
+ 1218  1228  2580   997     0  1382  1259  1259
+ 1300  1198  1454  2396  1187     0  1310  1208
+ 1259  1300  1228   818  1249  1331     0  2447
+ 1167  1300  1280   902  1239  1075  2406     0

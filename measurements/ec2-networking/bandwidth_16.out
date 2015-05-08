@@ -1,0 +1,34 @@
+result/bandwidth_16_4_100sec/52_24_140_200 total outgoing bandwidth: 9909.32
+result/bandwidth_16_4_100sec/52_24_140_254 total outgoing bandwidth: 6593.4
+result/bandwidth_16_4_100sec/52_24_140_202 total outgoing bandwidth: 9501.68
+result/bandwidth_16_4_100sec/52_24_141_4 total outgoing bandwidth: 9873.24
+result/bandwidth_16_4_100sec/52_24_140_251 total outgoing bandwidth: 9891.24
+result/bandwidth_16_4_100sec/52_24_141_2 total outgoing bandwidth: 9902.92
+result/bandwidth_16_4_100sec/52_24_141_1 total outgoing bandwidth: 9554.24
+result/bandwidth_16_4_100sec/52_24_140_250 total outgoing bandwidth: 9361.0
+result/bandwidth_16_4_100sec/52_24_136_189 total outgoing bandwidth: 9840.28
+result/bandwidth_16_4_100sec/52_24_139_27 total outgoing bandwidth: 9892.44
+result/bandwidth_16_4_100sec/52_24_60_104 total outgoing bandwidth: 8518.92
+result/bandwidth_16_4_100sec/52_24_141_5 total outgoing bandwidth: 9920.16
+result/bandwidth_16_4_100sec/52_24_124_58 total outgoing bandwidth: 9795.92
+result/bandwidth_16_4_100sec/52_24_141_8 total outgoing bandwidth: 9850.04
+result/bandwidth_16_4_100sec/52_24_141_6 total outgoing bandwidth: 9814.28
+result/bandwidth_16_4_100sec/52_24_140_238 total outgoing bandwidth: 9791.0
+average outgoing bandwidth 9500.63
+bandwidth matrix:
+    0  1157  1116   328   301   279   897   759   642   388   485  1751   406   445   645   310
+  537     0   517   538   418   318   375   238   245   279   460   165   289   288   544  1382
+  622   814     0   629   607   309   736   351   384   310   583  1607   384   734   467   964
+  367   827   395     0   654   305   397  1280   868   788   451   332   650  1034   742   783
+  329   828  1146   537     0  1085   467   604   775   464   426   546   404   741  1105   432
+  566   715   570   345   403     0   589   534   391  1638  1218   215  1064   539   746   368
+  798   512   671  1546   596   306     0   422   480   346   865   300   796   473   532   911
+  706   402   563   459   837   730   567     0   933   602   514   720   498   962   408   460
+ 1249   469   488   499   412   423   634   644     0   583   543   832   433   820   919   892
+  800   415   437   586   445  1658   517   663  1474     0   356   220   441  1000   388   491
+  500   581   620   685   688   351  1034   487   367   292     0   225   792   469  1095   332
+  274   746   337   417   277  1136   998   626   213   480  1720     0  1587   385   342   381
+  533   517   772   681  1105   305   835   801   393   488   657   743     0   839   575   551
+ 1157   399   639   594   630   661   476   953   918  1105   491   210   611     0   529   476
+  282   826   621   475  1423   820   493   668   448   366   510   778   601   397     0  1105
+  595   670   994   405   784   701   827   408   496   613   613   765   693   408   819     0
