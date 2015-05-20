@@ -195,9 +195,11 @@
 
 * Challenges in modelling:
   - Workload characterization: How to concisely describe a complex workload
-    without losing necessary information.
+    without losing necessary information. I.e., how do we compress the stream?
   - An absolute model doesn't capture the connection between a workload and the
-    storage device on which it executes.
+    storage device on which it executes, assumes open world that `Wi = Wj`.
+  - Which workload characteristics are important will vary from storage device,
+    so must maintain the superset.
   - Hence must abandon absolute models!
 
 * Use case:
@@ -216,4 +218,102 @@
   - Black-box: [2, 14, 19, 27]
   * Burstiness: [28]
   - Spatio-temporal locality: [26]
+
+* Challenges in absolute modelling:
+  - `Pi = Fi(WCi)` where `Pi` = performance characteristic, `Fi` = model for a
+    particular storage device, `WCi` = workload characteristics.
+  - Absolute in that the values for all the parameters above are isolated, they
+    aren't relative to some other device.
+
+* Relative fitness models:
+  - Learn to predict scaling factors or performance ratios rather than
+    performance itself.
+  - E.g., device `i` is 30% faster than device `j` for random reads (regardless
+    of request size or other characteristics).
+  - Want to predict performanance of a workload running on device `i` when we
+    have `WCj` for the workload running on device `j`.
+  - 0) Absolute model: `Pi = Fi(WCi)`
+  - 1) Predict `WCi` from `WCj`. We use a function indexed by `j` and `i`.
+  - 2a) Now can apply: `Pi = Fi( G_{j->i}( WCj ) )`
+  - 2b) But instead we compose F & G: `Pi = RM_{j->i}( WCj )`, to give a
+    relative model RM indexed by `j` and `i`.
+  - 3) Now use performance of device `j` (bandwidth, throughput, latency..) and
+    utilization (cache utilization, hit/miss ratio, cpu utilization..):
+    `Pi = RM_{j->i}( WCj, PERFj, UTILj )`
+  - 4) Finally, predict performance ratios, giving a relative fitness model:
+    `Pi / Pj = RF_{j->i}( WCj, PERFj, UTILj )`
+  - Use (4) to solve for `Pi`: `Pi = (4) * Pj`
+  - Unlike aboslute model, need to train a model per device pair.
+  - Use of performance and utilization metrics allows relaxed capturing of
+    workload characteristics.
+
+* Performance & Utilization:
+  - Appear to be the performance numbers (i.e., bandwidth) that the workload
+    achieves (in isolation, no other workloads running on these storage
+    devices) on storage device `j`.
+  - So allows us to ask the question, what bandwidth will this workload have on
+    storage device `i` if it has a bandwidth of `x` of storage device `j`?
+
+* Fitness test: Synthetic workload generator.
+
+* ML:
+  - Supervised learning: have access to a set of predictor variables (WCj,
+    PERFj, UTILj), as well as the desired response (predicted variables, e.g.,
+    Pi). Algorithm needs to learn mapping between them.
+  - "True values" are from our samples, our fitness test.
+  - Classification vs. regression:
+    - Classification: discrete-valued response variables.
+    - Regression: real-valued response variables.
+  - Paper uses a classification and regression tree (CART) model.
+
+* CART:
+  - Tree that at each node splits on a predictor variable.
+  - CART model-building is to determine which order to split in (i.e., who
+    should be root?). "Best" split is the one that minimizes differences (i.e.,
+    range) in the leaf nodes (i.e., tightest clusters).
+  - Most relevant predictor variables are used first, and less relevants ones
+    to refine the predicted value.
+  - A maximal tree (using all predictor variables) is first created, then
+    pruned to eliminate over-fitting, with multiple prune-depths explored.
+  - Optimal pruning depth is determined through cross-validation, where some
+    reserved training data is used to test accuracy of pruned trees.
+  - Leaf nodes contain predicted value (average of all samples in that leaf).
+
+* Fitness test workload characteristic variance:
+
+  ---------------------------------------------
+        WC        |  A  |  B  |  C  | Diference
+  ---------------------------------------------
+  Write %         |  40 |  39 |  38 |   5.2%
+  Write size (KB) |  61 |  61 |  61 |    0%
+  Read size (KB)  |  40 |  41 |  41 |   2.5%
+  Write seek (MB) | 321 | 250 | 233 |   38%
+  Read seek (MB)  | 710 | 711 | 711 |    0%
+  Queue depth     |  23 |  22 |  21 |   9.5%
+  ---------------------------------------------
+
+  - So big difference in write seek and essential no change in anything else.
+  - Win of relative model comes from ability to use performance data, not much
+    it seems from transforming the `WCj`.
+
+* Synthetic results:
+  - About a 4-10% improvement with the relative fitness model over an absolute.
+  - Relative fitness model prunes (so 'generalizes') much better than all
+    others (including a relative model). This is likely since a relative
+    fitness model gives a scaling factor, so essentially a function as output.
+    While the other three approaches have to give discrete values. So as you
+    prune the tree, the discrete approach suffers far more than a functional
+    approach.
+  - Best prediction results for bandwidth, then throughput, then latency.
+
+* App results (just throughput):
+  - TPC-C:
+    - Absolute model:   50-70% error
+    - Relative model:   18-30% error
+    - Relative fitness: 20-35% error
+
+  - Postmark:
+    - Absolute model:   30-60% error
+    - Relative model:   25-50% error
+    - Relative fitness: 20-30% error
 
