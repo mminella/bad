@@ -6,7 +6,7 @@
   - Memory management & Binary processing -- Explicit (unsafe) memory
     management, work on binary objects, not java objects.
   - Cache-aware computation -- Better exploit memory hierarchy.
-  - Code generation -- For SQL and other DSL's ontop of Spark.
+  - Code generation -- For SQL and other DSL's on top of Spark.
 
 ## Ousterhout, 2015, NSDI
 
@@ -103,4 +103,117 @@
   - 178 i2.8xlarge VM's in a placement group.
   - Estimated cost of $325.
   - Sort took 888 seconds, cost of $299.45.
+
+## BASIL: Automated IO Load Balancing Across Storage Devices
+
+* Modelling approaches:
+  - Black box vs White: Black box models are oblivious to the internal details
+    of the storage device, white box include some of those details.
+  - Absolute vs relative: Absolute models try to predict the actual performance
+    characteristics of an app placed on a storage device, while relative just
+    provide the relative change in performance when an app is moved from
+    storage device A to B.
+
+* BASIL: Black-box + relative.
+
+* Related work:
+  - Intro: [12, 21]
+  - Storage reconfiguration: Hippodrome [10], Minerva [8].
+  - Performance prediction: Mesnier (black-box, relative) [15] .
+  - Analytical Models: [14, 17, 29, 20]
+    - Table-based: [9]
+    - ML: [22]
+
+* BASIL Model: Workload metrics -> Storage metrics -> Performance
+  - Model (essentially the above function) is simple linear extrapolation from
+    the storage metrics to IO latencies.
+  - Workload metrics determine a place on the model.
+
+* Performance metrics:
+  - IO Latency (used since allows a very simple linear model).
+  - Lower is better!
+
+* Workload metrics:
+  - Average IO latency along following:
+    - Seek distance (randomness)
+    - IO size
+    - Read-write ratio
+    - Outstanding IOs
+  - Mostly inherit to app and independent of storage device:
+    - However, some co-dependency: e.g., IO size for a database logger may
+      decrease as latency decreases.
+  - BASIL assumes workload metrics are independent of IO device.
+    - Mesnier's model could capture the co-dependency.
+
+* Storage metrics:
+  - Measure impact of IO latency across a cross product of the 4 workload
+    metrics that gives 750 configurations.
+
+* Load balancing:
+  - Use performance model to predict average IO latency for an app when on a
+    storage device.
+  - Lower average IO latency is assumed to be better.
+  - Optimize in some weighted fashion to improve overall performance across
+    many applications.
+
+* IO Latency Model:
+  - `L = [ (K1 + OIO)*(K2 + IOSize)*(K3 + read%)*(K4 + random%) ] / K5`
+  - Take the 750 measurements per storage array and use it to figure out Ki
+    values.
+  - Linear fit (with minimizing least square error) used for K5.
+  - Most model prediction errors from very sequential workloads, so could
+    special case them. But for now, just leave.
+
+* Storage Device Model:
+  - Collect (OIO, Latency) data pairs for a storage device.
+  - Compute a linear fit for the pairs, i.e., a slope parameter (P).
+  - Use as a (relative) model for the storage device (instead of needing the
+    full Ki model!).
+  - When moving a workload with known latency L from a storage device D1 to a
+    storage device D2, we estimate it's new latency L' using:
+    - `L' = P(D1) / P(D2) * L`
+  - Model only works if OIO is a good predictor for IO behavior (i.e.,
+    consistent). To improve over some anomalies, made two changes:
+    1) Only consider read OIOs and average read latencies.
+    2) Ignore "outliers" (e.g., IO size > 32KB, sequentiality > 90%).
+
+* Load Balancing:
+  - Workload on a storage device is the sum of `L` (with K5 = 1) for each app
+    on that storage device.
+  - Capacity of a storage device is simply its slope, P, since slope is a
+    relative measure of performance (i.e., the same storage device with twice
+    the disk should have a slope 2x larger).
+
+## Modelling the Relative Fitness of Storage
+
+* A relative fitness model predicts performance differences between a pair of
+  devices.
+  - Allows capturing the workload changes as an app moves from storage A to B.
+  - Allows performance and resource utilization to be used in place of workload
+    characteristics (i.e., since modeling moving a workload from A to B, so can
+    make use of the performance information of the workload on A).
+
+* Challenges in modelling:
+  - Workload characterization: How to concisely describe a complex workload
+    without losing necessary information.
+  - An absolute model doesn't capture the connection between a workload and the
+    storage device on which it executes.
+  - Hence must abandon absolute models!
+
+* Use case:
+  - Train models before deploying a new storage device.
+  - Measure the characteristics, including the performance and resource
+    utilization, of a workload on the device it was originally assinged to.
+  - Use the model to predict performance of moving the workload to the new
+    storage device.
+
+* Related work:
+  - Analytical: [17, 22, 24]
+  - Statistical: [14]
+  - ML: [27]
+  - Table: [2]
+  - White-box: [25]
+  - Black-box: [2, 14, 19, 27]
+  * Burstiness: [28]
+  - Spatio-temporal locality: [26]
 
