@@ -317,3 +317,46 @@
     - Relative model:   25-50% error
     - Relative fitness: 20-30% error
 
+# Robust, Portable IO Scheduling with the Disk Mimic
+
+* Abstract: Kernel disk IO scheduler that works by performing on-line
+  simulation of the disk to figure out costs.
+
+* Off-line disk simulators: [4, 14, 30]
+
+* On-line approach must be cheaper to run, but also has the benefit of feedback
+  from the real device, allowing it to adapt / configure itself over time.
+
+* Disk mimic: simple table based approach, i.e., simply record previous history
+  for operations to build a table for future estimates.
+  - Challenge of keeping the table small: which input parameters are most
+    significant?
+  - Two input parameters: logical distance between requests, and request type.
+    - Logical distance: logical distance from the first block of the current
+      request to the last block of the previous request.
+    - Assumption of spinning disks.
+  - Linear interpolation between rows (some tricks around validating the rows
+    in the table to ensure accuracy on using the record points as interpolation
+    start and end holders. [Actual underlying disk has a saw tooth pattern, so
+    ideally want a start point and end point to not cross a saw tooth]).
+  - Scheduler optimizes for throughput.
+  - `Pi = Fi( distance, type )`, where `Pi = time (ms)` to perform this
+    operation. E.g., a read of distance 132KB from the previous IO operation
+    will take 1.8ms...
+
+* For evaluation they *simulate* the storage device!
+  - Simulate 8 different disks, using rotation, seek, head and cylinder switch,
+    track and cylinder skew and sectors per track.
+  - Curve fit seek times to the two-function equation proposed by Ruemmler and
+    Wilkes [17]. Short seeks are proportional to the square root of the
+    cylinder distance, and longer seeks are proportional to the cylinder
+    distance.
+
+* Related:
+  - Disk modelling: [18](Ruemmler and Wilkes), [14]
+  - Cache-behaviour: [24]
+  - Figuring out disk behaviour: [19, 32]
+  - Tables: [1, 7]
+  - Probabilistic: [27]
+  - Disk schedulers: [11, 13, 21, 33]
+
