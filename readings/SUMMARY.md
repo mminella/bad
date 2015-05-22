@@ -190,7 +190,7 @@
   devices.
   - Allows capturing the workload changes as an app moves from storage A to B.
   - Allows performance and resource utilization to be used in place of workload
-    characteristics (i.e., since modeling moving a workload from A to B, so can
+    characteristics (i.e., since modelling moving a workload from A to B, so can
     make use of the performance information of the workload on A).
 
 * Challenges in modelling:
@@ -359,4 +359,261 @@
   - Tables: [1, 7]
   - Probabilistic: [27]
   - Disk schedulers: [11, 13, 21, 33]
+
+# An Introduction to disk drive modelling (1994)
+
+* Disk mechanics:
+  - Platers -> tracks -> sectors
+  - Cylinder - the same track across all platers (i.e., vertically aligned),
+    although as tracks become denser, there is less vertical alignment and the
+    concept of a cylinder is less meaningful.
+  - Head, arm and arm pivot point.
+
+* Seeking: Must position head over correct track / cylinder.
+  - Head of all arms (at each platter) are on same pivot point, so more
+    together.
+  - Seek phases: Speedup -> Coast -> Slowdown -> Settle
+    - Very short seeks: dominated by settle time [1-3ms].
+    - Short seeks: dominated by speedup, so time is proportional to the square
+      root of the seek distance + settle time.
+    - Long seeks: dominated by coast, so time is proportional to distance + a
+      constant overhead.
+
+* Background tasks:
+  - Disk controller keeps a table of power and time requirements to move a head
+    a certain distance (not full table, uses interpolation). Ocasionally needs
+    to recalibrate this table. [500-800ms].
+
+* Cylinder switches (head & track switching):
+  - Switching from one track to the same on on different cylinder [0.5 - 1.5ms]
+    to resettle the head since small alignment differences between platters.
+  - Track switch: moving from last track of one platter, to the first track of
+    the next platter. Generally same as seek sttle time.
+
+* Optimizations:
+  - Will attempt a read before head has settled to hopefully save a rotation.
+    Error correction ensures bad data won't be returned, so worst outcome is
+    normal seek settle delay. Can save as much as 0.75ms.
+
+* Disk controller:
+  - Requires some processing, overhead of 0.3-1.0ms.
+  - SCSI bus interface:
+    - can get contention
+    - bus acquisition takes a few microseconds
+    - disk drives may disconnect and reconnect [200us] to allow other devices
+      to access the bus while it processes data.
+
+* Disk buffering:
+  - Cache policy:
+    - Partial-cache hits may be partially cache-filled, or may just completely
+      by-pass the cache.
+    - Large reads may always by-pass the cache.
+    - Some controllers evict blocks from the cache after a hit.
+  - Read-ahead:
+    - Generally disk-controller will continue to read into the cache from where
+      the last host request left off.
+    - Without read-ahead, two back-to-back reads would be delayed by almost a
+      full revolution since the dist and host processing time for initiating
+      the second read would be larger than the inter-sector gap.
+    - Policy:
+      - Aggressive: read-ahead crosses track and platter boundaries.
+      - Conservative: stop at end of track.
+      - Aggressive is optimal for sequantial access but degrades random.
+    - Partitioned cache: allows multiple sequential read streams to be
+      interleaved and cached.
+  - Write caching:
+    - Volatile or non-volatile memory?
+    - Can enable over-writing within cache to reduce data written to disk.
+    - Allows better scheduling of writes.
+
+* Command queuing:
+  - SCSI (and SATA with NCQ) allows multiple outstanding requests at a time and
+    determine request execution order (subject to consistency constraints).
+      
+* Disk modelling: "Because of their non-linear, state-dependent behaviour, disk
+  drives cannot be modelled analytically with any accuracy, so most work in
+  this area uses simulation."
+  - IO requests can't be modelled as a fixed latency.
+  - IO requests also can't be modelled as a uniform distribution.
+  - Seek times are non-linear.
+  - Rotational latency is not a uniform distribution for dependent requests.
+  - Bus contention shouldn't be ignored.
+
+* Simulator:
+  - AT&T tasking library: tasks of independent activity. Tasks can call
+    `delay(time)` to advance simulated time, and can wait on certain low-level
+    events.
+  - Disk drive model - two tasks:
+    - 1) The mechanisms: head and platter positions, etc. Accepts requests of
+      the form "read this much from here" and "seek to there".
+    - 2) DMA engine: models the SCSI bus and its transfer engine. Accepts
+      requests of the form "transfer this request between the host and the
+      disk".
+    - 3) A cache object: buffers requests between the two tasks and is used in
+      a classic producer-consumer style to manage the asynchronous interactions
+      between the bus interace and disk mechanism tasks.
+  - Disk drive model fits into a larger system that has items for representing
+    the SCSI bus itself (a semaphore to lock it for mutally exclusive access),
+    the host interface, synthetic and trace-driven workload generator tasks,
+    and a range of stat gathering and reporting tools.
+  - Disk related portions are 5,800 lines of C++, with 7,000 lines for the rest
+    of the infastruture.
+
+* Demerit factor: Root-square-mean (RSM) of horizontal difference between the
+  model curve and real curve for time distribution curves. Percentage terms is
+  as a percentage of the mean IO time.
+
+* Model comparisons (disks/w no data cache):
+  - 1) Fixed Cost:
+    - 35% when using mean IO latency from traces.
+  - 2) Transfer time proportional to IO size, seek-time linear in distance,
+    random rotation time in uniform distribution:
+    - 15% demerit score.
+  - 3) Model 2 but with non-linear seek time + cost of cylinder switching:
+    - 6.2% demerit score.
+  - 4) Model 3 + tracking platter rotational position + tracking logical to
+    physical block mapping:
+    - 2.6% demerit score.
+
+* Model comparison (disks/w data cache):
+  - Model 4 above has demerit score of 112%!
+  - 5) Adding cache (aggressive read-ahead and immediate write reporting):
+    - 5.7% demerit score.
+
+* Next level of model: Account for SCSI bus and disk controller overhead.
+  - 0.4-1.9% demerit score.
+
+* Importance of disk features to model:
+  - 1) caching
+  - 2) data transfer (including overlaps between disk activity and bus
+    transfer)
+  - 3) Seek-time and platter-switching costs.
+  - 4) Rotational position.
+
+# An analytic behaviour model for disk drives with read-ahead caches and request reordering
+
+* Approach:
+  1) Build individual models for components of the disk and allow them to be
+  composed to form a full model.
+  2) Describe workloads through a small set of characteristics (no time element).
+  3) Each layer can modify the workload presented to the lower layer.
+  4) Total service time is sum of all layers.
+
+* Models: Queue <-> Cache <-> Disk
+  - Predicts mean service time for IO requests in a particular workload.
+
+* Disk cache: since generally quite small compared to OS buffer cache, "random"
+  and "reuse" hit rate are very low, but "read-ahead" hits can be common.
+  - Speed-matching buffer as well for host vs bus vs disk speed.
+  - Buffering of writes and opportunities to re-order (either some safety lost
+    or non-volatile memory used).
+
+* Device specification:
+  - Disk:
+    - seek time as function of distance
+    - revolution time
+    - track switch time
+    - cylinder switch time
+    - bytes, cylinders, sectors per track, tracks per cylinder
+  - Cache:
+    - segment size
+    - read-ahead policy
+    - write policy
+    - cache-to-host transfer rate
+  - Queue:
+    - scheduling algorithm
+
+* Open vs Closed models:
+  - Open: jobs enters the system externally and then departs.
+    - Throughput (entering system) is an independent variable (specified as
+      part of data model).
+    - Number of jobs is a dependent variable (whose equilibrium distribution is
+      described in the model solution).
+  - Closed: fixed number of jobs circulate within the system.
+    - Number of jobs in system is an independent variable.
+    - Throughput (jobs departing some node) is a dependent variable.
+
+
+* Workload specification:
+  - Temporal locality (request timing):
+    - Arrival process: constant [open, closed], poisson or bursty.
+    - Request rate: arrival rate mean
+    - Bursty: group of requests who's consecutive arrival times is less than
+      the mean device service time (so a queue builds up).
+      - burst fraction: portion of all requests that occur in bursts.
+      - requests-per-burst: mean number of requests in a burst.
+
+  - Spatial locality:
+    - Data span: range of data accessed.
+    - Request size: length of host reads & writes.
+
+    - Run length: length of a run, a contiguous set of requests (bytes)
+    - Run stride: distance between start point of two consecutive runs (bytes).
+    - Locality fraction: fraction of requests that occur in a run.
+
+    - Requests per sparse run: size of a run with some internal holes.
+    - Sparse run length: (bytes).
+    - Sparse run fraction: fraction of requests that occur in a sparse run.
+      - [Sparse runs still benefit from read-ahead, but not as much as a run]
+
+  - Request type:
+    - Read fraction
+
+* Queue model: a continuous random variable for the time that a request is
+  delayed in the queue.
+
+* Related work:
+  - Simulation: [14, 27, 36]
+  - Analytical: [3, 5, 8, 19, 21, 22, 26, 33]
+  - Queuing theory: [9, 14, 23, 30, 32]
+  - Disk array models: [8, 19, 21]
+
+* Results:
+  - Mean error less than 17%
+  - Real-world generally less than 5%
+  - BUT only when disk utilization less than 60%, error increases as disk usage
+    does.
+
+# Simple table-based modelling of storage arrays
+
+* Table approach:
+  - Sample points across a range of IO request parameters to fill table
+  - Use some interpolation method to predict future request performance: find
+    hyperplane interpolation and then closest point work best.
+    - Believe spline interpolation shows promise.
+
+* Disk utilization:
+  - Need to capture (ideally) disk utilization [current state] as a parameter
+    to account for locality affects.
+  - On-line / training: access low level device performance characteristics.
+  - Simulation: make use of algorithms:
+    - Inter-stream adjustments: Usyal et al. A modular, analytical throughput
+      model for modern disk arrays.
+    - Inter-stream phasing: Borowsky et al. Capacity planning with phased
+      workloads.
+
+# Hippodrome: running circles around storage administration
+
+* Automatic configuration of a storage system.
+
+* Iterative process: design new system -> implement design -> migrate work ->
+  analyse workload.
+
+* Hippodrome:
+  - 1) Analysis: trace workload, but compress stream by applying a dynamic
+    window to the stream and aggregating a window into a vector of metrics.
+      - Metrics: request rate, request size, run count (mean number of requests
+        made to contiguous addresses), queue length, on time, off time, overlap
+        fraction.
+      - All metrics use mean for aggregating.
+  - 2) Performance model: takes workload summary from analysis and storage
+    system design from the solver.
+      - Inter-stream adjustment: adjust the metrics in each stream based on how
+        they overlap with other streams (i.e., decrease sequential read when
+        two streams overlap).
+      - Single-stream prediction: table approach.
+      - Utilization combination: use phasing algorithm to combine individual
+        stream estimations.
+  - 3) Solver: builds new storage configurations to test.
+  - 4) Migration: moves workloads.
 
