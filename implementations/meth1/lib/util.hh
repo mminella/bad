@@ -27,10 +27,9 @@ char ** clear_environ( void );
 void drop_privileges( void );
 
 /* Various checks that running with right conditions */
-void check_args_env( const int argc );
+void sanity_check_env( const int argc );
 void check_suid_root( const std::string & prog );
 void check_ip_forwarding( const std::string & prog );
-void check_requirements( const int argc, const char * const argv[] );
 
 /* Zero out an arbitrary structure */
 template <typename T> void zero( T & x ) { memset( &x, 0, sizeof( x ) ); }

@@ -89,7 +89,7 @@ void prepend_shell_ps1( const char * str )
 }
 
 /* verify args and stderr are present */
-void check_args_env( const int argc )
+void sanity_check_env ( const int argc )
 {
   if ( argc <= 0 ) {
     /* really crazy user */
@@ -113,12 +113,4 @@ void check_ip_forwarding( const string & prog )
       prog + ": Please run \"sudo sysctl -w net.ipv4.ip_forward=1\" " +
       "to enable IP forwarding" );
   }
-}
-
-/* check all requirements */
-void check_requirements( const int argc, const char * const argv[] )
-{
-  check_args_env( argc );
-  check_suid_root( argv[0] );
-  check_ip_forwarding( argv[0] );
 }

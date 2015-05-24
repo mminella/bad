@@ -38,7 +38,7 @@ int main( int argc, char * argv[] )
 
 int run( int argc, char * argv[] )
 {
-  check_args_env( argc );
+  sanity_check_env( argc );
   check_usage( argc, argv );
 
   string port{argv[1]};
