@@ -18,11 +18,11 @@ static uint32_t internet_checksum_pre( uint32_t start, const uint8_t * buf,
   uint32_t sum = start;
 
   for ( ; len > 1; len -= 2, buf += 2 ) {
-    sum += *(uint16_t *)buf;
+    sum += *reinterpret_cast<const uint16_t *>( buf );
   }
 
   if ( len > 0 ) {
-    sum += *(uint8_t *)buf;
+    sum += *reinterpret_cast<const uint8_t *>( buf );
   }
 
   return sum;
@@ -38,66 +38,44 @@ uint16_t internet_checksum( const uint8_t * buf, uint16_t len )
 }
 
 /* Calculate the IPV4 header checksum given an IPV4 packet */
-void calculate_ipv4_checksum( uint8_t * ipv4_pkt, uint16_t pkt_len )
+int calculate_ipv4_checksum( uint8_t * ipv4_pkt, uint16_t pkt_len )
 {
-  assert( pkt_len >= 20 );
+  if ( pkt_len < 20 ) {
+    return -1;
+  }
+
   size_t hdr_len = ( ipv4_pkt[0] & 0x0f ) * 4;
   uint16_t * chk_field = reinterpret_cast<uint16_t *>( ipv4_pkt + 10 );
 
   *chk_field = 0; // zero out existing one
   *chk_field = internet_checksum( ipv4_pkt, hdr_len );
+
+  return 0;
 }
 
-// XXX: I prefer this one which I (davidt) wrote, but GCC compiles it wrong! So
-// to avoid annoying bug just taking one from internet.
-// /* Calculate the IPV4-UDP header checksum given an IPV4-UDP packet */
-// void calculate_ipv4_udp_checksum( uint8_t * ipv4_pkt, uint16_t pkt_len )
-// {
-//   assert( pkt_len >= 28 );
-//
-//   uint32_t chk;
-//   uint16_t ip4_len = ( ipv4_pkt[0] & 0x0f ) * 4;
-//   uint16_t udp_len = pkt_len - ip4_len;
-//
-//   uint32_t pseudo_hdr[3];
-//   uint8_t *pseudo_hdr_8 = reinterpret_cast<uint8_t *>( pseudo_hdr );
-//   uint16_t *pseudo_hdr_16 = reinterpret_cast<uint16_t *>( pseudo_hdr );
-//
-//   uint32_t *ipv4_32 = reinterpret_cast<uint32_t *>( ipv4_pkt );
-//   uint16_t *ipv4_16 = reinterpret_cast<uint16_t *>( ipv4_pkt );
-//
-//   // zero old checksum
-//   ipv4_16[ip4_len / 2 + 3] = 0;
-//
-//   // pseudo header
-//   memset( pseudo_hdr, 0, 12 );
-//   pseudo_hdr[0] = ipv4_32[3];          // source ip
-//   pseudo_hdr[1] = ipv4_32[4];          // dest ip
-//   pseudo_hdr_8[8] = 0;                 // zeroes
-//   pseudo_hdr_8[9] = 0x11;              // protocol
-//   pseudo_hdr_16[5] = htons( udp_len ); // udp length
-//
-//   // checksum pseudo header
-//   chk = internet_checksum_pre( 0,  pseudo_hdr_8, 12 );
-//   chk = internet_checksum_pre( chk, ipv4_pkt + ip4_len, pkt_len - ip4_len );
-//   chk = ~(( chk & 0xffff ) + ( chk >> 16 ));
-//
-//   // add in new checksum
-//   ipv4_16[ip4_len / 2 + 3] = chk;
-// }
-
-void calculate_ipv4_udp_checksum( uint8_t * ipv4_pkt, uint16_t pkt_len )
+/* Calculate the IPV4-UDP header checksum given an IPV4-UDP packet */
+int calculate_ipv4_udp_checksum( uint8_t * ipv4_pkt, uint16_t pkt_len )
 {
-  struct iphdr * pIph = (struct iphdr *)ipv4_pkt;
-  uint16_t ip4_len = ( ipv4_pkt[0] & 0x0f ) * 4;
-  unsigned short * ipPayload = (unsigned short *)( ipv4_pkt + ip4_len );
+  if ( pkt_len < 28 ) {
+    return -1;
+  }
 
-  unsigned long sum = 0;
-  struct udphdr * udphdrp = (struct udphdr *)( ipPayload );
-  unsigned short udpLen = htons( udphdrp->len );
-  // printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~udp len=%d\n", udpLen);
+  struct iphdr * pIph = reinterpret_cast<struct iphdr *>( ipv4_pkt );
+  uint16_t ip4_len = ( ipv4_pkt[0] & 0x0f ) * 4;
+  if (ip4_len + UDP_HDRLEN > pkt_len) {
+    return -1;
+  }
+
+  uint16_t * ip_data = reinterpret_cast<uint16_t *>( ipv4_pkt + ip4_len);
+  struct udphdr * udphdrp = reinterpret_cast<struct udphdr *>( ip_data );
+  uint16_t udpLen = htons( udphdrp->len );
+  if (ip4_len + udpLen > pkt_len) {
+    return -1;
+  }
+
+  uint32_t sum = 0;
+
   // add the pseudo header
-  // printf("add pseudo header\n");
   // the source ip
   sum += ( pIph->saddr >> 16 ) & 0xFFFF;
   sum += ( pIph->saddr ) & 0xFFFF;
@@ -110,39 +88,52 @@ void calculate_ipv4_udp_checksum( uint8_t * ipv4_pkt, uint16_t pkt_len )
   sum += udphdrp->len;
 
   // add the IP payload
-  // printf("add ip payload\n");
   // initialize checksum to 0
   udphdrp->check = 0;
   while ( udpLen > 1 ) {
-    sum += *ipPayload++;
+    sum += *ip_data++;
     udpLen -= 2;
   }
+
   // if any bytes left, pad the bytes and add
   if ( udpLen > 0 ) {
-    // printf("+++++++++++++++padding: %d\n", udpLen);
-    sum += ( ( *ipPayload ) & htons( 0xFF00 ) );
+    sum += ( ( *ip_data ) & htons( 0xFF00 ) );
   }
+
   // Fold sum to 16 bits: add carrier to result
-  // printf("add carrier\n");
   while ( sum >> 16 ) {
     sum = ( sum & 0xffff ) + ( sum >> 16 );
   }
-  // printf("one's complement\n");
   sum = ~sum;
-  // set computation result
-  udphdrp->check =
-    ( (unsigned short)sum == 0x0000 ) ? 0xFFFF : (unsigned short)sum;
+
+  udphdrp->check = ( static_cast<uint16_t>( sum ) == 0x0000 )
+    ? 0xFFFF : static_cast<uint16_t>( sum );
+
+  return 0;
 }
 
 /* Calculate the IPV4-TCP header checksum given an IPV4-TCP packet */
-void calculate_ipv4_tcp_checksum( uint8_t * ipv4_pkt, uint16_t pkt_len )
+int calculate_ipv4_tcp_checksum( uint8_t * ipv4_pkt, uint16_t pkt_len )
 {
-  struct iphdr * pIph = (struct iphdr *)ipv4_pkt;
+  if ( pkt_len < 40 ) {
+    return -1;
+  }
+
+  struct iphdr * pIph = reinterpret_cast<struct iphdr *>( ipv4_pkt );
   uint16_t ip4_len = ( ipv4_pkt[0] & 0x0f ) * 4;
-  unsigned short * ipPayload = (unsigned short *)( ipv4_pkt + ip4_len );
-  unsigned long sum = 0;
-  unsigned short tcpLen = ntohs( pIph->tot_len ) - ( pIph->ihl << 2 );
-  struct tcphdr * tcphdrp = (struct tcphdr *)( ipPayload );
+  if (ip4_len + TCP_HDRLEN > pkt_len) {
+    return -1;
+  }
+
+  uint16_t * ip_data = reinterpret_cast<uint16_t *>( ipv4_pkt + ip4_len );
+  struct tcphdr * tcphdrp = reinterpret_cast<struct tcphdr *>( ip_data );
+  uint16_t tcpLen = ntohs( pIph->tot_len ) - ( pIph->ihl << 2 );
+  if (ip4_len + tcpLen > pkt_len) {
+    return -1;
+  }
+
+  uint32_t sum = 0;
+
   // add the pseudo header
   // the source ip
   sum += ( pIph->saddr >> 16 ) & 0xFFFF;
@@ -159,13 +150,12 @@ void calculate_ipv4_tcp_checksum( uint8_t * ipv4_pkt, uint16_t pkt_len )
   // initialize checksum to 0
   tcphdrp->check = 0;
   while ( tcpLen > 1 ) {
-    sum += *ipPayload++;
+    sum += *ip_data++;
     tcpLen -= 2;
   }
   // if any bytes left, pad the bytes and add
   if ( tcpLen > 0 ) {
-    // printf("+++++++++++padding, %d\n", tcpLen);
-    sum += ( ( *ipPayload ) & htons( 0xFF00 ) );
+    sum += ( ( *ip_data ) & htons( 0xFF00 ) );
   }
   // Fold 32-bit sum to 16 bits: add carrier to result
   while ( sum >> 16 ) {
@@ -173,46 +163,10 @@ void calculate_ipv4_tcp_checksum( uint8_t * ipv4_pkt, uint16_t pkt_len )
   }
   sum = ~sum;
   // set computation result
-  tcphdrp->check = (unsigned short)sum;
-}
+  tcphdrp->check = static_cast<uint16_t>( sum );
 
-// XXX: I prefer this one which I (davidt) wrote, but GCC compiles it wrong! So
-// to avoid annoying bug just taking one from internet.
-// /* Calculate the IPV4-TCP header checksum given an IPV4-TCP packet */
-// void calculate_ipv4_tcp_checksum( uint8_t * ipv4_pkt, uint16_t pkt_len )
-// {
-//   assert( pkt_len >= 40 );
-//
-//   uint32_t chk;
-//   uint16_t ip4_len = ( ipv4_pkt[0] & 0x0f ) * 4;
-//   uint16_t tcp_len = pkt_len - ip4_len;
-//
-//   uint32_t pseudo_hdr[3];
-//   uint8_t *pseudo_hdr_8 = reinterpret_cast<uint8_t *>( pseudo_hdr );
-//   uint16_t *pseudo_hdr_16 = reinterpret_cast<uint16_t *>( pseudo_hdr );
-//
-//   uint32_t *ipv4_32 = reinterpret_cast<uint32_t *>( ipv4_pkt );
-//   uint16_t *ipv4_16 = reinterpret_cast<uint16_t *>( ipv4_pkt );
-//
-//   // zero old checksum
-//   ipv4_16[ip4_len / 2 + 8] = 0;
-//
-//   // pseudo header
-//   memset( pseudo_hdr, 0, 12 );
-//   pseudo_hdr[0] = ipv4_32[3];          // source ip
-//   pseudo_hdr[1] = ipv4_32[4];          // dest ip
-//   pseudo_hdr_8[8] = 0;                 // zeroes
-//   pseudo_hdr_8[9] = 0x6;               // protocol
-//   pseudo_hdr_16[5] = htons( tcp_len ); // tcp length
-//
-//   // checksum pseudo header
-//   chk = internet_checksum_pre( 0,  pseudo_hdr_8, 12 );
-//   chk = internet_checksum_pre( chk, ipv4_pkt + ip4_len, pkt_len - ip4_len );
-//   chk = ~(( chk & 0xffff ) + ( chk >> 16 ));
-//
-//   // add in new checksum
-//   ipv4_16[ip4_len / 2 + 8] = chk;
-// }
+  return 0;
+}
 
 /* Print an IP packet header to stdout */
 void print_ip_packet( const uint8_t * const ip_pkt, size_t size )
