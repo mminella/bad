@@ -89,7 +89,7 @@ void prepend_shell_ps1( const char * str )
 }
 
 /* verify args and stderr are present */
-void sanity_check_env ( const int argc )
+void sanity_check_env( const int argc )
 {
   if ( argc <= 0 ) {
     /* really crazy user */

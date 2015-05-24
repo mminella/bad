@@ -11,10 +11,8 @@
 class Poller
 {
 public:
-  struct Action
-  {
-    struct Result
-    {
+  struct Action {
+    struct Result {
       enum class Type { Continue, Exit, Cancel } result;
       unsigned int exit_status;
       Result( const Type & s_result = Type::Continue,
@@ -35,9 +33,8 @@ public:
 
     Action( const IODevice & s_io, const PollDirection & s_direction,
             const CallbackType & s_callback,
-            const std::function<bool(void)> & s_when_interested = []() {
-      return true;
-    } )
+            const std::function<bool(void)> & s_when_interested =
+              []() { return true; } )
       : io( s_io )
       , direction( s_direction )
       , callback( s_callback )
@@ -54,8 +51,7 @@ private:
   std::vector<pollfd> pollfds_;
 
 public:
-  struct Result
-  {
+  struct Result {
     enum class Type { Success, Timeout, Exit } result;
     unsigned int exit_status;
     Result( const Type & s_result,

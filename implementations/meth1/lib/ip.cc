@@ -62,14 +62,14 @@ int calculate_ipv4_udp_checksum( uint8_t * ipv4_pkt, uint16_t pkt_len )
 
   struct iphdr * pIph = reinterpret_cast<struct iphdr *>( ipv4_pkt );
   uint16_t ip4_len = ( ipv4_pkt[0] & 0x0f ) * 4;
-  if (ip4_len + UDP_HDRLEN > pkt_len) {
+  if ( ip4_len + UDP_HDRLEN > pkt_len ) {
     return -1;
   }
 
-  uint16_t * ip_data = reinterpret_cast<uint16_t *>( ipv4_pkt + ip4_len);
+  uint16_t * ip_data = reinterpret_cast<uint16_t *>( ipv4_pkt + ip4_len );
   struct udphdr * udphdrp = reinterpret_cast<struct udphdr *>( ip_data );
   uint16_t udpLen = htons( udphdrp->len );
-  if (ip4_len + udpLen > pkt_len) {
+  if ( ip4_len + udpLen > pkt_len ) {
     return -1;
   }
 
@@ -107,7 +107,8 @@ int calculate_ipv4_udp_checksum( uint8_t * ipv4_pkt, uint16_t pkt_len )
   sum = ~sum;
 
   udphdrp->check = ( static_cast<uint16_t>( sum ) == 0x0000 )
-    ? 0xFFFF : static_cast<uint16_t>( sum );
+                     ? 0xFFFF
+                     : static_cast<uint16_t>( sum );
 
   return 0;
 }
@@ -121,14 +122,14 @@ int calculate_ipv4_tcp_checksum( uint8_t * ipv4_pkt, uint16_t pkt_len )
 
   struct iphdr * pIph = reinterpret_cast<struct iphdr *>( ipv4_pkt );
   uint16_t ip4_len = ( ipv4_pkt[0] & 0x0f ) * 4;
-  if (ip4_len + TCP_HDRLEN > pkt_len) {
+  if ( ip4_len + TCP_HDRLEN > pkt_len ) {
     return -1;
   }
 
   uint16_t * ip_data = reinterpret_cast<uint16_t *>( ipv4_pkt + ip4_len );
   struct tcphdr * tcphdrp = reinterpret_cast<struct tcphdr *>( ip_data );
   uint16_t tcpLen = ntohs( pIph->tot_len ) - ( pIph->ihl << 2 );
-  if (ip4_len + tcpLen > pkt_len) {
+  if ( ip4_len + tcpLen > pkt_len ) {
     return -1;
   }
 

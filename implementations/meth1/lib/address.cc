@@ -81,8 +81,7 @@ Address::Address( const string & node, const string & service,
 
   /* put resolved_address in a wrapper so it will get freed if we have to throw
    * an exception */
-  struct Freeaddrinfo_Deleter
-  {
+  struct Freeaddrinfo_Deleter {
     void operator()( addrinfo * const x ) const { freeaddrinfo( x ); }
   };
   unique_ptr<addrinfo, Freeaddrinfo_Deleter> wrapped_address(

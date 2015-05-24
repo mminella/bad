@@ -65,8 +65,7 @@ public:
   {
   }
 
-  struct received_datagram
-  {
+  struct received_datagram {
     Address source_address;
     uint64_t timestamp;
     std::string payload;

@@ -58,7 +58,8 @@ int run( int argc, char * argv[] )
     }
 
     cerr << "Received datagram from: " << dg.source_address.to_string() << endl
-         << " - Time: " << dg.timestamp << endl << " ---------------" << endl;
+         << " - Time: " << dg.timestamp << endl
+         << " ---------------" << endl;
 
     const uint8_t * const buf =
       reinterpret_cast<const uint8_t * const>( dg.payload.data() );

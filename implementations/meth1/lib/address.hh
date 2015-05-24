@@ -14,8 +14,7 @@ enum IPVersion { IPV4 = AF_INET, IPV6 = AF_INET6 };
 class Address
 {
 public:
-  typedef union
-  {
+  typedef union {
     sockaddr as_sockaddr;
     sockaddr_storage as_sockaddr_storage;
   } raw;
