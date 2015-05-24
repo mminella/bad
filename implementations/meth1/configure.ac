@@ -23,6 +23,7 @@ AC_SUBST([AM_CXXFLAGS], ["$DEF_CXXFLAGS"])
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_RANLIB
+AM_PROG_AR
 
 # Checks for libraries.
 
