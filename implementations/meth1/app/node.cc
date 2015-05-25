@@ -1,27 +1,49 @@
-#include <iostream>
-#include <thread>
+#include <fcntl.h>
 
-#include <arpa/inet.h>
-#include <linux/if_tun.h>
+#include <algorithm>
+#include <vector>
 
 #include "exception.hh"
-#include "ip.hh"
-#include "netdevice.hh"
-#include "pipe.hh"
-#include "poller.hh"
-#include "socket.hh"
-#include "system_runner.hh"
+#include "file_descriptor.hh"
 #include "util.hh"
 
 using namespace std;
-using namespace PollerShortNames;
+
+constexpr auto KEY_LEN = 10;
+constexpr auto VAL_LEN = 90;
+
+struct record {
+  record( const char * s );
+  string str( void );
+  uint8_t key[KEY_LEN];
+  uint8_t value[VAL_LEN];
+};
+
+record::record( const char * s )
+{
+  memcpy( key, s, KEY_LEN );
+  memcpy( value, s, VAL_LEN );
+}
+
+string record::str( void )
+{
+  char buf[KEY_LEN + VAL_LEN];
+  memcpy( buf, key, KEY_LEN );
+  memcpy( buf + KEY_LEN, value, VAL_LEN );
+  return string( buf, KEY_LEN + VAL_LEN );
+}
+
+bool operator<( const record & a, const record & b )
+{
+  return memcmp( a.key, b.key, KEY_LEN ) < 0 ? true : false;
+}
 
 int run( int argc, char * argv[] );
 
 void check_usage( const int argc, const char * const argv[] )
 {
-  if ( argc != 2 ) {
-    throw runtime_error( "Usage: " + string( argv[0] ) + " [port]" );
+  if ( argc != 3 ) {
+    throw runtime_error( "Usage: " + string( argv[0] ) + " [file] [out]" );
   }
 }
 
@@ -41,29 +63,27 @@ int run( int argc, char * argv[] )
   sanity_check_env( argc );
   check_usage( argc, argv );
 
-  string port{argv[1]};
+  FileDescriptor fdi( SystemCall( "open", open( argv[1], O_RDONLY ) ) );
+  FileDescriptor fdo( SystemCall(
+    "open", open( argv[2], O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR ) ) );
 
-  UDPSocket sock;
-  sock.set_reuseaddr();
-  sock.bind( Address( "::0", port ) );
+  vector<record> recs{};
 
-  cerr << "Listening on local address: " << sock.local_address().to_string()
-       << endl;
-
-  while ( true ) {
-    UDPSocket::received_datagram dg = sock.recv();
-
-    if ( sock.eof() ) {
+  for ( ;; ) {
+    string r = fdi.read( sizeof( record ) );
+    if ( fdi.eof() ) {
       break;
     }
-
-    cerr << "Received datagram from: " << dg.source_address.to_string() << endl
-         << " - Time: " << dg.timestamp << endl
-         << " ---------------" << endl;
-
-    // send back the packet to client
-    sock.sendto( dg.source_address, dg.payload );
+    recs.push_back( r.c_str() );
   }
+
+  sort( recs.begin(), recs.end() );
+
+  for ( auto & r : recs ) {
+    fdo.write( r.str() );
+  }
+
+  cout << "Read " << recs.size() << " records off disk." << endl;
 
   return EXIT_SUCCESS;
 }
