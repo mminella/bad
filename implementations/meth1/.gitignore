@@ -2,7 +2,6 @@
 Makefile
 Makefile.in
 aclocal.m4
-app/.deps/
 app/Makefile
 ar-lib
 autom4te.cache/
@@ -15,10 +14,10 @@ config.status
 configure
 depcomp
 install-sh
-lib/.deps/
 lib/Makefile
 missing
 stamp-h1
+.deps
 
 # executables
 app/node
