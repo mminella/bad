@@ -7,36 +7,9 @@
 #include "file.hh"
 #include "util.hh"
 
+#include "record.hh"
+
 using namespace std;
-
-constexpr auto KEY_LEN = 10;
-constexpr auto VAL_LEN = 90;
-
-struct record {
-  record( const char * s );
-  string str( void );
-  uint8_t key[KEY_LEN];
-  uint8_t value[VAL_LEN];
-};
-
-record::record( const char * s )
-{
-  memcpy( key, s, KEY_LEN );
-  memcpy( value, s, VAL_LEN );
-}
-
-string record::str( void )
-{
-  char buf[KEY_LEN + VAL_LEN];
-  memcpy( buf, key, KEY_LEN );
-  memcpy( buf + KEY_LEN, value, VAL_LEN );
-  return string( buf, KEY_LEN + VAL_LEN );
-}
-
-bool operator<( const record & a, const record & b )
-{
-  return memcmp( a.key, b.key, KEY_LEN ) < 0 ? true : false;
-}
 
 int run( int argc, char * argv[] );
 
@@ -66,14 +39,14 @@ int run( int argc, char * argv[] )
   File fdi( argv[1], O_RDONLY );
   File fdo( argv[2], O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR );
 
-  vector<record> recs{};
+  vector<Record> recs{};
 
   for ( ;; ) {
-    string r = fdi.read( sizeof( record ) );
+    string r = fdi.read( Record::SIZE );
     if ( fdi.eof() ) {
       break;
     }
-    recs.push_back( r.c_str() );
+    recs.push_back( Record( r ) );
   }
 
   sort( recs.begin(), recs.end() );

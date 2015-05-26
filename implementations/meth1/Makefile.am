@@ -1,4 +1,4 @@
-SUBDIRS = lib app
+SUBDIRS = lib sort app
 
 format:
 	@list='$(SUBDIRS)'; for subdir in $$list; do \
