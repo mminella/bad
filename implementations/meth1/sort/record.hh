@@ -25,10 +25,8 @@ public:
   /* construct from string read from disk */
   Record( std::string s ) : Record( s.c_str() ) {};
 
-  /* no move constructor */
-  // Record( Record && other ) = delete;
-
-  /* allow copying and assignment */
+  /* allow move, copying and assignment */
+  Record( Record && other ) = default;
   Record( const Record & other ) = default;
   Record & operator=( const Record & other ) = default;
 
