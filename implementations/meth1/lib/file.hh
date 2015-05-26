@@ -23,6 +23,9 @@ public:
   /* forbid copying FileDescriptor objects or assigning them */
   File( const File & other ) = delete;
   const File & operator=( const File & other ) = delete;
+
+  /* rewind to begging of file */
+  void rewind( void );
 };
 
 #endif /* FILE_HH */

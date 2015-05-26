@@ -1,4 +1,5 @@
 #include <fcntl.h>
+#include <unistd.h>
 
 #include <cassert>
 
@@ -33,3 +34,10 @@ File::File( File && other )
 
 /* destructor */
 File::~File() {}
+
+/* rewind to begging of file */
+void File::rewind( void )
+{
+  SystemCall( "lseek", lseek( fd_num(), 0, SEEK_SET ) );
+  reset_eof();
+}

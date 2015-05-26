@@ -1,3 +1,7 @@
+/**
+ * Test program. Takes gensort file as input and reads whole thing into memory,
+ * sorting using C++ algorithm sort implementation.
+ */
 #include <fcntl.h>
 
 #include <algorithm>
@@ -41,12 +45,12 @@ int run( int argc, char * argv[] )
 
   vector<Record> recs{};
 
-  for ( ;; ) {
+  for ( uint64_t i = 0;; i++ ) {
     string r = fdi.read( Record::SIZE );
     if ( fdi.eof() ) {
       break;
     }
-    recs.push_back( Record( r ) );
+    recs.push_back( Record( i, r, true ) );
   }
 
   sort( recs.begin(), recs.end() );
@@ -59,3 +63,4 @@ int run( int argc, char * argv[] )
 
   return EXIT_SUCCESS;
 }
+

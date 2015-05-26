@@ -19,6 +19,7 @@ protected:
   void register_read( void ) { read_count_++; }
   void register_write( void ) { write_count_++; }
   void set_eof( void ) { eof_ = true; }
+  void reset_eof( void ) { eof_ = false; }
 
 public:
   IODevice( const int fd_r, const int fd_w );
