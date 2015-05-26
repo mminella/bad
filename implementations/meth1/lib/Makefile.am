@@ -17,4 +17,5 @@ libsourdough_a_SOURCES = util.hh util.cc \
 	route.hh route.cc \
 	ip.hh ip.cc \
 	domain_socket.hh domain_socket.cc \
-	iodevice.hh iodevice.cc
+	iodevice.hh iodevice.cc \
+	file.hh file.cc

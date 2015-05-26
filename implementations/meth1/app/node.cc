@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "exception.hh"
-#include "file_descriptor.hh"
+#include "file.hh"
 #include "util.hh"
 
 using namespace std;
@@ -63,9 +63,8 @@ int run( int argc, char * argv[] )
   sanity_check_env( argc );
   check_usage( argc, argv );
 
-  FileDescriptor fdi( SystemCall( "open", open( argv[1], O_RDONLY ) ) );
-  FileDescriptor fdo( SystemCall(
-    "open", open( argv[2], O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR ) ) );
+  File fdi( argv[1], O_RDONLY );
+  File fdo( argv[2], O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR );
 
   vector<record> recs{};
 
