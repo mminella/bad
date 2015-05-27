@@ -1,13 +1,15 @@
 package sort
 
-import "bytes"
-import "unsafe"
+import (
+	"bytes"
+	"unsafe"
 
-import set "bad/settings"
+	"bad/settings"
+)
 
 type Record struct {
-	Key [set.KEY_SIZE]uint8
-	Val [set.VAL_SIZE]uint8
+	Key [settings.KEY_SIZE]uint8
+	Val [settings.VAL_SIZE]uint8
 }
 
 type Ord int
@@ -32,7 +34,7 @@ func UnsafeRecord(bytes []byte) *Record {
 }
 
 func RecordMAX() Record {
-	k := bytes.Repeat([]uint8{0xFF}, set.KEY_SIZE)
+	k := bytes.Repeat([]uint8{0xFF}, settings.KEY_SIZE)
 	r := Record{}
 	copy(r.Key[:], k)
 	return r

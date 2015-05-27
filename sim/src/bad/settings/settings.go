@@ -18,9 +18,10 @@ const (
 
 // Cluster setup
 const (
-	IOPS     = 100
-	MEM      = 1 * GB
-	NODES    = 1
-	DATA     = 1000 * RECORD_SIZE
-	IO_BLOCK = 4 * KB
+	IOPS      = 100
+	MEM       = 1 * GB
+	NODES     = 1
+	DATA      = 1000 * RECORD_SIZE
+	IO_BLOCK  = 4 * KB
+	BUF_CACHE = 1000
 )

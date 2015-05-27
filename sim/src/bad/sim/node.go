@@ -1,7 +1,9 @@
 package sim
 
-import "sync"
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 type Node struct {
 	lock sync.Mutex

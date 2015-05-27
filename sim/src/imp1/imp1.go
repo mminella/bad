@@ -1,10 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
 
-import set "bad/settings"
-import "bad/sim"
-import "bad/sort"
+	"bad/settings"
+	"bad/sim"
+	"bad/sort"
+)
 
 func main() {
 	imp := NewImp1()
@@ -29,7 +31,7 @@ func NewImp1() *imp1 {
 }
 
 func (n *imp1) nodeStartup() {
-	n.file = sim.NewFile(n.node, set.DATA)
+	n.file = sim.NewFile(n.node, settings.DATA)
 	n.last = &sort.RecordOff{sort.RecordMIN(), 0}
 }
 
@@ -42,7 +44,7 @@ func linearScan(in *sim.File, after *sort.RecordOff) *sort.RecordOff {
 	min := &sort.RecordOff{sort.RecordMAX(), 0}
 
 	for i := uint64(1); ; i++ {
-		rec := in.Read(set.RECORD_SIZE)
+		rec := in.Read(settings.RECORD_SIZE)
 		if in.EOF() {
 			break
 		}
