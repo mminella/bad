@@ -66,14 +66,19 @@ public:
   std::string str( void ) const;
 
   /* Comparison */
-  bool operator<( const Record & b )
+  bool operator<( const Record & b ) const
   {
-    return std::memcmp( key(), b.key(), KEY_LEN ) < 0 ? true : false;
+    return compare( b ) < 0 ? true : false;
   }
 
-  bool operator<=( const Record & b )
+  bool operator<=( const Record & b ) const
   {
-    return std::memcmp( key(), b.key(), KEY_LEN ) <= 0 ? true : false;
+    return compare( b ) <= 0 ? true : false;
+  }
+
+  int compare( const Record & b ) const
+  {
+    return std::memcmp( key(), b.key(), KEY_LEN );
   }
 };
 

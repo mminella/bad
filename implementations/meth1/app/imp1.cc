@@ -39,10 +39,13 @@ Record linear_scan( File & in, Record & after )
     Record next{ i, in.read( Record::SIZE ), false };
     if (in.eof()) {
       break;
-    } else if ( after <= next && next < min ) {
+    }
+
+    int cmp = next.compare(after);
+    if ( cmp >= 0 && next < min ) {
       // we check the offset to ensure we don't pick up same key, but can still
       // handle duplicate keys.
-      if ( after.offset() < next.offset() ) {
+      if ( cmp > 0 || after.offset() < next.offset() ) {
         min = next.clone();
       }
     }
