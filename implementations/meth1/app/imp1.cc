@@ -42,12 +42,11 @@ Record linear_scan( File & in, Record & after )
     } else if ( after <= next && next < min ) {
       // we check the offset to ensure we don't pick up same key, but can still
       // handle duplicate keys.
-      if ( after.offset() != next.offset() ) {
+      if ( after.offset() < next.offset() ) {
         min = next.clone();
       }
     }
   }
-
 
   return min;
 }
