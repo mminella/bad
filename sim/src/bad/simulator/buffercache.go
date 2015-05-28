@@ -1,4 +1,4 @@
-package sim
+package simulator
 
 type bufferCache struct {
 	disk  *disk

@@ -7,9 +7,12 @@ import (
 	"bad/settings"
 )
 
+type Key [settings.KEY_SIZE]uint8
+type Val [settings.VAL_SIZE]uint8
+
 type Record struct {
-	Key [settings.KEY_SIZE]uint8
-	Val [settings.VAL_SIZE]uint8
+	Key Key
+	Val Val
 }
 
 type Ord int

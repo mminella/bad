@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"bad/settings"
-	"bad/sim"
+	"bad/simulator"
 	"bad/sort"
 )
 
@@ -19,13 +19,13 @@ func main() {
 }
 
 type imp1 struct {
-	node *sim.Node
-	file *sim.File
+	node *simulator.Node
+	file *simulator.File
 	last *sort.RecordOff
 }
 
 func NewImp1() *imp1 {
-	return &imp1{node: sim.NewNode()}
+	return &imp1{node: simulator.NewNode()}
 }
 
 func (n *imp1) nodeStartup() {
@@ -38,7 +38,7 @@ func (n *imp1) nodeNextRecord() {
 	n.last = linearScan(n.file, n.last)
 }
 
-func linearScan(in *sim.File, after *sort.RecordOff) *sort.RecordOff {
+func linearScan(in *simulator.File, after *sort.RecordOff) *sort.RecordOff {
 	min := &sort.RecordOff{sort.RecordMAX(), 0}
 
 	for i := uint64(1); ; i++ {
