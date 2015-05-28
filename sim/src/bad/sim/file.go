@@ -15,8 +15,8 @@ type File struct {
 	eof        bool
 }
 
-func NewFile(n *Node, size uint64) *File {
-	return &File{bcache: newBufferCache(n), size: size}
+func newFile(bc *bufferCache, size uint64) *File {
+	return &File{bcache: bc, size: size}
 }
 
 func (f *File) Lock()   { f.lock.Lock() }

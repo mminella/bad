@@ -12,10 +12,10 @@ func main() {
 	imp := NewImp1()
 
 	imp.nodeStartup()
-	fmt.Printf("Startup Cost:\t\t%v\n", imp.node.GetRunTime())
+	fmt.Printf("Startup Cost:\t\t%v\n", imp.node.GetTime())
 
 	imp.nodeNextRecord()
-	fmt.Printf("NextRecord Cost:\t%v\n", imp.node.GetRunTime())
+	fmt.Printf("NextRecord Cost:\t%v\n", imp.node.GetTime())
 }
 
 type imp1 struct {
@@ -25,13 +25,11 @@ type imp1 struct {
 }
 
 func NewImp1() *imp1 {
-	return &imp1{
-		node: sim.NewNode(),
-	}
+	return &imp1{node: sim.NewNode()}
 }
 
 func (n *imp1) nodeStartup() {
-	n.file = sim.NewFile(n.node, settings.DATA)
+	n.file = n.node.OpenDataFile()
 	n.last = &sort.RecordOff{sort.RecordMIN(), 0}
 }
 
