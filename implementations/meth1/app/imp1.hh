@@ -14,6 +14,7 @@ class Imp1 : public Implementation {
 private:
   File      data_;
   Record    last_;
+  size_type fpos_;
   size_type size_;
 
 public:

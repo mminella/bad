@@ -20,7 +20,7 @@ Record::Record( limit_t lim )
 }
 
 /* Construct from c string read from disk */
-Record::Record( uint64_t offset, const char * s, bool copy )
+Record::Record( size_type offset, const char * s, bool copy )
   : offset_ { offset }
   , key_r_ { reinterpret_cast<const key_t *>( s ) }
   , val_r_ { reinterpret_cast<const val_t *>( s + KEY_LEN ) }

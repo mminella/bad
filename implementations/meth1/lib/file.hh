@@ -14,8 +14,14 @@ public:
   File( const char * path, int flags );
   File( const char * path, int flags, mode_t mode );
 
+  File( const std::string path, int flags )
+    : File ( path.c_str(), flags ) {};
+  File( const std::string path, int flags, mode_t mode )
+    : File ( path.c_str(), flags, mode ) {};
+
   /* move constructor */
   File( File && other );
+  const File & operator=( const File && other ) = delete;
 
   /* destructor */
   virtual ~File();

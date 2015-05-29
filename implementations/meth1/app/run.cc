@@ -39,14 +39,14 @@ int run( int argc, char * argv[] )
   sanity_check_env( argc );
   check_usage( argc, argv );
 
-  Imp1 imp1 { argv[0] };
-
+  Imp1 imp1 { argv[1] };
   imp1.Initialize();
   
-  std::vector<Record> r = imp1.Read(1, 1);
-
-  cout << "Record: " << r[0].offset() << endl;
-
+  auto recs = imp1.Read(1, 5);
+  for ( auto & r : recs ) {
+    cout << "Record: " << r.offset() << endl;
+  }
+  
   return EXIT_SUCCESS;
 }
 

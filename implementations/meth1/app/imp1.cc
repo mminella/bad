@@ -23,6 +23,7 @@ static_assert(
 Imp1::Imp1(std::string file)
   : data_{ file.c_str(), O_RDONLY }
   , last_{ Record::MIN }
+  , fpos_{ 0 }
   , size_{ 0 }
 {
 }
@@ -36,28 +37,27 @@ void Imp1::DoInitialize( void )
 /* Read a contiguous subset of the file starting from specified position. */
 std::vector<Record> Imp1::DoRead( size_type pos, size_type size )
 {
-  if (pos == 0) {
-    throw std::invalid_argument{"pos must be greater than 0"};
-  }
-
   // establish starting record
-  Record after = Record::MIN;
-  if (last_.offset() + 1 == pos) {
+  Record after { Record::MIN };
+  size_type fpos { 0 };
+  if ( fpos_ == pos ) {
     after = last_;
+    fpos = fpos_;
   }
 
   std::vector<Record> recs;
   recs.reserve( size );
 
   // forward scan through all records until we hit the subset we want.
-  while ( after.offset() + 1 < pos + size ) {
+  for ( ; fpos < pos + size; fpos++ ) {
     after = linear_scan( data_, after );
     // collect records
-    if ( after.offset() >= pos ) {
+    if ( fpos >= pos ) {
       recs.push_back( after );
     }
   }
 
+  fpos_ = fpos;
   last_ = after;
 
   return recs;
@@ -79,7 +79,7 @@ Record Imp1::linear_scan( File & in, const Record & after )
   Record min { Record::MAX };
   size_type i;
 
-  for ( i = 1; ; i++ ) {
+  for ( i = 0; ; i++ ) {
     Record next{ i, in.read( Record::SIZE ), false };
     if (in.eof()) {
       break;

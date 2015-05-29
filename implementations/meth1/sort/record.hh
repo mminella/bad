@@ -11,8 +11,9 @@
  */
 class Record {
 public:
-  using key_t = uint8_t;
-  using val_t = uint8_t;
+  using size_type = uint64_t;
+  using key_t     = uint8_t;
+  using val_t     = uint8_t;
 
   static constexpr size_t SIZE = 100;
   static constexpr size_t KEY_LEN = 10;
@@ -21,7 +22,7 @@ public:
   enum limit_t { MAX, MIN };
 
 private:
-  uint64_t offset_;
+  size_type offset_;
 
   /* Private storage for copying record to */
   key_t key_[KEY_LEN];
@@ -44,10 +45,10 @@ public:
   /* Construct from c string read from disk. By default simply uses the storage
    * passed in (so needs to remain valid for life of Record). But if `copy` is
    * true, an internal private copy of the record will be made. */
-  Record( uint64_t offset, const char * s, bool copy = false);
+  Record( size_type offset, const char * s, bool copy = false);
 
   /* Construct from string read from disk */
-  Record( uint64_t offset, std::string s, bool copy = false )
+  Record( size_type offset, std::string s, bool copy = false )
     : Record( offset, s.c_str(), copy ) {}
 
   /* Allow move, copying and assignment */
@@ -62,7 +63,7 @@ public:
   Record clone( void );
 
   /* Accessors */
-  uint64_t offset( void ) const { return offset_; }
+  size_type offset( void ) const { return offset_; }
   const key_t * key( void ) const { return key_r_; }
   const key_t * value( void ) const { return val_r_; }
 
