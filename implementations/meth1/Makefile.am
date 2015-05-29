@@ -1,3 +1,5 @@
+ACLOCAL_AMFLAGS = -I m4
+
 SUBDIRS = lib sort stratergies app
 
 format:
@@ -14,4 +16,3 @@ test: app/test
 	@mkdir -p .test-tmp
 	@./app/test test/in.100.recs .test-tmp/out.100.recs > /dev/null
 	@diff test/out.100.recs .test-tmp/out.100.recs && echo "PASSED"
-

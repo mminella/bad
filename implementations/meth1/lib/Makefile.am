@@ -1,6 +1,6 @@
-noinst_LIBRARIES = libbasicrts.a
+noinst_LTLIBRARIES = libbasicrts.la
 
-libbasicrts_a_SOURCES = util.hh util.cc \
+libbasicrts_la_SOURCES = util.hh util.cc \
 	file_descriptor.hh file_descriptor.cc \
 	address.hh address.cc \
 	socket.hh socket.cc \

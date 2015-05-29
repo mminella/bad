@@ -1,8 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.68])
-AC_INIT([bad1], [1.0.0], [dterei@cs.stanford.edu])
+AC_PREREQ([2.69])
+AC_INIT([bad1],[1.0.0],[dterei@cs.stanford.edu])
 
 # Set automake options.
 # `-Wall -Werror` here is for automake warning, nothing to do with src
@@ -11,6 +11,9 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 # Set sanity check for a source file.
 AC_CONFIG_SRCDIR([lib/address.hh])
+
+# Set m4 output directory (for libtool).
+AC_CONFIG_MACRO_DIR([m4])
 
 # Set configure output header.
 AC_CONFIG_HEADERS([config.h])
@@ -22,8 +25,8 @@ AC_SUBST([AM_CXXFLAGS], ["$DEF_CXXFLAGS"])
 
 # Checks for programs.
 AC_PROG_CXX
-AC_PROG_RANLIB
 AM_PROG_AR
+LT_INIT
 
 # Checks for libraries.
 
@@ -31,6 +34,8 @@ AM_PROG_AR
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT64_T
 
 # Checks for library functions.
 

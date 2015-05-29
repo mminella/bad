@@ -1,4 +1,6 @@
 # build files
+.deps
+.test-tmp/
 Makefile
 Makefile.in
 aclocal.m4
@@ -6,22 +8,30 @@ app/Makefile
 ar-lib
 autom4te.cache/
 compile
+config.guess
 config.h
 config.h.in
 config.h.in~
 config.log
 config.status
+config.sub
 configure
+configure.ac~
 depcomp
 install-sh
 lib/Makefile
+libtool
+ltmain.sh
+m4/
 missing
 stamp-h1
-.deps
-.test-tmp/
 
 # executables
 app/node
 
+# libraries
+*.la
+
 # object files
 *.o
+*.lo

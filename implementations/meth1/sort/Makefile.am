@@ -1,4 +1,3 @@
-noinst_LIBRARIES = libsort.a
+noinst_LTLIBRARIES = libsort.la
 
-libsort_a_SOURCES = record.hh record.cc
-
+libsort_la_SOURCES = record.hh record.cc
