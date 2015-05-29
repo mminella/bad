@@ -1,9 +1,15 @@
-AM_CPPFLAGS = -I$(srcdir)/../lib -I$(srcdir)/../sort
-LDADD = ../lib/libbasicrts.a ../sort/libsort.a -lpthread
+AM_CPPFLAGS = -I$(srcdir)/../lib \
+							-I$(srcdir)/../sort \
+							-I$(srcdir)/../stratergies \
+							-I$(srcdir)/../stratergies/meth1
+LDADD = ../lib/libbasicrts.a \
+				../sort/libsort.a \
+				../stratergies/meth1/libmeth1.a \
+				-lpthread
 
-bin_PROGRAMS = test imp1
+bin_PROGRAMS = test meth1
 
 test_SOURCES = test.cc
 
-imp1_SOURCES = run.cc imp1.cc
+meth1_SOURCES = meth1.cc
 

@@ -35,5 +35,12 @@ AC_TYPE_UINT16_T
 # Checks for library functions.
 
 # Set output files.
-AC_CONFIG_FILES([Makefile lib/Makefile sort/Makefile app/Makefile])
+AC_CONFIG_FILES([
+  Makefile
+  lib/Makefile
+  sort/Makefile
+  stratergies/Makefile
+  stratergies/meth1/Makefile
+  app/Makefile
+])
 AC_OUTPUT

@@ -1,5 +1,5 @@
-#ifndef IMP1_HH
-#define IMP1_HH
+#ifndef METH1_NODE_HH
+#define METH1_NODE_HH
 
 #include "implementation.hh"
 
@@ -38,4 +38,4 @@ private:
   Record linear_scan( File & in, const Record & after );
 };
 
-#endif
+#endif /* METH1_NODE_HH */
