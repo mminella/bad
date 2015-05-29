@@ -1,41 +1,85 @@
 #include <fcntl.h>
 
 #include <algorithm>
+#include <cassert>
+#include <stdexcept>
 #include <vector>
+
+#include "imp1.hh"
+
+#include "record.hh"
 
 #include "exception.hh"
 #include "file.hh"
 #include "util.hh"
 
-#include "record.hh"
+// Check size_t for a vector is a size_type or larger
+static_assert(
+  sizeof( std::vector<Record>::size_type ) >= sizeof( Implementation::size_type ),
+  "Vector<Record> max size is too small!"
+);
 
-using namespace std;
-
-int run( int argc, char * argv[] );
-
-void check_usage( const int argc, const char * const argv[] )
+/* Construct Imp1 */
+Imp1::Imp1(std::string file)
+  : data_{ file.c_str(), O_RDONLY }
+  , last_{ Record::MIN }
+  , size_{ 0 }
 {
-  if ( argc != 2 ) {
-    throw runtime_error( "Usage: " + string( argv[0] ) + " [file]" );
-  }
 }
 
-int main( int argc, char * argv[] )
+/* Initialization routine */
+void Imp1::DoInitialize( void )
 {
-  try {
-    run( argc, argv );
-  } catch ( const exception & e ) {
-    print_exception( e );
-    return EXIT_FAILURE;
-  }
-  return EXIT_SUCCESS;
+  return;
 }
 
-Record linear_scan( File & in, Record & after )
+/* Read a contiguous subset of the file starting from specified position. */
+std::vector<Record> Imp1::DoRead( size_type pos, size_type size )
+{
+  if (pos == 0) {
+    throw std::invalid_argument{"pos must be greater than 0"};
+  }
+
+  // establish starting record
+  Record after = Record::MIN;
+  if (last_.offset() + 1 == pos) {
+    after = last_;
+  }
+
+  std::vector<Record> recs;
+  recs.reserve( size );
+
+  // forward scan through all records until we hit the subset we want.
+  while ( after.offset() + 1 < pos + size ) {
+    after = linear_scan( data_, after );
+    // collect records
+    if ( after.offset() >= pos ) {
+      recs.push_back( after );
+    }
+  }
+
+  last_ = after;
+
+  return recs;
+}
+
+/* Return the the number of records on disk */
+Imp1::size_type Imp1::DoSize( void )
+{
+  if ( size_ == 0 ) {
+    linear_scan( data_, Record::MIN);
+  }
+  return size_;
+}
+
+/* Perform a full linear scan to return the next smallest record that occurs
+ * after the 'after' record. */
+Record Imp1::linear_scan( File & in, const Record & after )
 {
   Record min { Record::MAX };
+  size_type i;
 
-  for ( uint64_t i = 0; ; i++ ) {
+  for ( i = 1; ; i++ ) {
     Record next{ i, in.read( Record::SIZE ), false };
     if (in.eof()) {
       break;
@@ -51,31 +95,11 @@ Record linear_scan( File & in, Record & after )
     }
   }
 
-  return min;
-}
+  // cache number of records on disk
+  size_ = i;
 
-Record next_record( File & in, Record & after )
-{
-  Record r = linear_scan( in, after );
-  cout << "Min was: " << r.offset() << endl;
+  // rewind the file
   in.rewind();
-  return r;
-}
 
-int run( int argc, char * argv[] )
-{
-  sanity_check_env( argc );
-  check_usage( argc, argv );
-
-  File fdi( argv[1], O_RDONLY );
-  Record after { Record::MIN };
-
-  after = next_record( fdi, after );
-  after = next_record( fdi, after );
-  after = next_record( fdi, after );
-  after = next_record( fdi, after );
-  after = next_record( fdi, after );
-  after = next_record( fdi, after );
-
-  return EXIT_SUCCESS;
+  return min;
 }

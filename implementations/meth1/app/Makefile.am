@@ -5,5 +5,5 @@ bin_PROGRAMS = test imp1
 
 test_SOURCES = test.cc
 
-imp1_SOURCES = imp1.cc
+imp1_SOURCES = run.cc imp1.cc
 

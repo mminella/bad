@@ -1,0 +1,52 @@
+#include <fcntl.h>
+
+#include <algorithm>
+#include <vector>
+
+#include "exception.hh"
+#include "file.hh"
+#include "util.hh"
+
+#include "implementation.hh"
+#include "imp1.hh"
+
+#include "record.hh"
+
+using namespace std;
+
+int run( int argc, char * argv[] );
+
+void check_usage( const int argc, const char * const argv[] )
+{
+  if ( argc != 2 ) {
+    throw runtime_error( "Usage: " + string( argv[0] ) + " [file]" );
+  }
+}
+
+int main( int argc, char * argv[] )
+{
+  try {
+    run( argc, argv );
+  } catch ( const exception & e ) {
+    print_exception( e );
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+
+int run( int argc, char * argv[] )
+{
+  sanity_check_env( argc );
+  check_usage( argc, argv );
+
+  Imp1 imp1 { argv[0] };
+
+  imp1.Initialize();
+  
+  std::vector<Record> r = imp1.Read(1, 1);
+
+  cout << "Record: " << r[0].offset() << endl;
+
+  return EXIT_SUCCESS;
+}
+

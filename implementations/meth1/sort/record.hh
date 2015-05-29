@@ -4,12 +4,16 @@
 #include <cstring>
 #include <string>
 
+
 /**
  * Represent a record in the sort benchmark. Copies data on initialization and
  * stores internally in statically sized arrays.
  */
 class Record {
 public:
+  using key_t = uint8_t;
+  using val_t = uint8_t;
+
   static constexpr size_t SIZE = 100;
   static constexpr size_t KEY_LEN = 10;
   static constexpr size_t VAL_LEN = 90;
@@ -20,12 +24,12 @@ private:
   uint64_t offset_;
 
   /* Private storage for copying record to */
-  uint8_t key_[KEY_LEN];
-  uint8_t val_[VAL_LEN];
+  key_t key_[KEY_LEN];
+  val_t val_[VAL_LEN];
 
   /* Can simply point to existing storage */
-  const uint8_t * key_r_;
-  const uint8_t * val_r_;
+  const key_t * key_r_;
+  const val_t * val_r_;
 
   /* Did we make a copy? */
   bool copied_;
@@ -59,8 +63,8 @@ public:
 
   /* Accessors */
   uint64_t offset( void ) const { return offset_; }
-  const uint8_t * key( void ) const { return key_r_; }
-  const uint8_t * value( void ) const { return val_r_; }
+  const key_t * key( void ) const { return key_r_; }
+  const key_t * value( void ) const { return val_r_; }
 
   /* Serialization */
   std::string str( void ) const;
