@@ -12,8 +12,8 @@
 
 using namespace std;
 
-/* start up a child process running the supplied lambda */
-/* the return value of the lambda is the child's exit status */
+/* Create a new UNIX process that runs the supplied lambda. The return value
+ * of the lambda is the child's exit status */
 ChildProcess::ChildProcess( const string & name,
                             function<int()> && child_procedure,
                             const bool new_namespace,
@@ -132,6 +132,7 @@ void ChildProcess::signal( const int sig )
   }
 }
 
+/* destructor */
 ChildProcess::~ChildProcess()
 {
   if ( moved_away_ ) {

@@ -16,25 +16,26 @@ private:
     const std::function<int(int, sockaddr *, socklen_t *)> & function ) const;
 
 protected:
-  /* default constructor */
-  Socket( const int domain, const int type );
-
-  /* full constructor */
-  Socket( const int domain, const int type, const int protocol );
+  /* constructor */
+  Socket( int domain, int type, int protocol = 0 );
 
   /* construct from file descriptor */
-  Socket( FileDescriptor && s_fd, const int domain, const int type );
+  Socket( FileDescriptor && s_fd, int domain, int type );
 
   /* forbid copying or assignment */
   Socket( const Socket & other ) = delete;
-  const Socket & operator=( const Socket & other ) = delete;
+  Socket & operator=( const Socket & other ) = delete;
 
   /* allow moving */
-  Socket( Socket && other );
+  Socket( Socket && other ) noexcept;
+  Socket & operator=( Socket && other ) noexcept;
+
+  /* destructor */
+  virtual ~Socket() = default;
 
   /* set socket option */
   template <typename option_type>
-  void setsockopt( const int level, const int option,
+  void setsockopt( int level, int option,
                    const option_type & option_value );
 
 public:
@@ -56,20 +57,28 @@ public:
 class UDPSocket : public Socket
 {
 public:
-  UDPSocket()
-    : Socket( IPV6, SOCK_DGRAM )
-  {
-  }
-  UDPSocket( const IPVersion ipv )
-    : Socket( ipv, SOCK_DGRAM )
-  {
-  }
-
   struct received_datagram {
     Address source_address;
     uint64_t timestamp;
     std::string payload;
   };
+
+  /* default constructor, creates a IPV6 UDP Socket. */
+  UDPSocket() : Socket( IPV6, SOCK_DGRAM ) {}
+
+  /* constructor, creates UDP socket of specified IP version. */
+  UDPSocket( IPVersion ipv ) : Socket( ipv, SOCK_DGRAM ) {}
+
+  /* forbid copying or assignment */
+  UDPSocket( const UDPSocket & other ) = delete;
+  UDPSocket & operator=( const UDPSocket & other ) = delete;
+
+  /* allow moving */
+  UDPSocket( UDPSocket && other ) = default;
+  UDPSocket & operator=( UDPSocket && other ) = default;
+
+  /* destructor */
+  virtual ~UDPSocket() = default;
 
   /* receive datagram, timestamp, and where it came from */
   received_datagram recv( void );
@@ -95,22 +104,28 @@ class TCPSocket : public Socket
 private:
   /* private constructor used by accept() */
   TCPSocket( FileDescriptor && fd )
-    : Socket( std::move( fd ), IPV6, SOCK_STREAM )
-  {
-  }
+    : Socket( std::move( fd ), IPV6, SOCK_STREAM ) {}
 
 public:
-  TCPSocket()
-    : Socket( IPV6, SOCK_STREAM )
-  {
-  }
-  TCPSocket( const IPVersion ipv )
-    : Socket( ipv, SOCK_STREAM )
-  {
-  }
+  /* default constructor, creates a IPV6 TCP Socket. */
+  TCPSocket() : Socket( IPV6, SOCK_STREAM ) {}
+
+  /* constructor, creates TCP socket of specified IP version. */
+  TCPSocket( IPVersion ipv ) : Socket( ipv, SOCK_STREAM ) {}
+
+  /* forbid copying or assignment */
+  TCPSocket( const TCPSocket & other ) = delete;
+  TCPSocket & operator=( const TCPSocket & other ) = delete;
+
+  /* allow moving */
+  TCPSocket( TCPSocket && other ) = default;
+  TCPSocket & operator=( TCPSocket && other ) = default;
+
+  /* destructor */
+  ~TCPSocket() = default;
 
   /* mark the socket as listening for incoming connections */
-  void listen( const int backlog = 16 );
+  void listen( int backlog = 16 );
 
   /* accept a new incoming connection */
   TCPSocket accept( void );
@@ -120,9 +135,22 @@ public:
 class RAWSocket : public Socket
 {
 public:
-  RAWSocket()
-    : RAWSocket( IPV6 ){};
-  RAWSocket( const IPVersion ipv );
+  /* default constructor, creates a IPV6 RAW Socket. */
+  RAWSocket() : RAWSocket( IPV6 ){};
+
+  /* constructor, creates RAW socket of specified IP version. */
+  RAWSocket( IPVersion ipv );
+
+  /* forbid copying or assignment */
+  RAWSocket( const RAWSocket & other ) = delete;
+  RAWSocket & operator=( const RAWSocket & other ) = delete;
+
+  /* allow moving */
+  RAWSocket( RAWSocket && other ) = default;
+  RAWSocket & operator=( RAWSocket && other ) = default;
+
+  /* destructor */
+  ~RAWSocket() = default;
 
   /* send datagram to specified address */
   void sendto( const Address & peer, const std::string & payload );

@@ -3,10 +3,14 @@
 
 #include <string>
 
-/* Device capable of IO (sockets, files, etc.). We represent as a union of two
- * underlying file descriptors, a read and write. */
+/* Device capable of IO (sockets, files, etc.) both for read and write. We
+ * represent as two underlying file descriptors, a read and write one.
+ */
 class IODevice
 {
+public:
+  using iterator_type = std::string::const_iterator;
+
 protected:
   int fd_r_;
   int fd_w_;
@@ -16,31 +20,40 @@ protected:
 
   const static size_t BUFFER_SIZE = 1024 * 1024;
 
-  void register_read( void ) { read_count_++; }
-  void register_write( void ) { write_count_++; }
-  void set_eof( void ) { eof_ = true; }
-  void reset_eof( void ) { eof_ = false; }
+  void register_read( void ) noexcept { read_count_++; }
+  void register_write( void ) noexcept { write_count_++; }
+  void set_eof( void ) noexcept { eof_ = true; }
+  void reset_eof( void ) noexcept { eof_ = false; }
 
 public:
-  IODevice( const int fd_r, const int fd_w );
-  virtual ~IODevice(){};
+  /* Construct an IO Device */
+  IODevice( int fd_r, int fd_w ) noexcept;
+
+  /* Forbid copy and move - subclasses should implement */
+  IODevice( const IODevice & other ) = delete;
+  IODevice( IODevice && other ) = delete;
+  IODevice & operator=( const IODevice & other ) = delete;
+  IODevice & operator=( IODevice && other ) = delete;
+
+  /* Destruct an IO Device. Does nothing, but subclasses are expected to close
+   * open file descriptors appropriately. */
+  virtual ~IODevice() noexcept {};
 
   /* accessors */
-  const int & fd_r_num( void ) const { return fd_r_; }
-  const int & fd_w_num( void ) const { return fd_w_; }
-  const bool & eof( void ) const { return eof_; }
-  unsigned int read_count( void ) const { return read_count_; }
-  unsigned int write_count( void ) const { return write_count_; }
+  const int & fd_r_num( void ) const noexcept { return fd_r_; }
+  const int & fd_w_num( void ) const noexcept { return fd_w_; }
+  const bool & eof( void ) const noexcept { return eof_; }
+  unsigned int read_count( void ) const noexcept { return read_count_; }
+  unsigned int write_count( void ) const noexcept { return write_count_; }
 
-  /* read and write methods */
-  virtual std::string read( const size_t limit = BUFFER_SIZE );
-  std::string::const_iterator write( const std::string & buffer,
-                                     const bool write_all = true );
+  /* read method */
+  virtual std::string read( size_t limit = BUFFER_SIZE );
 
-  /* attempt to write a portion of a string */
-  virtual std::string::const_iterator
-  write( const std::string::const_iterator & begin,
-         const std::string::const_iterator & end );
+  /* write methods */
+  ssize_t write( const char * buffer, size_t count );
+  iterator_type write( const std::string & buffer, bool write_all = true );
+  virtual iterator_type write( const iterator_type & begin,
+                               const iterator_type & end );
 };
 
 #endif /* IODEVICE_HH */

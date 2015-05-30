@@ -3,39 +3,55 @@
 
 #include "implementation.hh"
 
+#include "record.hh"
+
 #include "file.hh"
+#include "socket.hh"
 
 /**
- * Imp1 defines the basic implementation strategy:
+ * Stratergy 1.
  * - No upfront work.
  * - Full linear scan for each record.
  */
-class Imp1 : public Implementation {
-private:
-  File      data_;
-  Record    last_;
-  size_type fpos_;
-  size_type size_;
+namespace meth1 {
 
-public:
-  /* constructor */
-  Imp1(std::string file);
+  /**
+   * Node defines the backend running on each node with a subset of the data.
+   */
+  class Node : public Implementation {
+  private:
+    File      data_;
+    Record    last_;
+    size_type fpos_;
+    size_type size_;
 
-  /* destructor */
-  ~Imp1() = default;
+  public:
+    /* constructor */
+    Node(std::string file);
 
-  /* forbid copy & move assignment */
-  Imp1( const Imp1 & other ) = delete;
-  Imp1 & operator=( const Imp1 & other ) = delete;
-  Imp1( Imp1 && other ) = delete;
-  Imp1 & operator=( const Imp1 && other ) = delete;
+    /* destructor */
+    ~Node() = default;
 
-private:
-  void DoInitialize( void );
-  std::vector<Record> DoRead( size_type pos, size_type size );
-  size_type DoSize( void );
+    /* forbid copy & move assignment */
+    Node( const Node & other ) = delete;
+    Node & operator=( const Node & other ) = delete;
+    Node( Node && other ) = delete;
+    Node & operator=( const Node && other ) = delete;
 
-  Record linear_scan( File & in, const Record & after );
-};
+    /* run the node - list and respond to RPCs */
+    void Run( void );
+
+  private:
+    void DoInitialize( void );
+    std::vector<Record> DoRead( size_type pos, size_type size );
+    size_type DoSize( void );
+
+    Record linear_scan( File & in, const Record & after );
+
+    void RPC_Read( TCPSocket & client );
+    void RPC_Size( TCPSocket & client );
+  };
+
+}
 
 #endif /* METH1_NODE_HH */

@@ -7,20 +7,14 @@
 
 using namespace std;
 
-/* default constructor for socket of (subclassed) domain and type */
-Socket::Socket( const int domain, const int type )
-  : Socket( domain, type, 0 )
-{
-}
-
 /* full constructor */
-Socket::Socket( const int domain, const int type, const int protocol )
+Socket::Socket( int domain, int type, int protocol )
   : FileDescriptor( SystemCall( "socket", socket( domain, type, protocol ) ) )
 {
 }
 
 /* construct from file descriptor */
-Socket::Socket( FileDescriptor && fd, const int domain, const int type )
+Socket::Socket( FileDescriptor && fd, int domain, int type )
   : FileDescriptor( move( fd ) )
 {
   int actual_value;
@@ -50,9 +44,19 @@ Socket::Socket( FileDescriptor && fd, const int domain, const int type )
 }
 
 /* move constructor */
-Socket::Socket( Socket && other )
+Socket::Socket( Socket && other ) noexcept
   : FileDescriptor( move( other ) )
 {
+}
+
+/* move assignment */
+Socket & Socket::operator=( Socket && other ) noexcept
+{
+  if ( this != &other ) {
+    *static_cast<FileDescriptor *>( this ) =
+      move( static_cast<FileDescriptor &&>( other ) );
+  }
+  return *this;
 }
 
 /* get the local or peer address the socket is connected to */

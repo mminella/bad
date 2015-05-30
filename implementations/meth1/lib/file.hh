@@ -8,7 +8,7 @@ class File : public FileDescriptor
 {
 public:
   /* construct from fd number */
-  File( const int fd );
+  File( int fd );
 
   /* construct by opening file at path given */
   File( const char * path, int flags );
@@ -19,16 +19,16 @@ public:
   File( const std::string path, int flags, mode_t mode )
     : File ( path.c_str(), flags, mode ) {};
 
+  /* forbid copying FileDescriptor objects or assigning them */
+  File( const File & other ) = delete;
+  File & operator=( const File & other ) = delete;
+
   /* move constructor */
   File( File && other );
-  const File & operator=( const File && other ) = delete;
+  File & operator=( File && other );
 
   /* destructor */
   virtual ~File();
-
-  /* forbid copying FileDescriptor objects or assigning them */
-  File( const File & other ) = delete;
-  const File & operator=( const File & other ) = delete;
 
   /* rewind to begging of file */
   void rewind( void );

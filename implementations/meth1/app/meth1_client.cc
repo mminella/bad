@@ -4,21 +4,21 @@
 #include <vector>
 
 #include "exception.hh"
-#include "file.hh"
 #include "util.hh"
-
-#include "node.hh"
 
 #include "record.hh"
 
+#include "client.hh"
+
 using namespace std;
+using namespace meth1;
 
 int run( int argc, char * argv[] );
 
 void check_usage( const int argc, const char * const argv[] )
 {
-  if ( argc != 2 ) {
-    throw runtime_error( "Usage: " + string( argv[0] ) + " [file]" );
+  if ( argc != 1 ) {
+    throw runtime_error( "Usage: " + string( argv[0] ) );
   }
 }
 
@@ -38,14 +38,19 @@ int run( int argc, char * argv[] )
   sanity_check_env( argc );
   check_usage( argc, argv );
 
-  Imp1 imp1 { argv[1] };
-  imp1.Initialize();
+  Client client { Address( "::0", 9000 ) };
+  client.Initialize();
   
-  auto recs = imp1.Read(1, 5);
+  auto recs = client.Read(0, 5);
+  cout << "Recs: " << recs.size() << endl;
   for ( auto & r : recs ) {
-    cout << "Record: " << r.offset() << endl;
+    cout << "Record: " << r.diskloc() << endl;
   }
+
+  auto siz = client.Size();
+  cout << "Size: " << siz << endl;
   
   return EXIT_SUCCESS;
 }
+
 

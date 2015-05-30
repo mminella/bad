@@ -1,21 +1,18 @@
-bin_PROGRAMS = test meth1
+bin_PROGRAMS = test meth1_test meth1_client meth1_node
 
-test_SOURCES = test.cc
-test_CPPFLAGS = \
-	-I$(srcdir)/../lib \
-	-I$(srcdir)/../sort
-test_LDADD = \
-	../lib/libbasicrts.la \
-	../sort/libsort.la
-
-meth1_SOURCES = meth1.cc
-meth1_CPPFLAGS = \
+AM_CPPFLAGS = \
 	-I$(srcdir)/../lib \
 	-I$(srcdir)/../sort \
 	-I$(srcdir)/../stratergies \
 	-I$(srcdir)/../stratergies/meth1
-meth1_LDADD = \
+LDADD = \
 	../lib/libbasicrts.la \
 	../sort/libsort.la \
 	../stratergies/meth1/libmeth1.la \
 	-lpthread
+
+test_SOURCES = test.cc
+meth1_test_SOURCES = meth1_test.cc
+meth1_client_SOURCES = meth1_client.cc
+meth1_node_SOURCES = meth1_node.cc
+

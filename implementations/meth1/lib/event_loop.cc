@@ -5,22 +5,17 @@
 using namespace std;
 using namespace PollerShortNames;
 
+/* Construct a new event loop. */
 EventLoop::EventLoop()
   : signals_( {SIGCHLD, SIGCONT, SIGHUP, SIGTERM, SIGQUIT, SIGINT} )
   , poller_()
   , child_processes_()
 {
-  signals_
-    .set_as_mask(); /* block signals so we can later use signalfd to read them
-                       */
+  /* block signals so we can later use signalfd to read them */
+  signals_.set_as_mask();
 }
 
-void EventLoop::add_simple_input_handler(
-  const IODevice & io, const Poller::Action::CallbackType & callback )
-{
-  poller_.add_action( Poller::Action( io, Direction::In, callback ) );
-}
-
+/* Handle a signal */
 Result EventLoop::handle_signal( const signalfd_siginfo & sig )
 {
   switch ( sig.ssi_signo ) {
@@ -69,7 +64,8 @@ Result EventLoop::handle_signal( const signalfd_siginfo & sig )
   return ResultType::Continue;
 }
 
-int EventLoop::internal_loop( const std::function<int(void)> & wait_time )
+/* Run the event loop, looping until an an event handler returns 'Exit'. */
+int EventLoop::loop( void )
 {
   TemporarilyUnprivileged tu;
 
@@ -88,7 +84,7 @@ int EventLoop::internal_loop( const std::function<int(void)> & wait_time )
   } );
 
   while ( true ) {
-    const auto poll_result = poller_.poll( wait_time() );
+    const auto poll_result = poller_.poll( -1 );
     if ( poll_result.result == Poller::Result::Type::Exit ) {
       return poll_result.exit_status;
     }

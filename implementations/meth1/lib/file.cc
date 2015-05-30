@@ -9,7 +9,7 @@
 using namespace std;
 
 /* construct from fd number */
-File::File( const int fd )
+File::File( int fd )
   : FileDescriptor( fd )
 {
 }
@@ -28,8 +28,18 @@ File::File( const char * path, int flags, mode_t mode )
 
 /* move constructor */
 File::File( File && other )
-  : FileDescriptor( std::move( other ) )
+  : FileDescriptor( move( other ) )
 {
+}
+
+/* move assignment */
+File & File::operator=( File && other )
+{
+  if ( this != &other ) {
+    *static_cast<FileDescriptor *>( this ) =
+      move( static_cast<FileDescriptor &&>( other ) );
+  }
+  return *this;
 }
 
 /* destructor */

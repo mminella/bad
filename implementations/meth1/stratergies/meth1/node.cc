@@ -9,18 +9,24 @@
 
 #include "record.hh"
 
+#include "address.hh"
+#include "event_loop.hh"
 #include "exception.hh"
 #include "file.hh"
-#include "util.hh"
+#include "socket.hh"
+
+using namespace std;
+using namespace meth1;
 
 // Check size_t for a vector is a size_type or larger
 static_assert(
-  sizeof( std::vector<Record>::size_type ) >= sizeof( Implementation::size_type ),
+  sizeof( std::vector<Record>::size_type )
+    >= sizeof( Implementation::size_type ),
   "Vector<Record> max size is too small!"
 );
 
-/* Construct Imp1 */
-Imp1::Imp1(std::string file)
+/* Construct Node */
+Node::Node(std::string file)
   : data_{ file.c_str(), O_RDONLY }
   , last_{ Record::MIN }
   , fpos_{ 0 }
@@ -28,14 +34,72 @@ Imp1::Imp1(std::string file)
 {
 }
 
+/* run the node - list and respond to RPCs */
+void Node::Run( void )
+{
+  TCPSocket sock;
+  sock.set_reuseaddr();
+  sock.bind( Address { "::0", 9000 } );
+  sock.listen();
+
+  while ( true ) {
+    try {
+      auto client = sock.accept();
+
+      while ( true ) {
+        string str = client.read(1);
+        if ( client.eof() ) { break; }
+
+        switch ( str[0] ) {
+        case 0: // Read
+          RPC_Read( client );
+          break;
+        case 1: // Size
+          RPC_Size( client );
+          break;
+        default:
+          // TODO: throw error!
+          break;
+        }
+      }
+    } catch ( const exception & e ) {
+      print_exception( e );
+    }
+  }
+}
+
+void Node::RPC_Read( TCPSocket & client )
+{
+  // parse arguments
+  string str = client.read( 2 * sizeof(size_type) );
+  size_type pos = *( reinterpret_cast<const size_type *>( str.c_str() ) );
+  size_type amt = *( reinterpret_cast<const size_type *>( str.c_str() ) + 1 );
+
+  // perform read
+  vector<Record> recs = Read( pos, amt );
+  size_type siz = recs.size();
+
+  // serialize results to wire
+  client.write( reinterpret_cast<const char *>( &siz ), sizeof(size_type) );
+  for ( auto & r : recs ) {
+    client.write( r.str( Record::WITH_LOC ) );
+  }
+}
+
+void Node::RPC_Size( TCPSocket & client )
+{
+  size_type siz = Size();
+  client.write( reinterpret_cast<const char *>( &siz ), sizeof(size_type) );
+}
+
 /* Initialization routine */
-void Imp1::DoInitialize( void )
+void Node::DoInitialize( void )
 {
   return;
 }
 
 /* Read a contiguous subset of the file starting from specified position. */
-std::vector<Record> Imp1::DoRead( size_type pos, size_type size )
+std::vector<Record> Node::DoRead( size_type pos, size_type size )
 {
   // establish starting record
   Record after { Record::MIN };
@@ -64,7 +128,7 @@ std::vector<Record> Imp1::DoRead( size_type pos, size_type size )
 }
 
 /* Return the the number of records on disk */
-Imp1::size_type Imp1::DoSize( void )
+Node::size_type Node::DoSize( void )
 {
   if ( size_ == 0 ) {
     linear_scan( data_, Record::MIN);
@@ -74,22 +138,22 @@ Imp1::size_type Imp1::DoSize( void )
 
 /* Perform a full linear scan to return the next smallest record that occurs
  * after the 'after' record. */
-Record Imp1::linear_scan( File & in, const Record & after )
+Record Node::linear_scan( File & in, const Record & after )
 {
   Record min { Record::MAX };
   size_type i;
 
   for ( i = 0; ; i++ ) {
-    Record next{ i, in.read( Record::SIZE ), false };
+    Record next = Record::ParseRecord( in.read( Record::SIZE ), i, false );
     if (in.eof()) {
       break;
     }
 
     int cmp = next.compare(after);
     if ( cmp >= 0 && next < min ) {
-      // we check the offset to ensure we don't pick up same key, but can still
+      // we check the diskloc to ensure we don't pick up same key, but can still
       // handle duplicate keys.
-      if ( cmp > 0 || after.offset() < next.offset() ) {
+      if ( cmp > 0 || after.diskloc() < next.diskloc() ) {
         min = next.clone();
       }
     }

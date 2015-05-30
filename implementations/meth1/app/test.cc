@@ -50,13 +50,13 @@ int run( int argc, char * argv[] )
     if ( fdi.eof() ) {
       break;
     }
-    recs.push_back( Record( i, r, true ) );
+    recs.push_back( Record::ParseRecord( r, i, true ) );
   }
 
   sort( recs.begin(), recs.end() );
 
   for ( auto & r : recs ) {
-    fdo.write( r.str() );
+    fdo.write( r.str( Record::NO_LOC ) );
   }
 
   cout << "Read " << recs.size() << " records off disk." << endl;

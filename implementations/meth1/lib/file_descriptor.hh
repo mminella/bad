@@ -8,22 +8,26 @@
 /* Unix file descriptors (sockets, files, etc.) */
 class FileDescriptor : public IODevice
 {
+protected:
+  void close( void ) noexcept;
+
 public:
   /* construct from fd number */
-  FileDescriptor( const int fd );
+  FileDescriptor( int fd ) noexcept;
 
-  /* move constructor */
-  FileDescriptor( FileDescriptor && other );
+  /* move */
+  FileDescriptor( FileDescriptor && other ) noexcept;
+  FileDescriptor & operator=( FileDescriptor && other ) noexcept;
+
+  /* forbid copying FileDescriptor objects */
+  FileDescriptor( const FileDescriptor & other ) = delete;
+  FileDescriptor & operator=( const FileDescriptor & other ) = delete;
 
   /* destructor */
-  virtual ~FileDescriptor();
+  virtual ~FileDescriptor() noexcept;
 
   /* accessors */
-  const int & fd_num( void ) const { return fd_r_; }
-
-  /* forbid copying FileDescriptor objects or assigning them */
-  FileDescriptor( const FileDescriptor & other ) = delete;
-  const FileDescriptor & operator=( const FileDescriptor & other ) = delete;
+  const int & fd_num( void ) const noexcept { return fd_r_; }
 };
 
 #endif /* FILE_DESCRIPTOR_HH */
