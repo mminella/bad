@@ -36,6 +36,7 @@ private:
   std::vector<Record> DoRead( size_type pos, size_type size );
   size_type DoSize( void );
 };
+
 }
 
 #endif /* METH1_CLUSTER_HH */

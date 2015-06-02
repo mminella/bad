@@ -3,6 +3,8 @@
 
 #include "implementation.hh"
 
+#include "priority_queue.hh"
+
 #include "record.hh"
 
 #include "file.hh"
@@ -39,11 +41,13 @@ private:
   std::vector<Record> DoRead( size_type pos, size_type size );
   size_type DoSize( void );
 
-  Record linear_scan( File & in, const Record & after );
+  std::vector<Record> linear_scan( File & in, const Record & after,
+                                   size_type size = 1 );
 
   void RPC_Read( TCPSocket & client );
   void RPC_Size( TCPSocket & client );
 };
+
 }
 
 #endif /* METH1_NODE_HH */

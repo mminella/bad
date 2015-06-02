@@ -1,6 +1,4 @@
 #include <algorithm>
-#include <functional>
-#include <numeric>
 #include <vector>
 
 #include "implementation.hh"

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "node.hh"
+#include "priority_queue.hh"
 
 #include "record.hh"
 
@@ -19,7 +20,7 @@ using namespace std;
 using namespace meth1;
 
 // Check size_t for a vector is a size_type or larger
-static_assert( sizeof( std::vector<Record>::size_type ) >=
+static_assert( sizeof( vector<Record>::size_type ) >=
                  sizeof( Implementation::size_type ),
                "Vector<Record> max size is too small!" );
 
@@ -97,7 +98,7 @@ void Node::RPC_Size( TCPSocket & client )
 void Node::DoInitialize( void ) { return; }
 
 /* Read a contiguous subset of the file starting from specified position. */
-std::vector<Record> Node::DoRead( size_type pos, size_type size )
+vector<Record> Node::DoRead( size_type pos, size_type size )
 {
   // establish starting record
   Record after{Record::MIN};
@@ -106,21 +107,10 @@ std::vector<Record> Node::DoRead( size_type pos, size_type size )
     after = last_;
     fpos = fpos_;
   }
-
-  std::vector<Record> recs;
-  recs.reserve( size );
-
-  // forward scan through all records until we hit the subset we want.
-  for ( ; fpos < pos + size; fpos++ ) {
-    after = linear_scan( data_, after );
-    // collect records
-    if ( fpos >= pos ) {
-      recs.push_back( after );
-    }
-  }
-
-  fpos_ = fpos;
-  last_ = after;
+  
+  auto recs = linear_scan( data_, after, size );
+  last_ = recs.back();
+  fpos_ = pos + size;
 
   return recs;
 }
@@ -136,25 +126,30 @@ Node::size_type Node::DoSize( void )
 
 /* Perform a full linear scan to return the next smallest record that occurs
  * after the 'after' record. */
-Record Node::linear_scan( File & in, const Record & after )
+vector<Record>
+Node::linear_scan( File & in, const Record & after, size_type size )
 {
-  Record min{Record::MAX};
+  // TODO: Better to use pointers to Record? Or perhaps to change Record to
+  // heap allocate?
+  mystl::priority_queue<Record> recs{ size + 1 };
+  Record rmax = Record{ Record::MAX };
+  Record & top = rmax;
+
   size_type i;
 
   for ( i = 0;; i++ ) {
     Record next = Record::ParseRecord( in.read( Record::SIZE ), i, false );
-    if ( in.eof() ) {
-      break;
-    }
+    if ( in.eof() ) { break; }
 
-    int cmp = next.compare( after );
-    if ( cmp >= 0 && next < min ) {
-      // we check the diskloc to ensure we don't pick up same key, but can
-      // still
-      // handle duplicate keys.
-      if ( cmp > 0 or after.diskloc() < next.diskloc() ) {
-        min = next.clone();
+    int cmpTop = next.compare( top );
+
+    if ( after < next && cmpTop <= 0 ) {
+      if ( cmpTop < 0 or recs.size() < size ) {
+        // if we equal the top, only add when space
+        recs.push( next.clone() );
+        if ( recs.size() > size ) { recs.pop(); }
       }
+      top = recs.top();
     }
   }
 
@@ -164,5 +159,9 @@ Record Node::linear_scan( File & in, const Record & after )
   // rewind the file
   in.rewind();
 
-  return min;
+  // sort final heap
+  auto vrecs = recs.container();
+  sort_heap( vrecs.begin(), vrecs.end() );
+
+  return vrecs;
 }

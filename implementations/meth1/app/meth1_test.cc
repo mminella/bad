@@ -45,6 +45,10 @@ int run( int argc, char * argv[] )
   for ( auto & r : recs ) {
     cout << "Record: " << r.diskloc() << endl;
   }
+  recs = node.Read( 5, 5 );
+  for ( auto & r : recs ) {
+    cout << "Record: " << r.diskloc() << endl;
+  }
 
   return EXIT_SUCCESS;
 }

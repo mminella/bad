@@ -83,9 +83,15 @@ public:
     return compare( b ) <= 0 ? true : false;
   }
 
+  /* we compare on key first, and then on diskloc_ */
   int compare( const Record & b ) const
   {
-    return std::memcmp( key(), b.key(), KEY_LEN );
+    int cmp = std::memcmp( key(), b.key(), KEY_LEN );
+    if ( cmp == 0 ) {
+      if ( diskloc_ < b.diskloc_ ) { cmp = -1; }
+      if ( diskloc_ > b.diskloc_ ) { cmp = 1; }
+    }
+    return cmp;
   }
 
 public:
