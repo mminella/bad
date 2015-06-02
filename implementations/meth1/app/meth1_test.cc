@@ -38,14 +38,13 @@ int run( int argc, char * argv[] )
   sanity_check_env( argc );
   check_usage( argc, argv );
 
-  Node node { argv[1], "0" };
+  Node node{argv[1], "0"};
   node.Initialize();
-  
-  auto recs = node.Read(0, 5);
+
+  auto recs = node.Read( 0, 5 );
   for ( auto & r : recs ) {
     cout << "Record: " << r.diskloc() << endl;
   }
-  
+
   return EXIT_SUCCESS;
 }
-

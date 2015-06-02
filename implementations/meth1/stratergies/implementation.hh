@@ -9,7 +9,8 @@
 /**
  * Defines the interface any implementation must satisfy.
  */
-class Implementation {
+class Implementation
+{
 private:
   virtual void DoInitialize( void ) = 0;
 
@@ -29,19 +30,16 @@ public:
   virtual ~Implementation() {}
 
   /* Initialization routine */
-  void Initialize( void ) {
-    DoInitialize();
-  };
+  void Initialize( void ) { DoInitialize(); };
 
   /* Read a contiguous subset of the file starting from specified position. */
-  std::vector<Record> Read( size_type pos, size_type size ) {
+  std::vector<Record> Read( size_type pos, size_type size )
+  {
     return DoRead( pos, size );
   };
 
   /* Return the the number of records on disk */
-  size_type Size( void ) {
-    return DoSize();
-  };
+  size_type Size( void ) { return DoSize(); };
 };
 
 #endif /* IMPLEMENTATION_HH */

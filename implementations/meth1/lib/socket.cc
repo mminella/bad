@@ -44,10 +44,7 @@ Socket::Socket( FileDescriptor && fd, int domain, int type )
 }
 
 /* move constructor */
-Socket::Socket( Socket && other ) noexcept
-  : FileDescriptor( move( other ) )
-{
-}
+Socket::Socket( Socket && other ) noexcept : FileDescriptor( move( other ) ) {}
 
 /* move assignment */
 Socket & Socket::operator=( Socket && other ) noexcept

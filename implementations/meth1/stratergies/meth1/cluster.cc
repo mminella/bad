@@ -11,11 +11,11 @@
 using namespace std;
 using namespace meth1;
 
-Cluster::Cluster(vector<Address> nodes)
-  : nodes_ {}
+Cluster::Cluster( vector<Address> nodes )
+  : nodes_{}
 {
   for ( auto & a : nodes ) {
-    nodes_.push_back( Client{ a } );
+    nodes_.push_back( Client{a} );
   }
 }
 
@@ -42,7 +42,7 @@ vector<Record> Cluster::DoRead( size_type pos, size_type size )
   }
 
   sort( recs.begin(), recs.end() );
-  recs.resize( size, Record{ Record::MAX } );
+  recs.resize( size, Record{Record::MAX} );
 
   return recs;
 }
@@ -50,9 +50,11 @@ vector<Record> Cluster::DoRead( size_type pos, size_type size )
 Cluster::size_type Cluster::DoSize( void )
 {
   // multi-cast RPC
-  for ( auto & n : nodes_ ) { n.sendSize(); }
+  for ( auto & n : nodes_ ) {
+    n.sendSize();
+  }
 
-  size_type siz { 0 };
+  size_type siz{0};
   for ( auto & n : nodes_ ) {
     siz += n.recvSize();
   }

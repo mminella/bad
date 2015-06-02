@@ -35,8 +35,7 @@ protected:
 
   /* set socket option */
   template <typename option_type>
-  void setsockopt( int level, int option,
-                   const option_type & option_value );
+  void setsockopt( int level, int option, const option_type & option_value );
 
 public:
   /* bind socket to a specified local address (usually to listen/accept) */
@@ -64,10 +63,16 @@ public:
   };
 
   /* default constructor, creates a IPV6 UDP Socket. */
-  UDPSocket() : Socket( IPV6, SOCK_DGRAM ) {}
+  UDPSocket()
+    : Socket( IPV6, SOCK_DGRAM )
+  {
+  }
 
   /* constructor, creates UDP socket of specified IP version. */
-  UDPSocket( IPVersion ipv ) : Socket( ipv, SOCK_DGRAM ) {}
+  UDPSocket( IPVersion ipv )
+    : Socket( ipv, SOCK_DGRAM )
+  {
+  }
 
   /* forbid copying or assignment */
   UDPSocket( const UDPSocket & other ) = delete;
@@ -104,14 +109,22 @@ class TCPSocket : public Socket
 private:
   /* private constructor used by accept() */
   TCPSocket( FileDescriptor && fd )
-    : Socket( std::move( fd ), IPV6, SOCK_STREAM ) {}
+    : Socket( std::move( fd ), IPV6, SOCK_STREAM )
+  {
+  }
 
 public:
   /* default constructor, creates a IPV6 TCP Socket. */
-  TCPSocket() : Socket( IPV6, SOCK_STREAM ) {}
+  TCPSocket()
+    : Socket( IPV6, SOCK_STREAM )
+  {
+  }
 
   /* constructor, creates TCP socket of specified IP version. */
-  TCPSocket( IPVersion ipv ) : Socket( ipv, SOCK_STREAM ) {}
+  TCPSocket( IPVersion ipv )
+    : Socket( ipv, SOCK_STREAM )
+  {
+  }
 
   /* forbid copying or assignment */
   TCPSocket( const TCPSocket & other ) = delete;
@@ -136,7 +149,8 @@ class RAWSocket : public Socket
 {
 public:
   /* default constructor, creates a IPV6 RAW Socket. */
-  RAWSocket() : RAWSocket( IPV6 ){};
+  RAWSocket()
+    : RAWSocket( IPV6 ){};
 
   /* constructor, creates RAW socket of specified IP version. */
   RAWSocket( IPVersion ipv );

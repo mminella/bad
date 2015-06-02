@@ -38,11 +38,11 @@ int run( int argc, char * argv[] )
   sanity_check_env( argc );
   check_usage( argc, argv );
 
-  auto addrs = vector<Address>( argv+1, argv+argc );
-  Cluster client { addrs };
+  auto addrs = vector<Address>( argv + 1, argv + argc );
+  Cluster client{addrs};
   client.Initialize();
 
-  auto recs = client.Read(0, 5);
+  auto recs = client.Read( 0, 5 );
   cout << "Recs: " << recs.size() << endl;
   for ( auto & r : recs ) {
     cout << "Record: " << r.diskloc() << endl;
@@ -50,8 +50,6 @@ int run( int argc, char * argv[] )
 
   auto siz = client.Size();
   cout << "Size: " << siz << endl;
-  
+
   return EXIT_SUCCESS;
 }
-
-

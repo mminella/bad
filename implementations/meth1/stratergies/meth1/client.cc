@@ -10,23 +10,20 @@
 using namespace std;
 using namespace meth1;
 
-Client::Client(Address node)
+Client::Client( Address node )
   : sock_{}
-  , addr_ { node }
+  , addr_{node}
 {
 }
 
-void Client::DoInitialize( void )
-{
-  sock_.connect( addr_ );
-}
+void Client::DoInitialize( void ) { sock_.connect( addr_ ); }
 
 void Client::sendRead( size_type pos, size_type size )
 {
   int8_t rpc = 0;
-  sock_.write( (char *) &rpc, 1 );
-  sock_.write( (char *) &pos, sizeof( size_type ) );
-  sock_.write( (char *) &size, sizeof( size_type ) );
+  sock_.write( (char *)&rpc, 1 );
+  sock_.write( (char *)&pos, sizeof( size_type ) );
+  sock_.write( (char *)&size, sizeof( size_type ) );
 }
 
 std::vector<Record> Client::recvRead( void )
@@ -34,8 +31,8 @@ std::vector<Record> Client::recvRead( void )
   string str = sock_.read( sizeof( size_type ) );
   size_type nrecs = *reinterpret_cast<const size_type *>( str.c_str() );
 
-  vector<Record> recs {};
-  recs.reserve(nrecs);
+  vector<Record> recs{};
+  recs.reserve( nrecs );
   for ( size_type i = 0; i < nrecs; i++ ) {
     string r = sock_.read( Record::SIZE_WITH_LOC );
     recs.push_back( Record::ParseRecordWithLoc( r, true ) );
@@ -47,7 +44,7 @@ std::vector<Record> Client::recvRead( void )
 void Client::sendSize( void )
 {
   int8_t rpc = 1;
-  sock_.write( (char *) &rpc, 1 );
+  sock_.write( (char *)&rpc, 1 );
 }
 
 Client::size_type Client::recvSize( void )

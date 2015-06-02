@@ -8,10 +8,7 @@
 using namespace std;
 
 /* construct from fd number */
-FileDescriptor::FileDescriptor( int fd ) noexcept
-  : IODevice( fd, fd )
-{
-}
+FileDescriptor::FileDescriptor( int fd ) noexcept : IODevice( fd, fd ) {}
 
 /* move constructor */
 FileDescriptor::FileDescriptor( FileDescriptor && other ) noexcept
@@ -23,8 +20,7 @@ FileDescriptor::FileDescriptor( FileDescriptor && other ) noexcept
 }
 
 /* move assignment */
-FileDescriptor &
-FileDescriptor::operator=( FileDescriptor && other ) noexcept
+FileDescriptor & FileDescriptor::operator=( FileDescriptor && other ) noexcept
 {
   if ( this != &other ) {
     close();
@@ -35,10 +31,7 @@ FileDescriptor::operator=( FileDescriptor && other ) noexcept
 }
 
 /* destructor */
-FileDescriptor::~FileDescriptor() noexcept
-{
-  close();
-}
+FileDescriptor::~FileDescriptor() noexcept { close(); }
 
 /* close the file descriptor */
 void FileDescriptor::close( void ) noexcept

@@ -8,11 +8,12 @@
  * Represent a record in the sort benchmark. Copies data on initialization and
  * stores internally in statically sized arrays.
  */
-class Record {
+class Record
+{
 public:
   using size_type = uint64_t;
-  using key_t     = char;
-  using val_t     = char;
+  using key_t = char;
+  using val_t = char;
 
   static constexpr size_t SIZE = 100;
   static constexpr size_t KEY_LEN = 10;
@@ -47,7 +48,7 @@ private:
   /* Construct from c string read from disk. By default simply uses the storage
    * passed in (so needs to remain valid for life of Record). But if `copy` is
    * true, an internal private copy of the record will be made. */
-  Record( const char * s, size_type diskloc, bool copy = false);
+  Record( const char * s, size_type diskloc, bool copy = false );
 
 public:
   /* Construct an empty record. */
@@ -61,7 +62,7 @@ public:
   ~Record( void ) = default;
 
   /* Clone method to make a deep copy */
-  Record clone( void ) { return { *this, true }; };
+  Record clone( void ) { return {*this, true}; };
 
   /* Accessors */
   size_type diskloc( void ) const { return diskloc_; }
@@ -89,10 +90,10 @@ public:
 
 public:
   static Record ParseRecord( const char * s, size_type diskloc,
-                             bool copy = false);
+                             bool copy = false );
 
   static Record ParseRecord( std::string s, size_type diskloc,
-                             bool copy = false)
+                             bool copy = false )
   {
     return ParseRecord( s.c_str(), diskloc, copy );
   }

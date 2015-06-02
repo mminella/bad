@@ -15,9 +15,9 @@ public:
   File( const char * path, int flags, mode_t mode );
 
   File( const std::string path, int flags )
-    : File ( path.c_str(), flags ) {};
+    : File( path.c_str(), flags ){};
   File( const std::string path, int flags, mode_t mode )
-    : File ( path.c_str(), flags, mode ) {};
+    : File( path.c_str(), flags, mode ){};
 
   /* forbid copying FileDescriptor objects or assigning them */
   File( const File & other ) = delete;
@@ -28,7 +28,7 @@ public:
   File & operator=( File && other ) = default;
 
   /* destructor */
-  virtual ~File() {};
+  virtual ~File(){};
 
   /* rewind to begging of file */
   void rewind( void );

@@ -120,7 +120,7 @@ Address::Address( std::string ip )
 {
   string port = "0";
 
-  size_t i = ip.find_last_of(':');
+  size_t i = ip.find_last_of( ':' );
   if ( i != string::npos ) {
     port = ip.substr( i + 1 );
     ip = ip.substr( 0, i );

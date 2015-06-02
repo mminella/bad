@@ -11,14 +11,14 @@ class ChildProcess
 {
 private:
   std::string name_;
-  pid_t       pid_;
-  bool        running_, terminated_;
-  int         exit_status_;
-  bool        died_on_signal_;
-  int         graceful_termination_signal_;
+  pid_t pid_;
+  bool running_, terminated_;
+  int exit_status_;
+  bool died_on_signal_;
+  int graceful_termination_signal_;
 
   /* has this child process been moved (C++ move constructor)? */
-  bool        moved_away_;
+  bool moved_away_;
 
 public:
   /* Create a new UNIX process that runs the supplied lambda. The return value

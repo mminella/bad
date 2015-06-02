@@ -8,10 +8,10 @@ using namespace std;
 
 /* Construct an empty record. Guaranteed to be the maximum record. */
 Record::Record( limit_t lim )
-  : diskloc_ { 0 }
-  , key_r_ { key_ }
-  , val_r_ { val_ }
-  , copied_ { true }
+  : diskloc_{0}
+  , key_r_{key_}
+  , val_r_{val_}
+  , copied_{true}
 {
   if ( lim == MAX ) {
     memset( key_, 0xFF, KEY_LEN );
@@ -34,22 +34,26 @@ void Record::copy( void )
 
 /* Construct from c string read from disk */
 Record::Record( const char * s, size_type loc, bool copy )
-  : diskloc_ { loc }
-  , key_r_ { s }
-  , val_r_ { s + KEY_LEN }
-  , copied_ { copy }
+  : diskloc_{loc}
+  , key_r_{s}
+  , val_r_{s + KEY_LEN}
+  , copied_{copy}
 {
-  if ( copied_ ) { Record::copy(); }
+  if ( copied_ ) {
+    Record::copy();
+  }
 }
 
 /* Copy constructor */
 Record::Record( const Record & other, bool deep_copy )
-  : diskloc_ { other.diskloc_ }
-  , key_r_ { other.key_r_ }
-  , val_r_ { other.val_r_ }
-  , copied_ { other.copied_ or deep_copy }
+  : diskloc_{other.diskloc_}
+  , key_r_{other.key_r_}
+  , val_r_{other.val_r_}
+  , copied_{other.copied_ or deep_copy}
 {
-  if ( copied_ ) { copy(); }
+  if ( copied_ ) {
+    copy();
+  }
 }
 
 /* Assignment */
@@ -61,7 +65,9 @@ Record & Record::operator=( const Record & other )
     key_r_ = other.key_r_;
     val_r_ = other.val_r_;
 
-    if ( copied_ ) { copy(); }
+    if ( copied_ ) {
+      copy();
+    }
   }
   return *this;
 }
@@ -69,7 +75,7 @@ Record & Record::operator=( const Record & other )
 /* To string */
 string Record::str( loc_t locinfo ) const
 {
-  string buf { key_r_, KEY_LEN };
+  string buf{key_r_, KEY_LEN};
   buf.append( val_, VAL_LEN );
   if ( locinfo == WITH_LOC ) {
     buf.append( reinterpret_cast<const char *>( &diskloc_ ),
@@ -81,12 +87,12 @@ string Record::str( loc_t locinfo ) const
 Record Record::ParseRecord( const char * s, Record::size_type diskloc,
                             bool copy )
 {
-  return Record{ s, diskloc, copy };
+  return Record{s, diskloc, copy};
 }
 
 Record Record::ParseRecordWithLoc( const char * s, bool copy )
 {
-  Record r { s, 0, copy };
+  Record r{s, 0, copy};
   r.diskloc_ = *reinterpret_cast<const size_type *>( s + SIZE );
   return r;
 }

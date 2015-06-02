@@ -36,7 +36,7 @@ public:
     };
 
     using CallbackType = std::function<Result(void)>;
-    using FilterType = std::function<bool (void)>;
+    using FilterType = std::function<bool(void)>;
     enum PollDirection : short { In = POLLIN, Out = POLLOUT };
 
     const IODevice & io;
@@ -57,7 +57,8 @@ public:
     {
     }
 
-    unsigned int service_count( void ) const {
+    unsigned int service_count( void ) const
+    {
       return direction == In ? io.read_count() : io.write_count();
     }
   };

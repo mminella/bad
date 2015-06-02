@@ -8,12 +8,11 @@
 using namespace std;
 
 /* default constructor */
-IODevice::IODevice( int fd_r, int fd_w ) noexcept
-  : fd_r_( fd_r )
-  , fd_w_( fd_w )
-  , eof_( false )
-  , read_count_( 0 )
-  , write_count_( 0 )
+IODevice::IODevice( int fd_r, int fd_w ) noexcept : fd_r_( fd_r ),
+                                                    fd_w_( fd_w ),
+                                                    eof_( false ),
+                                                    read_count_( 0 ),
+                                                    write_count_( 0 )
 {
 }
 
@@ -45,7 +44,7 @@ ssize_t IODevice::write( const char * buffer, size_t count )
   }
 
   ssize_t bytes_written =
-    SystemCall( "write", ::write( fd_w_, buffer, count) );
+    SystemCall( "write", ::write( fd_w_, buffer, count ) );
   if ( bytes_written == 0 ) {
     throw runtime_error( "write returned 0" );
   }
@@ -70,7 +69,7 @@ string::const_iterator IODevice::write( const string::const_iterator & begin,
 
 /* write method */
 IODevice::iterator_type IODevice::write( const std::string & buffer,
-                                          bool write_all )
+                                         bool write_all )
 {
   auto it = buffer.begin();
 
