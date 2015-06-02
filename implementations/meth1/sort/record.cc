@@ -47,7 +47,7 @@ Record::Record( const Record & other, bool deep_copy )
   : diskloc_ { other.diskloc_ }
   , key_r_ { other.key_r_ }
   , val_r_ { other.val_r_ }
-  , copied_ { other.copied_ || deep_copy }
+  , copied_ { other.copied_ or deep_copy }
 {
   if ( copied_ ) { copy(); }
 }

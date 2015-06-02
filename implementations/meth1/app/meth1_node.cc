@@ -17,8 +17,8 @@ int run( int argc, char * argv[] );
 
 void check_usage( const int argc, const char * const argv[] )
 {
-  if ( argc != 2 ) {
-    throw runtime_error( "Usage: " + string( argv[0] ) + " [file]" );
+  if ( argc != 3 ) {
+    throw runtime_error( "Usage: " + string( argv[0] ) + " [port] [file]" );
   }
 }
 
@@ -38,7 +38,7 @@ int run( int argc, char * argv[] )
   sanity_check_env( argc );
   check_usage( argc, argv );
 
-  Node node { argv[1] };
+  Node node { argv[2], argv[1] };
   node.Initialize();
   node.Run(); 
 

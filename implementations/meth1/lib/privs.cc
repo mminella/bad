@@ -41,14 +41,14 @@ void drop_privileges( void )
   }
 
   /* verify that the changes were successful. if not, abort */
-  if ( real_gid != eff_gid &&
-       ( setegid( eff_gid ) != -1 || getegid() != real_gid ) ) {
+  if ( real_gid != eff_gid and
+       ( setegid( eff_gid ) != -1 or getegid() != real_gid ) ) {
     cerr << "BUG: dropping privileged gid failed" << endl;
     _exit( EXIT_FAILURE );
   }
 
-  if ( real_uid != eff_uid &&
-       ( seteuid( eff_uid ) != -1 || geteuid() != real_uid ) ) {
+  if ( real_uid != eff_uid and
+       ( seteuid( eff_uid ) != -1 or geteuid() != real_uid ) ) {
     cerr << "BUG: dropping privileged uid failed" << endl;
     _exit( EXIT_FAILURE );
   }
@@ -61,7 +61,7 @@ void check_suid_root( const string & prog )
     throw runtime_error( prog + ": needs to be installed setuid root" );
   }
 
-  if ( ( getuid() == 0 ) || ( getgid() == 0 ) ) {
+  if ( getuid() == 0 or getgid() == 0 ) {
     throw runtime_error( prog + ": please run as non-root" );
   }
 

@@ -8,6 +8,7 @@
 using namespace std;
 using namespace PollerShortNames;
 
+/* Add an event driven action to the poller. */
 void Poller::add_action( Poller::Action action )
 {
   actions_.push_back( action );
@@ -16,11 +17,7 @@ void Poller::add_action( Poller::Action action )
   pollfds_.push_back( {fd, 0, 0} );
 }
 
-unsigned int Poller::Action::service_count( void ) const
-{
-  return direction == Direction::In ? io.read_count() : io.write_count();
-}
-
+/* Run poll a single step */
 Poller::Result Poller::poll( const int & timeout_ms )
 {
   assert( pollfds_.size() == actions_.size() );
@@ -29,6 +26,7 @@ Poller::Result Poller::poll( const int & timeout_ms )
   for ( unsigned int i = 0; i < actions_.size(); i++ ) {
     assert( pollfds_.at( i ).fd == actions_.at( i ).io.fd_r_num() or
             pollfds_.at( i ).fd == actions_.at( i ).io.fd_w_num() );
+
     pollfds_.at( i ).events =
       ( actions_.at( i ).active and actions_.at( i ).when_interested() )
         ? actions_.at( i ).direction
@@ -48,11 +46,13 @@ Poller::Result Poller::poll( const int & timeout_ms )
     return Result::Type::Exit;
   }
 
+  /* Call 'poll' system call */
   if ( 0 == SystemCall(
               "poll", ::poll( &pollfds_[0], pollfds_.size(), timeout_ms ) ) ) {
     return Result::Type::Timeout;
   }
 
+  /* Run actions for filedescriptors that are ready */
   for ( unsigned int i = 0; i < pollfds_.size(); i++ ) {
     if ( pollfds_[i].revents & ( POLLERR | POLLHUP | POLLNVAL ) ) {
       return Result::Type::Exit;
@@ -64,6 +64,7 @@ Poller::Result Poller::poll( const int & timeout_ms )
       const auto count_before = actions_.at( i ).service_count();
       auto result = actions_.at( i ).callback();
 
+      /* make sure action made some progress */
       if ( count_before == actions_.at( i ).service_count() ) {
         throw runtime_error(
           "Poller: busy wait detected: callback did not read/write fd" );

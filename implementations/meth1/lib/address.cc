@@ -19,8 +19,7 @@ Address::Address()
 }
 
 Address::Address( const IPVersion ipv )
-  : size_( 0 )
-  , addr_()
+  : Address()
 {
   zero( addr_ );
   addr_.as_sockaddr_storage.ss_family = ipv;
@@ -60,8 +59,7 @@ public:
 /* private constructor given ip/host, service/port, and optional hints */
 Address::Address( const string & node, const string & service,
                   const addrinfo * hints )
-  : size_()
-  , addr_()
+  : Address()
 {
   /* prepare for the answer */
   addrinfo * resolved_address;
@@ -114,6 +112,21 @@ Address::Address( const std::string & ip, const uint16_t port )
   hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV | AI_V4MAPPED;
 
   *this = Address( ip, ::to_string( port ), &hints );
+}
+
+/* construct from an IP string with port -- i.e., "192.168.0.3:800" */
+Address::Address( std::string ip )
+  : Address()
+{
+  string port = "0";
+
+  size_t i = ip.find_last_of(':');
+  if ( i != string::npos ) {
+    port = ip.substr( i + 1 );
+    ip = ip.substr( 0, i );
+  }
+
+  *this = Address( ip, port );
 }
 
 /* accessors */

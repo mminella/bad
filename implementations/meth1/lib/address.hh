@@ -41,9 +41,9 @@ public:
   /* construct with numerical IP address and numeral port number */
   Address( const std::string & ip, const uint16_t port );
 
-  /* implicit cast constructor to allow literal addresses */
-  Address( const char * ip )
-    : Address{std::string( ip ), 0} {};
+  /* construct from an IP string with port -- i.e., "192.168.0.3:800" */
+  Address( std::string ip );
+  Address( const char * ip ) : Address{ std::string( ip ) } {};
 
   /* accessors */
   sa_family_t domain( void ) const { return addr_.as_sockaddr.sa_family; }

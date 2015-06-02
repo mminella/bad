@@ -26,11 +26,12 @@ static_assert(
 );
 
 /* Construct Node */
-Node::Node(std::string file)
-  : data_{ file.c_str(), O_RDONLY }
-  , last_{ Record::MIN }
-  , fpos_{ 0 }
-  , size_{ 0 }
+Node::Node( string file, string port )
+  : data_ { file.c_str(), O_RDONLY }
+  , port_ { port }
+  , last_ { Record::MIN }
+  , fpos_ { 0 }
+  , size_ { 0 }
 {
 }
 
@@ -39,7 +40,7 @@ void Node::Run( void )
 {
   TCPSocket sock;
   sock.set_reuseaddr();
-  sock.bind( Address { "::0", 9000 } );
+  sock.bind( Address { "::0", port_ } );
   sock.listen();
 
   while ( true ) {
@@ -153,7 +154,7 @@ Record Node::linear_scan( File & in, const Record & after )
     if ( cmp >= 0 && next < min ) {
       // we check the diskloc to ensure we don't pick up same key, but can still
       // handle duplicate keys.
-      if ( cmp > 0 || after.diskloc() < next.diskloc() ) {
+      if ( cmp > 0 or after.diskloc() < next.diskloc() ) {
         min = next.clone();
       }
     }

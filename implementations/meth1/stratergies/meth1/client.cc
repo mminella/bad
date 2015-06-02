@@ -16,24 +16,39 @@ Client::Client(Address node)
 {
 }
 
+Client::Client( Client && other )
+  : sock_ { move( other.sock_ ) }
+  , addr_ { move( other.addr_ ) }
+{
+}
+
+Client & Client::operator=( Client && other )
+{
+  if ( this != &other ) {
+    sock_ = move( other.sock_ );
+    addr_ = move( other.addr_ );
+  }
+  return *this;
+}
+
 void Client::DoInitialize( void )
 {
   sock_.connect( addr_ );
 }
 
-vector<Record> Client::DoRead( size_type pos, size_type size )
+void Client::sendRead( size_type pos, size_type size )
 {
-  // send rpc
   int8_t rpc = 0;
   sock_.write( (char *) &rpc, 1 );
   sock_.write( (char *) &pos, sizeof( size_type ) );
   sock_.write( (char *) &size, sizeof( size_type ) );
+}
 
-  // recv rpc
+std::vector<Record> Client::recvRead( void )
+{
   string str = sock_.read( sizeof( size_type ) );
   size_type nrecs = *reinterpret_cast<const size_type *>( str.c_str() );
 
-  // parse records
   vector<Record> recs {};
   recs.reserve(nrecs);
   for ( size_type i = 0; i < nrecs; i++ ) {
@@ -44,13 +59,26 @@ vector<Record> Client::DoRead( size_type pos, size_type size )
   return recs;
 }
 
-Client::size_type Client::DoSize( void )
+void Client::sendSize( void )
 {
-  // send rpc
   int8_t rpc = 1;
   sock_.write( (char *) &rpc, 1 );
- 
-  // recv rpc
+}
+
+Client::size_type Client::recvSize( void )
+{
   string str = sock_.read( sizeof( size_type ) );
   return *reinterpret_cast<const size_type *>( str.c_str() );
+}
+
+vector<Record> Client::DoRead( size_type pos, size_type size )
+{
+  sendRead( pos, size );
+  return recvRead();
+}
+
+Client::size_type Client::DoSize( void )
+{
+  sendSize();
+  return recvSize();
 }

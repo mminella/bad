@@ -13,6 +13,8 @@
  * handlers (called an 'Action') for particular file descriptors can be added
  * to a poller (with 'add_action') and then the event loop run in a step-wise
  * fashion (with 'poll').
+ *
+ * This wraps the underlying 'poll' system call.
  */
 class Poller
 {
@@ -33,19 +35,20 @@ public:
       }
     };
 
-    typedef std::function<Result(void)> CallbackType;
+    using CallbackType = std::function<Result(void)>;
+    using FilterType = std::function<bool (void)>;
+    enum PollDirection : short { In = POLLIN, Out = POLLOUT };
 
     const IODevice & io;
-    enum PollDirection : short { In = POLLIN, Out = POLLOUT } direction;
+    PollDirection direction;
     CallbackType callback;
-    std::function<bool(void)> when_interested;
+    FilterType when_interested;
     bool active;
 
     /* An action to run when a file descriptor is ready. */
-    Action( const IODevice & s_io, const PollDirection & s_direction,
+    Action( const IODevice & s_io, PollDirection s_direction,
             const CallbackType & s_callback,
-            const std::function<bool(void)> & s_when_interested =
-              []() { return true; } )
+            const FilterType & s_when_interested = []() { return true; } )
       : io( s_io )
       , direction( s_direction )
       , callback( s_callback )
@@ -54,7 +57,9 @@ public:
     {
     }
 
-    unsigned int service_count( void ) const;
+    unsigned int service_count( void ) const {
+      return direction == In ? io.read_count() : io.write_count();
+    }
   };
 
   /* The result of a poll event. */

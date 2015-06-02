@@ -20,14 +20,15 @@ namespace meth1 {
    */
   class Node : public Implementation {
   private:
-    File      data_;
-    Record    last_;
-    size_type fpos_;
-    size_type size_;
+    File        data_;
+    std::string port_;
+    Record      last_;
+    size_type   fpos_;
+    size_type   size_;
 
   public:
     /* constructor */
-    Node(std::string file);
+    Node( std::string file, std::string port );
 
     /* destructor */
     ~Node() = default;

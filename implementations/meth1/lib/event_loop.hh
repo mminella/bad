@@ -46,9 +46,6 @@ public:
 
   /* Run the event loop, looping until an an event handler returns 'Exit'. */
   int loop( void );
-
-  /* Destroy the event loop */
-  virtual ~EventLoop() {}
 };
 
 #endif /* EVENT_LOOP_HH */

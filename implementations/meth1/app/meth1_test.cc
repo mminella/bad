@@ -38,7 +38,7 @@ int run( int argc, char * argv[] )
   sanity_check_env( argc );
   check_usage( argc, argv );
 
-  Node node { argv[1] };
+  Node node { argv[1], "0" };
   node.Initialize();
   
   auto recs = node.Read(0, 5);

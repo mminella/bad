@@ -8,7 +8,7 @@
 
 #include "record.hh"
 
-#include "client.hh"
+#include "cluster.hh"
 
 using namespace std;
 using namespace meth1;
@@ -17,8 +17,8 @@ int run( int argc, char * argv[] );
 
 void check_usage( const int argc, const char * const argv[] )
 {
-  if ( argc != 1 ) {
-    throw runtime_error( "Usage: " + string( argv[0] ) );
+  if ( argc <= 1 ) {
+    throw runtime_error( "Usage: " + string( argv[0] ) + " [nodes...]" );
   }
 }
 
@@ -38,7 +38,8 @@ int run( int argc, char * argv[] )
   sanity_check_env( argc );
   check_usage( argc, argv );
 
-  Client client { Address( "::0", 9000 ) };
+  auto addrs = vector<Address>( argv+1, argv+argc );
+  Cluster client { addrs };
   client.Initialize();
   
   auto recs = client.Read(0, 5);
