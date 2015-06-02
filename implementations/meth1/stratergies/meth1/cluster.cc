@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <functional>
+#include <numeric>
 #include <vector>
 
 #include "implementation.hh"
@@ -36,13 +38,18 @@ vector<Record> Cluster::DoRead( size_type pos, size_type size )
     n.sendRead( pos, size );
   }
 
+  // retrieve and merge results
   for ( auto & n : nodes_ ) {
     auto rs = n.recvRead();
-    recs.insert( recs.end(), rs.begin(), rs.end() );
-  }
+    auto pend = recs.end();
 
-  sort( recs.begin(), recs.end() );
-  recs.resize( size, Record{Record::MAX} );
+    recs.insert( pend, rs.begin(), rs.end() );
+
+    // we merge and trim as we go, but may want to cache extra results for
+    // future operations.
+    inplace_merge( recs.begin(), pend, recs.end() );
+    recs.resize( size, Record{Record::MAX} );
+  }
 
   return recs;
 }
@@ -54,9 +61,11 @@ Cluster::size_type Cluster::DoSize( void )
     n.sendSize();
   }
 
+  // retrieve and merge results
   size_type siz{0};
   for ( auto & n : nodes_ ) {
     siz += n.recvSize();
   }
+
   return siz;
 }
