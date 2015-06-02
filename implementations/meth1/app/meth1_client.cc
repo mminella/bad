@@ -41,7 +41,7 @@ int run( int argc, char * argv[] )
   auto addrs = vector<Address>( argv+1, argv+argc );
   Cluster client { addrs };
   client.Initialize();
-  
+
   auto recs = client.Read(0, 5);
   cout << "Recs: " << recs.size() << endl;
   for ( auto & r : recs ) {

@@ -78,7 +78,7 @@ public:
   UDPSocket & operator=( UDPSocket && other ) = default;
 
   /* destructor */
-  virtual ~UDPSocket() = default;
+  ~UDPSocket() = default;
 
   /* receive datagram, timestamp, and where it came from */
   received_datagram recv( void );

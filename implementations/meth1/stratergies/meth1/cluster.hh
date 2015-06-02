@@ -27,14 +27,7 @@ namespace meth1 {
     std::vector<Client> nodes_;
 
   public:
-    /* constructor */
     Cluster(std::vector<Address> nodes);
-
-    /* forbid copy & move assignment */
-    Cluster( const Cluster & other ) = delete;
-    Cluster & operator=( const Cluster & other ) = delete;
-    Cluster( Cluster && other ) = delete;
-    Cluster & operator=( const Cluster && other ) = delete;
 
   private:
     void DoInitialize( void );

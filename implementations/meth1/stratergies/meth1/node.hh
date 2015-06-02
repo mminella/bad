@@ -27,17 +27,7 @@ namespace meth1 {
     size_type   size_;
 
   public:
-    /* constructor */
     Node( std::string file, std::string port );
-
-    /* destructor */
-    ~Node() = default;
-
-    /* forbid copy & move assignment */
-    Node( const Node & other ) = delete;
-    Node & operator=( const Node & other ) = delete;
-    Node( Node && other ) = delete;
-    Node & operator=( const Node && other ) = delete;
 
     /* run the node - list and respond to RPCs */
     void Run( void );

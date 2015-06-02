@@ -24,11 +24,11 @@ public:
   File & operator=( const File & other ) = delete;
 
   /* move constructor */
-  File( File && other );
-  File & operator=( File && other );
+  File( File && other ) = default;
+  File & operator=( File && other ) = default;
 
   /* destructor */
-  virtual ~File();
+  virtual ~File() {};
 
   /* rewind to begging of file */
   void rewind( void );

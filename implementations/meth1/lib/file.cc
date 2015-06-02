@@ -26,25 +26,6 @@ File::File( const char * path, int flags, mode_t mode )
 {
 }
 
-/* move constructor */
-File::File( File && other )
-  : FileDescriptor( move( other ) )
-{
-}
-
-/* move assignment */
-File & File::operator=( File && other )
-{
-  if ( this != &other ) {
-    *static_cast<FileDescriptor *>( this ) =
-      move( static_cast<FileDescriptor &&>( other ) );
-  }
-  return *this;
-}
-
-/* destructor */
-File::~File() {}
-
 /* rewind to begging of file */
 void File::rewind( void )
 {

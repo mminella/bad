@@ -40,7 +40,7 @@ void Node::Run( void )
 {
   TCPSocket sock;
   sock.set_reuseaddr();
-  sock.bind( Address { "::0", port_ } );
+  sock.bind( { "::0", port_ } );
   sock.listen();
 
   while ( true ) {

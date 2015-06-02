@@ -20,7 +20,13 @@ private:
 public:
   using size_type = uint64_t;
 
-  virtual ~Implementation() = default;
+  /* Constructors */
+  Implementation() {}
+  Implementation( const Implementation & ) = default;
+  Implementation( Implementation && ) = default;
+  Implementation & operator=( const Implementation & ) = default;
+  Implementation & operator=( Implementation && ) = default;
+  virtual ~Implementation() {}
 
   /* Initialization routine */
   void Initialize( void ) {

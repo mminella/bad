@@ -25,17 +25,7 @@ namespace meth1 {
     Address addr_;
 
   public:
-    /* constructor */
     Client(Address node);
-
-    /* destructor */
-    ~Client() = default;
-
-    /* forbid copy & move assignment */
-    Client( const Client & other ) = delete;
-    Client & operator=( const Client & other ) = delete;
-    Client( Client && other );
-    Client & operator=( Client && other );
 
     /* provide each side of RPC so we can multi-cast */
     void sendRead( size_type pos, size_type size );

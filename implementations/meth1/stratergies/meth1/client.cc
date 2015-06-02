@@ -16,21 +16,6 @@ Client::Client(Address node)
 {
 }
 
-Client::Client( Client && other )
-  : sock_ { move( other.sock_ ) }
-  , addr_ { move( other.addr_ ) }
-{
-}
-
-Client & Client::operator=( Client && other )
-{
-  if ( this != &other ) {
-    sock_ = move( other.sock_ );
-    addr_ = move( other.addr_ );
-  }
-  return *this;
-}
-
 void Client::DoInitialize( void )
 {
   sock_.connect( addr_ );
