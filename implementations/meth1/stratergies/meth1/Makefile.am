@@ -4,7 +4,7 @@ libmeth1_la_SOURCES = \
 	node.hh node.cc \
 	client.hh client.cc \
 	cluster.hh cluster.cc \
-	priority_queue.hh priority_queue.cc
+	priority_queue.hh
 
 libmeth1_la_CPPFLAGS = \
 	-I$(srcdir)/.. \

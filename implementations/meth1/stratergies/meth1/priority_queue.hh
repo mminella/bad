@@ -3,6 +3,8 @@
 
 #include <queue>
 
+#include "exception.hh"
+
 namespace mystl {
 
 /**
@@ -15,7 +17,12 @@ class priority_queue : public std::priority_queue<T>
 public:
   using size_type = typename std::priority_queue<T>::size_type;
 
-  priority_queue( size_type capacity = 0 ) { reserve( capacity ); }
+  priority_queue( size_type capacity = 0 )
+  {
+    if ( capacity > 0 ) {
+      reserve( capacity );
+    }
+  }
 
   void reserve( size_type capacity )
   {

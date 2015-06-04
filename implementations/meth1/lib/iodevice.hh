@@ -25,6 +25,10 @@ protected:
   void set_eof( void ) noexcept { eof_ = true; }
   void reset_eof( void ) noexcept { eof_ = false; }
 
+  /* base read and write methods */
+  virtual std::string rread( size_t limit = BUFFER_SIZE );
+  virtual ssize_t wwrite( const char * buffer, size_t count );
+
 public:
   /* Construct an IO Device */
   IODevice( int fd_r, int fd_w ) noexcept;
@@ -47,13 +51,12 @@ public:
   unsigned int write_count( void ) const noexcept { return write_count_; }
 
   /* read method */
-  virtual std::string read( size_t limit = BUFFER_SIZE );
+  std::string read( size_t limit = BUFFER_SIZE, bool read_all = false );
 
   /* write methods */
-  ssize_t write( const char * buffer, size_t count );
+  ssize_t write( const char * buffer, size_t count, bool write_all = true );
   iterator_type write( const std::string & buffer, bool write_all = true );
-  virtual iterator_type write( const iterator_type & begin,
-                               const iterator_type & end );
+  iterator_type write( const iterator_type & begin, const iterator_type & end );
 };
 
 #endif /* IODEVICE_HH */

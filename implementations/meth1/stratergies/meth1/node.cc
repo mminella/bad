@@ -73,7 +73,8 @@ void Node::Run( void )
 void Node::RPC_Read( TCPSocket & client )
 {
   // parse arguments
-  string str = client.read( 2 * sizeof( size_type ) );
+  size_t nread = 2 * sizeof( size_type );
+  string str = client.read( nread, true );
   size_type pos = *( reinterpret_cast<const size_type *>( str.c_str() ) );
   size_type amt = *( reinterpret_cast<const size_type *>( str.c_str() ) + 1 );
 
@@ -83,7 +84,7 @@ void Node::RPC_Read( TCPSocket & client )
 
   // serialize results to wire
   client.write( reinterpret_cast<const char *>( &siz ), sizeof( size_type ) );
-  for ( auto & r : recs ) {
+  for ( auto const & r : recs) {
     client.write( r.str( Record::WITH_LOC ) );
   }
 }
@@ -107,11 +108,12 @@ vector<Record> Node::DoRead( size_type pos, size_type size )
     after = last_;
     fpos = fpos_;
   }
-  
+
+  // read the records from disk
   auto recs = linear_scan( data_, after, size );
   last_ = recs.back();
   fpos_ = pos + size;
-
+  
   return recs;
 }
 

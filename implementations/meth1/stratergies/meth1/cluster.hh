@@ -9,6 +9,7 @@
 
 #include "address.hh"
 #include "file.hh"
+#include "poller.hh"
 #include "socket.hh"
 
 /**
@@ -26,7 +27,8 @@ namespace meth1
 class Cluster : public Implementation
 {
 private:
-  std::vector<Client> nodes_;
+  std::vector<Client> clients_;
+  Poller poller_;
 
 public:
   Cluster( std::vector<Address> nodes );

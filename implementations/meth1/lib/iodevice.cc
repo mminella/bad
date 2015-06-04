@@ -16,8 +16,8 @@ IODevice::IODevice( int fd_r, int fd_w ) noexcept : fd_r_( fd_r ),
 {
 }
 
-/* read method */
-string IODevice::read( size_t limit )
+/* read method (internal) */
+string IODevice::rread( size_t limit )
 {
   char buffer[BUFFER_SIZE];
 
@@ -36,8 +36,21 @@ string IODevice::read( size_t limit )
   return string( buffer, bytes_read );
 }
 
-/* write a cstring */
-ssize_t IODevice::write( const char * buffer, size_t count )
+/* read method (external) */
+string IODevice::read( size_t limit, bool read_all )
+{
+  string str;
+  if ( read_all ) { str.reserve( limit ); }
+
+  do {
+    str += rread( limit - str.size() );
+  } while ( str.size() < limit and read_all );
+  
+  return str;
+}
+
+/* write a cstring (internal) */
+ssize_t IODevice::wwrite( const char * buffer, size_t count )
 {
   if ( count == 0 ) {
     throw runtime_error( "nothing to write" );
@@ -54,6 +67,18 @@ ssize_t IODevice::write( const char * buffer, size_t count )
   return bytes_written;
 }
 
+/* write a cstring (external) */
+ssize_t IODevice::write( const char * buffer, size_t count, bool write_all )
+{
+  size_t bytes_written {0};
+
+  do {
+    bytes_written = wwrite( buffer, count );
+  } while ( write_all and bytes_written < count );
+
+  return bytes_written;
+}
+
 /* attempt to write a portion of a string */
 string::const_iterator IODevice::write( const string::const_iterator & begin,
                                         const string::const_iterator & end )
@@ -62,9 +87,7 @@ string::const_iterator IODevice::write( const string::const_iterator & begin,
     throw runtime_error( "nothing to write" );
   }
 
-  ssize_t bytes_written = write( &*begin, end - begin );
-
-  return begin + bytes_written;
+  return begin + wwrite( &*begin, end - begin );
 }
 
 /* write method */
