@@ -47,7 +47,6 @@ private:
   void RPC_Read( TCPSocket & client );
   void RPC_Size( TCPSocket & client );
 };
-
 }
 
 #endif /* METH1_NODE_HH */

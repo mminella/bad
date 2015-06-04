@@ -88,8 +88,12 @@ public:
   {
     int cmp = std::memcmp( key(), b.key(), KEY_LEN );
     if ( cmp == 0 ) {
-      if ( diskloc_ < b.diskloc_ ) { cmp = -1; }
-      if ( diskloc_ > b.diskloc_ ) { cmp = 1; }
+      if ( diskloc_ < b.diskloc_ ) {
+        cmp = -1;
+      }
+      if ( diskloc_ > b.diskloc_ ) {
+        cmp = 1;
+      }
     }
     return cmp;
   }

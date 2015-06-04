@@ -84,7 +84,7 @@ void Node::RPC_Read( TCPSocket & client )
 
   // serialize results to wire
   client.write( reinterpret_cast<const char *>( &siz ), sizeof( size_type ) );
-  for ( auto const & r : recs) {
+  for ( auto const & r : recs ) {
     client.write( r.str( Record::WITH_LOC ) );
   }
 }
@@ -113,7 +113,7 @@ vector<Record> Node::DoRead( size_type pos, size_type size )
   auto recs = linear_scan( data_, after, size );
   last_ = recs.back();
   fpos_ = pos + size;
-  
+
   return recs;
 }
 
@@ -128,20 +128,22 @@ Node::size_type Node::DoSize( void )
 
 /* Perform a full linear scan to return the next smallest record that occurs
  * after the 'after' record. */
-vector<Record>
-Node::linear_scan( File & in, const Record & after, size_type size )
+vector<Record> Node::linear_scan( File & in, const Record & after,
+                                  size_type size )
 {
   // TODO: Better to use pointers to Record? Or perhaps to change Record to
   // heap allocate?
-  mystl::priority_queue<Record> recs{ size + 1 };
-  Record rmax = Record{ Record::MAX };
+  mystl::priority_queue<Record> recs{size + 1};
+  Record rmax = Record{Record::MAX};
   Record & top = rmax;
 
   size_type i;
 
   for ( i = 0;; i++ ) {
     Record next = Record::ParseRecord( in.read( Record::SIZE ), i, false );
-    if ( in.eof() ) { break; }
+    if ( in.eof() ) {
+      break;
+    }
 
     int cmpTop = next.compare( top );
 
@@ -149,7 +151,9 @@ Node::linear_scan( File & in, const Record & after, size_type size )
       if ( cmpTop < 0 or recs.size() < size ) {
         // if we equal the top, only add when space
         recs.push( next.clone() );
-        if ( recs.size() > size ) { recs.pop(); }
+        if ( recs.size() > size ) {
+          recs.pop();
+        }
       }
       top = recs.top();
     }

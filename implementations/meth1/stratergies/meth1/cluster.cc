@@ -33,7 +33,9 @@ void Cluster::DoInitialize( void )
 
   // run poller in another thread for all clients
   thread clientRPC( [this]() {
-    while ( true ) { poller_.poll( -1 ); }
+    while ( true ) {
+      poller_.poll( -1 );
+    }
   } );
   clientRPC.detach();
 }
@@ -51,7 +53,7 @@ void Cluster::DoInitialize( void )
 //   vector<Record> recs;
 //   recs.reserve( size );
 //   mystl::priority_queue<RecordNode> heap { clients_.size() };
-//   
+//
 //   for ( auto & c : clients_ ) {
 //     c.prepRead( pos, size );
 //   }

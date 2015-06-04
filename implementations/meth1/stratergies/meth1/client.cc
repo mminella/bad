@@ -32,10 +32,7 @@ Client::Client( Address node )
 {
 }
 
-void Client::DoInitialize( void )
-{ 
-  sock_.connect( addr_ );
-}
+void Client::DoInitialize( void ) { sock_.connect( addr_ ); }
 
 /* make sure we aren't already performing an RPC */
 void Client::checkNoRPC( void )
@@ -86,12 +83,12 @@ std::vector<Record> Client::recvRead( void )
     for ( auto & buf : cache_ ) {
       if ( buf.fpos == evict ) {
         // add to buffer cache, replacing evicted
-        buf = { recs, rpcPos_ };
+        buf = {recs, rpcPos_};
       }
     }
   } else {
     // add to buffer cache
-    cache_.push_back( { recs, rpcPos_ } );
+    cache_.push_back( {recs, rpcPos_} );
   }
 
   // maintain sort invariant
@@ -99,7 +96,7 @@ std::vector<Record> Client::recvRead( void )
 
   // add to LRU
   lru_.push_front( rpcPos_ );
-  
+
   return recs;
 }
 
@@ -118,13 +115,13 @@ bool Client::fillFromCache( vector<Record> & recs, size_type & pos,
       if ( start + size <= buf.records.size() ) {
         // cache extent fully contains read
         recs.insert( recs.end(), buf.records.begin() + start,
-          buf.records.begin() + size );
+                     buf.records.begin() + size );
         return true;
       } else {
         // cache extent partially contains read, other cache extents may
         // have rest of needed data.
         recs.insert( recs.end(), buf.records.begin() + start,
-          buf.records.end() );
+                     buf.records.end() );
         size_type read = buf.records.size() - start;
         pos += read;
         size -= read;
@@ -143,7 +140,7 @@ bool Client::fillFromCache( vector<Record> & recs, size_type & pos,
 vector<Record> Client::DoRead( size_type pos, size_type size )
 {
   unique_lock<std::mutex> lck{*mtx_};
-  vector<Record> recs {};
+  vector<Record> recs{};
   recs.reserve( size );
 
   // fill from cache if possible
@@ -154,9 +151,9 @@ vector<Record> Client::DoRead( size_type pos, size_type size )
   if ( rpcActive_ == Size_ ) {
     throw runtime_error( "need to perform Read RPC but Size RPC active" );
   } else if ( rpcActive_ == Read_ ) {
-     if ( rpcPos_ != pos ) {
+    if ( rpcPos_ != pos ) {
       throw runtime_error( "outstanding Read RPC isn't at position needed" );
-     }
+    }
   } else {
     // perform read for remaining data missing from cache
     sendRead( pos, size );
@@ -173,7 +170,7 @@ vector<Record> Client::DoRead( size_type pos, size_type size )
   if ( !fillFromCache( recs, pos, size ) ) {
     throw runtime_error( "DoRead failed to fill cache with needed data" );
   }
-  
+
   return recs;
 }
 
@@ -183,7 +180,7 @@ Client::size_type Client::DoSize( void )
   if ( size_ == 0 ) {
     if ( rpcActive_ != Size_ ) {
       sendSize();
-    } 
+    }
     cv_->wait( lck );
   }
   return size_;
@@ -191,7 +188,7 @@ Client::size_type Client::DoSize( void )
 
 Action Client::RPCRunner( void )
 {
-  return Action{ sock_, Direction::In, [this](){
+  return Action{sock_, Direction::In, [this]() {
     unique_lock<std::mutex> lck{*mtx_};
 
     switch ( rpcActive_ ) {

@@ -56,7 +56,8 @@ public:
   /* write methods */
   ssize_t write( const char * buffer, size_t count, bool write_all = true );
   iterator_type write( const std::string & buffer, bool write_all = true );
-  iterator_type write( const iterator_type & begin, const iterator_type & end );
+  iterator_type write( const iterator_type & begin,
+                       const iterator_type & end );
 };
 
 #endif /* IODEVICE_HH */

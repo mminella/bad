@@ -40,12 +40,14 @@ string IODevice::rread( size_t limit )
 string IODevice::read( size_t limit, bool read_all )
 {
   string str;
-  if ( read_all ) { str.reserve( limit ); }
+  if ( read_all ) {
+    str.reserve( limit );
+  }
 
   do {
     str += rread( limit - str.size() );
   } while ( str.size() < limit and read_all );
-  
+
   return str;
 }
 
@@ -70,7 +72,7 @@ ssize_t IODevice::wwrite( const char * buffer, size_t count )
 /* write a cstring (external) */
 ssize_t IODevice::write( const char * buffer, size_t count, bool write_all )
 {
-  size_t bytes_written {0};
+  size_t bytes_written{0};
 
   do {
     bytes_written = wwrite( buffer, count );
