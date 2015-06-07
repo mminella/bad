@@ -103,10 +103,8 @@ vector<Record> Node::DoRead( size_type pos, size_type size )
 {
   // establish starting record
   Record after{Record::MIN};
-  size_type fpos{0};
   if ( fpos_ == pos ) {
     after = last_;
-    fpos = fpos_;
   }
 
   // read the records from disk

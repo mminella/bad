@@ -25,7 +25,6 @@ Client::Client( Address node )
   , rpcPos_{0}
   , cache_{}
   , lru_{}
-  , fpos_{0}
   , size_{0}
   , mtx_{new mutex{}}
   , cv_{new condition_variable{}}
@@ -115,7 +114,7 @@ bool Client::fillFromCache( vector<Record> & recs, size_type & pos,
       if ( start + size <= buf.records.size() ) {
         // cache extent fully contains read
         recs.insert( recs.end(), buf.records.begin() + start,
-                     buf.records.begin() + size );
+                     buf.records.begin() + start + size );
         return true;
       } else {
         // cache extent partially contains read, other cache extents may

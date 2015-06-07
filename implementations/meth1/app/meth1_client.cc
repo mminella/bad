@@ -42,7 +42,7 @@ int run( int argc, char * argv[] )
   Cluster client{addrs};
   client.Initialize();
 
-  auto recs = client.Read( 0, 5 );
+  auto recs = client.Read( 0, 10 );
   cout << "Recs: " << recs.size() << endl;
   for ( auto & r : recs ) {
     cout << "Record: " << r.diskloc() << endl;

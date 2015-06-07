@@ -5,7 +5,7 @@
 
 #include "implementation.hh"
 
-#include "client.hh"
+#include "remote_file.hh"
 
 #include "address.hh"
 #include "file.hh"
@@ -27,10 +27,12 @@ namespace meth1
 class Cluster : public Implementation
 {
 private:
-  std::vector<Client> clients_;
+  std::vector<RemoteFile> files_;
   Poller poller_;
 
 public:
+  static constexpr size_type READ_AHEAD = 10;
+
   Cluster( std::vector<Address> nodes );
 
 private:

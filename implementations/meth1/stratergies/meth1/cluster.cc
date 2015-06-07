@@ -16,85 +16,65 @@ using namespace std;
 using namespace meth1;
 
 Cluster::Cluster( vector<Address> nodes )
-  : clients_{}
+  : files_{}
   , poller_{}
 {
   for ( auto & a : nodes ) {
-    clients_.push_back( Client{a} );
+    files_.push_back( RemoteFile{a, READ_AHEAD} );
   }
 }
 
 void Cluster::DoInitialize( void )
 {
-  for ( auto & c : clients_ ) {
-    c.Initialize();
-    poller_.add_action( c.RPCRunner() );
+  for ( auto & f : files_ ) {
+    f.open();
+    poller_.add_action( f.RPCRunner() );
   }
 
   // run poller in another thread for all clients
-  thread clientRPC( [this]() {
+  thread fileRPC( [this]() {
     while ( true ) {
       poller_.poll( -1 );
     }
   } );
-  clientRPC.detach();
+  fileRPC.detach();
 }
 
-// struct RecordNode {
-//   Record r;
-//   Client * c;
-//   RecordNode( Record rr, Client * cc ): r{rr}, c{cc} {}
-//
-//   bool operator<( const RecordNode & b ) const { return r < b.r; }
-// };
-//
-// vector<Record> Cluster::DoRead2( size_type pos, size_type size )
-// {
-//   vector<Record> recs;
-//   recs.reserve( size );
-//   mystl::priority_queue<RecordNode> heap { clients_.size() };
-//
-//   for ( auto & c : clients_ ) {
-//     c.prepRead( pos, size );
-//   }
-//
-//   for ( auto & c : clients_ ) {
-//     heap.push( RecordNode{ c.top(), &c } );
-//   }
-//
-//   for ( size_type i = 0; i < size; i++ ) {
-//     // grab next record
-//     RecordNode next { heap.top() };
-//     heap.pop();
-//     recs.push_back( next.r );
-//
-//     // advance that client
-//     next.r = next.c->next();
-//     heap.push( next );
-//   }
-// }
+struct RecordNode {
+  Record r;
+  RemoteFile * f;
+  RecordNode( Record rr, RemoteFile * ff ): r{rr}, f{ff} {}
+
+  bool operator<( const RecordNode & b ) const { return r < b.r; }
+};
 
 vector<Record> Cluster::DoRead( size_type pos, size_type size )
 {
   vector<Record> recs;
   recs.reserve( size );
+  mystl::priority_queue<RecordNode> heap { files_.size() };
 
-  // multi-cast RPC
-  for ( auto & c : clients_ ) {
-    c.prepareRead( pos, size );
+  // seek & prefetch all remote files
+  for ( auto & f : files_ ) {
+    f.seek( pos );
+    f.prefetch();
   }
 
-  // retrieve and merge results
-  for ( auto & c : clients_ ) {
-    auto rs = c.Read( pos, size );
-    auto pend = recs.end();
+  // load first record from each remote
+  for ( auto & f : files_ ) {
+    heap.push( RecordNode{ f.read(), &f } );
+  }
 
-    recs.insert( pend, rs.begin(), rs.end() );
+  // merge all remote files
+  for ( size_type i = 0; i < size; i++ ) {
+    // grab next record
+    RecordNode next { heap.top() };
+    heap.pop();
+    recs.push_back( next.r );
 
-    // we merge and trim as we go, but may want to cache extra results for
-    // future operations.
-    inplace_merge( recs.begin(), pend, recs.end() );
-    recs.resize( size, Record{Record::MAX} );
+    // advance that file
+    next.r = next.f->read();
+    heap.push( next );
   }
 
   return recs;
@@ -102,15 +82,12 @@ vector<Record> Cluster::DoRead( size_type pos, size_type size )
 
 Cluster::size_type Cluster::DoSize( void )
 {
-  // multi-cast RPC
-  for ( auto & c : clients_ ) {
-    c.prepareSize();
-  }
+  // TODO: need multi-cast?
 
   // retrieve and merge results
   size_type siz{0};
-  for ( auto & c : clients_ ) {
-    siz += c.Size();
+  for ( auto & f : files_ ) {
+    siz += f.stat();
   }
 
   return siz;

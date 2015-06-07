@@ -10,6 +10,7 @@
 #include "implementation.hh"
 
 #include "address.hh"
+#include "exception.hh"
 #include "file.hh"
 #include "poller.hh"
 #include "socket.hh"
@@ -56,9 +57,6 @@ private:
   /* lru of buffer extents for eviction -- we use the fpos for an id, so
    * invariants is no two extents have the same fpos */
   std::list<size_type> lru_;
-
-  /* file state for sequential reads */
-  size_type fpos_;
 
   /* cache file size */
   size_type size_;
