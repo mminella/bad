@@ -9,7 +9,7 @@ using namespace std;
 using namespace meth1;
 
 RemoteFile::RemoteFile( Client c, size_type readahead, size_type low_cache )
-  : client_{move(c)}
+  : client_{move( c )}
   , fpos_{0}
   , cached_{0}
   , readahead_{readahead}
@@ -24,12 +24,10 @@ RemoteFile::RemoteFile( Client c, size_type readahead, size_type low_cache )
   }
 }
 
-void RemoteFile::open( void )
-{
-  client_.Initialize();
-}
+void RemoteFile::open( void ) { client_.Initialize(); }
 
-void RemoteFile::seek( size_type offset ) {
+void RemoteFile::seek( size_type offset )
+{
   if ( offset != fpos_ ) {
     fpos_ = offset;
     cached_ = 0;
@@ -62,12 +60,6 @@ Record RemoteFile::read( void )
   return rec[0];
 }
 
-Poller::Action RemoteFile::RPCRunner( void )
-{
-  return client_.RPCRunner();
-}
+Poller::Action RemoteFile::RPCRunner( void ) { return client_.RPCRunner(); }
 
-RemoteFile::size_type RemoteFile::stat( void )
-{
-  return client_.Size();
-}
+RemoteFile::size_type RemoteFile::stat( void ) { return client_.Size(); }

@@ -43,7 +43,11 @@ void Cluster::DoInitialize( void )
 struct RecordNode {
   Record r;
   RemoteFile * f;
-  RecordNode( Record rr, RemoteFile * ff ): r{rr}, f{ff} {}
+  RecordNode( Record rr, RemoteFile * ff )
+    : r{rr}
+    , f{ff}
+  {
+  }
 
   bool operator<( const RecordNode & b ) const { return r < b.r; }
 };
@@ -52,7 +56,7 @@ vector<Record> Cluster::DoRead( size_type pos, size_type size )
 {
   vector<Record> recs;
   recs.reserve( size );
-  mystl::priority_queue<RecordNode> heap { files_.size() };
+  mystl::priority_queue<RecordNode> heap{files_.size()};
 
   // seek & prefetch all remote files
   for ( auto & f : files_ ) {
@@ -62,13 +66,13 @@ vector<Record> Cluster::DoRead( size_type pos, size_type size )
 
   // load first record from each remote
   for ( auto & f : files_ ) {
-    heap.push( RecordNode{ f.read(), &f } );
+    heap.push( RecordNode{f.read(), &f} );
   }
 
   // merge all remote files
   for ( size_type i = 0; i < size; i++ ) {
     // grab next record
-    RecordNode next { heap.top() };
+    RecordNode next{heap.top()};
     heap.pop();
     recs.push_back( next.r );
 

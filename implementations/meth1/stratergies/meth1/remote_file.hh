@@ -27,17 +27,19 @@ public:
   using size_type = Implementation::size_type;
 
 private:
-  Client client_;        // contained client
-  size_type fpos_;       // file position
-  size_type cached_;     // records cached (read-ahead)
-  size_type readahead_;  // read-ahead amount
-  size_type low_cache_;  // low-cache amount to start read-ahead
+  Client client_;       // contained client
+  size_type fpos_;      // file position
+  size_type cached_;    // records cached (read-ahead)
+  size_type readahead_; // read-ahead amount
+  size_type low_cache_; // low-cache amount to start read-ahead
 
 public:
   RemoteFile( Client c, size_type readahead, size_type low_cache = 0 );
 
   RemoteFile( Address node, size_type readahead, size_type low_cache = 0 )
-    : RemoteFile( Client{ node }, readahead, low_cache ) {}
+    : RemoteFile( Client{node}, readahead, low_cache )
+  {
+  }
 
   void open( void );
   void seek( size_type offset );
