@@ -100,10 +100,10 @@ public:
 
 public:
   static Record ParseRecord( const char * s, size_type diskloc,
-                             bool copy = false );
+                             bool copy );
 
   static Record ParseRecord( std::string s, size_type diskloc,
-                             bool copy = false )
+                             bool copy )
   {
     return ParseRecord( s.c_str(), diskloc, copy );
   }
