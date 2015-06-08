@@ -1,14 +1,16 @@
 #include <fcntl.h>
 
 #include <algorithm>
+#include <thread>
 #include <vector>
 
 #include "exception.hh"
+#include "poller.hh"
 #include "util.hh"
 
 #include "record.hh"
 
-#include "cluster.hh"
+#include "client.hh"
 
 using namespace std;
 using namespace meth1;
@@ -17,8 +19,8 @@ int run( int argc, char * argv[] );
 
 void check_usage( const int argc, const char * const argv[] )
 {
-  if ( argc <= 1 ) {
-    throw runtime_error( "Usage: " + string( argv[0] ) + " [nodes...]" );
+  if ( argc != 3 ) {
+    throw runtime_error( "Usage: " + string( argv[0] ) + " [node] [out file]" );
   }
 }
 
@@ -38,18 +40,41 @@ int run( int argc, char * argv[] )
   sanity_check_env( argc );
   check_usage( argc, argv );
 
-  auto addrs = vector<Address>( argv + 1, argv + argc );
-  Cluster client{addrs};
+  File out( argv[2], O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR );
+
+  Client client{argv[1]};
   client.Initialize();
 
-  auto recs = client.Read( 0, 10 );
-  cout << "Recs: " << recs.size() << endl;
-  for ( auto & r : recs ) {
-    cout << "Record: " << r.diskloc() << endl;
-  }
+  // // read directly (no poller)
+  // for ( size_t i = 0; i < 1000; i++ ) {
+  //   client.sendRead( i, 1 );
+  //   auto recs = client.recvRead();
+  //   out.write( recs[0].str( Record::NO_LOC ) );
+  // }
 
-  auto siz = client.Size();
-  cout << "Size: " << siz << endl;
+  // run RPC
+  Poller poller;
+  poller.add_action( client.RPCRunner() );
+  thread fileRPC( [&poller]() {
+    while ( true ) {
+      poller.poll( -1 );
+    }
+  } );
+  fileRPC.detach();
+
+  // read individually
+  // for ( size_t i = 0; i < 1000; i++ ) {
+  //   auto recs = client.Read( i, 1 );
+  //   out.write( recs[0].str( Record::NO_LOC ) );
+  // }
+
+  // read batch
+  auto recs = client.Read( 0, 1000 );
+  cout << "Recs: " << recs.size() << endl;
+
+  for ( auto & r : recs ) {
+    out.write( r.str( Record::NO_LOC ) );
+  }
 
   return EXIT_SUCCESS;
 }

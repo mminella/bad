@@ -2,6 +2,7 @@ bin_PROGRAMS = \
 	sort_test \
 	meth1_node_test \
 	meth1_client_test \
+	meth1_cluster_test \
 	meth1_client \
 	meth1_node
 
@@ -19,6 +20,7 @@ LDADD = \
 sort_test_SOURCES = sort_test.cc
 meth1_node_test_SOURCES = meth1_node_test.cc
 meth1_client_test_SOURCES = meth1_client_test.cc
+meth1_cluster_test_SOURCES = meth1_cluster_test.cc
 
 meth1_node_SOURCES = meth1_node.cc
 meth1_client_SOURCES = meth1_client.cc

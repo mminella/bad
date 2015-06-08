@@ -8,6 +8,7 @@
 
 #include "record.hh"
 
+#include "implementation.hh"
 #include "cluster.hh"
 
 using namespace std;
@@ -17,8 +18,9 @@ int run( int argc, char * argv[] );
 
 void check_usage( const int argc, const char * const argv[] )
 {
-  if ( argc <= 1 ) {
-    throw runtime_error( "Usage: " + string( argv[0] ) + " [nodes...]" );
+  if ( argc <= 4 ) {
+    throw runtime_error( "Usage: " + string( argv[0] )
+      + " [size] [read ahead] [out file] [nodes...]" );
   }
 }
 
@@ -38,18 +40,21 @@ int run( int argc, char * argv[] )
   sanity_check_env( argc );
   check_usage( argc, argv );
 
-  auto addrs = vector<Address>( argv + 1, argv + argc );
-  Cluster client{addrs};
+  Implementation::size_type records = stoul( argv[1] );
+  size_t read_ahead = stoul( argv[2] );
+  string file_out{argv[3]};
+  char ** addresses = argv + 4;
+
+  File out( file_out, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR );
+
+  auto addrs = vector<Address>( addresses, argv + argc );
+  Cluster client{addrs, read_ahead};
   client.Initialize();
 
-  auto recs = client.Read( 0, 10 );
-  cout << "Recs: " << recs.size() << endl;
+  auto recs = client.Read( 0, records );
   for ( auto & r : recs ) {
-    cout << "Record: " << r.diskloc() << endl;
+    out.write( r.str( Record::NO_LOC ) );
   }
-
-  auto siz = client.Size();
-  cout << "Size: " << siz << endl;
 
   return EXIT_SUCCESS;
 }
