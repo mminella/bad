@@ -73,8 +73,7 @@ void Node::Run( void )
 void Node::RPC_Read( TCPSocket & client )
 {
   // parse arguments
-  size_t nread = 2 * sizeof( size_type );
-  string str = client.read( nread, true );
+  string str = client.read( 2 * sizeof( size_type ), true );
   size_type pos = *( reinterpret_cast<const size_type *>( str.c_str() ) );
   size_type amt = *( reinterpret_cast<const size_type *>( str.c_str() ) + 1 );
 
@@ -107,10 +106,15 @@ vector<Record> Node::DoRead( size_type pos, size_type size )
     after = last_;
   }
 
+  // TODO: don't handle a starting position that isn't a continuation of last
+  // time!
+
   // read the records from disk
   auto recs = linear_scan( data_, after, size );
-  last_ = recs.back();
-  fpos_ = pos + size;
+  if ( recs.size() > 0 ) {
+    last_ = recs.back();
+    fpos_ = pos + recs.size();
+  }
 
   return recs;
 }
@@ -133,7 +137,6 @@ vector<Record> Node::linear_scan( File & in, const Record & after,
   // heap allocate?
   mystl::priority_queue<Record> recs{size + 1};
   Record rmax = Record{Record::MAX};
-  Record & top = rmax;
 
   size_type i;
 
@@ -143,17 +146,13 @@ vector<Record> Node::linear_scan( File & in, const Record & after,
       break;
     }
 
-    int cmpTop = next.compare( top );
-
-    if ( after < next && cmpTop <= 0 ) {
-      if ( cmpTop < 0 or recs.size() < size ) {
-        // if we equal the top, only add when space
+    if ( after < next ) {
+      if ( recs.size() < size ) {
         recs.push( next.clone() );
-        if ( recs.size() > size ) {
-          recs.pop();
-        }
+      } else if ( next < recs.top() ) {
+        recs.push( next.clone() );
+        recs.pop();
       }
-      top = recs.top();
     }
   }
 
