@@ -85,7 +85,7 @@ void Node::RPC_Read( TCPSocket & client )
   // serialize results to wire
   client.write( reinterpret_cast<const char *>( &siz ), sizeof( size_type ) );
   for ( auto const & r : recs ) {
-    client.write( r.str( Record::WITH_LOC ) );
+    client.write( r.str( Record::NO_LOC ) );
   }
 }
 

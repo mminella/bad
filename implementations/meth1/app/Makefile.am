@@ -1,4 +1,9 @@
-bin_PROGRAMS = test meth1_test meth1_client meth1_node
+bin_PROGRAMS = \
+	sort_test \
+	meth1_node_test \
+	meth1_client_test \
+	meth1_client \
+	meth1_node
 
 AM_CPPFLAGS = \
 	-I$(srcdir)/../lib \
@@ -11,8 +16,9 @@ LDADD = \
 	../stratergies/meth1/libmeth1.la \
 	-lpthread
 
-test_SOURCES = test.cc
-meth1_test_SOURCES = meth1_test.cc
-meth1_client_SOURCES = meth1_client.cc
-meth1_node_SOURCES = meth1_node.cc
+sort_test_SOURCES = sort_test.cc
+meth1_node_test_SOURCES = meth1_node_test.cc
+meth1_client_test_SOURCES = meth1_client_test.cc
 
+meth1_node_SOURCES = meth1_node.cc
+meth1_client_SOURCES = meth1_client.cc

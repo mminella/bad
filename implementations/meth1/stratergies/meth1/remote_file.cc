@@ -39,7 +39,6 @@ void RemoteFile::prefetch( size_type size )
   if ( size == 0 ) {
     size = readahead_;
   }
-  cout << "prefetch: " << fpos_ << ", " << size << endl;
   client_.prepareRead( fpos_, size );
   cached_ = size;
 }
@@ -50,7 +49,6 @@ Record RemoteFile::read( void )
   if ( cached_ <= low_cache_ ) {
     client_.prepareRead( fpos_ + cached_, readahead_ );
     cached_ += readahead_;
-    cout << "prefetch: " << fpos_ + cached_ << endl;
   }
 
   // read next record

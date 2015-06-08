@@ -71,8 +71,8 @@ std::vector<Record> Client::recvRead( void )
   vector<Record> recs{};
   recs.reserve( nrecs );
   for ( size_type i = 0; i < nrecs; i++ ) {
-    string r = sock_.read( Record::SIZE_WITH_LOC );
-    recs.push_back( Record::ParseRecordWithLoc( r, true ) );
+    string r = sock_.read( Record::SIZE );
+    recs.push_back( Record::ParseRecord( r, true ) );
   }
 
   // should an extent be evicted from cache?

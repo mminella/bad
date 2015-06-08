@@ -1,4 +1,5 @@
-meth1_node
 meth1_client
-meth1_test
-test
+meth1_client_test
+meth1_node
+meth1_node_test
+sort_test
