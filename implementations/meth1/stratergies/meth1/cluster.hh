@@ -33,7 +33,7 @@ private:
 public:
   static constexpr size_type READ_AHEAD = 10;
 
-  Cluster( std::vector<Address> nodes );
+  Cluster( std::vector<Address> nodes, size_t read_ahead = READ_AHEAD );
 
 private:
   void DoInitialize( void );

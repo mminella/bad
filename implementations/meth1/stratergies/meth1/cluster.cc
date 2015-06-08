@@ -15,12 +15,12 @@
 using namespace std;
 using namespace meth1;
 
-Cluster::Cluster( vector<Address> nodes )
+Cluster::Cluster( vector<Address> nodes, size_t read_ahead )
   : files_{}
   , poller_{}
 {
   for ( auto & a : nodes ) {
-    files_.push_back( RemoteFile{a, READ_AHEAD} );
+    files_.push_back( RemoteFile{a, read_ahead} );
   }
 }
 
