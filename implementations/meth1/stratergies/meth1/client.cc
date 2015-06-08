@@ -72,7 +72,7 @@ std::vector<Record> Client::recvRead( void )
   recs.reserve( nrecs );
   for ( size_type i = 0; i < nrecs; i++ ) {
     string r = sock_.read( Record::SIZE );
-    recs.push_back( Record::ParseRecord( r, true ) );
+    recs.push_back( Record::ParseRecord( r, 0, true ) );
   }
 
   // should an extent be evicted from cache?
@@ -140,6 +140,12 @@ vector<Record> Client::DoRead( size_type pos, size_type size )
 {
   unique_lock<std::mutex> lck{*mtx_};
   vector<Record> recs{};
+
+  // Don't read past end of file
+  if ( size_ != 0 && pos + size > size_ ) {
+    size = size_ - pos;
+  }
+
   recs.reserve( size );
 
   // fill from cache if possible
@@ -166,9 +172,10 @@ vector<Record> Client::DoRead( size_type pos, size_type size )
   if ( bfpos != pos ) {
     throw runtime_error( "new cached extent isn't what was expected" );
   }
-  if ( !fillFromCache( recs, pos, size ) ) {
-    throw runtime_error( "DoRead failed to fill cache with needed data" );
-  }
+  
+  // we let it fail this time, which it should only do if we are trying to read
+  // past the end of the file.
+  fillFromCache( recs, pos, size );
 
   return recs;
 }
