@@ -83,6 +83,11 @@ public:
     return compare( b ) <= 0 ? true : false;
   }
 
+  bool operator>( const Record & b ) const
+  {
+    return compare( b ) > 0 ? true : false;
+  }
+
   /* we compare on key first, and then on diskloc_ */
   int compare( const Record & b ) const
   {
