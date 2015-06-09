@@ -90,14 +90,22 @@ void shell( Cluster & c, size_type records, size_type block_size,
 
   iss >> str;
   if ( str == "start" ) {
+    // 'start\n'         -- prepare the system
+    auto start = chrono::high_resolution_clock::now();
+
     c.Initialize();
+
+    auto end = chrono::high_resolution_clock::now();
+    auto dur = chrono::duration_cast<chrono::seconds>( end - start ).count();
+    cout << dur << endl;
+
   } else if ( str == "all" ) {
     // 'all\n'           -- get all records
     auto start = chrono::high_resolution_clock::now();
 
     File out = query_file( out_dir, query, "all" );
 
-    for ( size_type i = 0; i < records; i += block_size + 1 ) {
+    for ( size_type i = 0; i < records; i += block_size ) {
       vector<Record> recs = c.Read( i, block_size );
       for ( const auto & r : recs ) {
         out.write( r.str( Record::NO_LOC ) );
@@ -107,11 +115,23 @@ void shell( Cluster & c, size_type records, size_type block_size,
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::seconds>( end - start ).count();
     cout << dur << endl;
+
   } else if ( str == "record" ) {
     // 'record [int]\n'  -- get record n
     cout << "not implemented!" << endl;
+
   } else if ( str == "first" ) {
-    // 'first\n'         -- get record 0
+    // 'first\n'         -- get first record
+    auto start = chrono::high_resolution_clock::now();
+
+    File out = query_file( out_dir, query, "first" );
+    Record r = c.Read( 0, 1 )[0];
+    out.write( r.str( Record::NO_LOC ) );
+
+    auto end = chrono::high_resolution_clock::now();
+    auto dur = chrono::duration_cast<chrono::seconds>( end - start ).count();
+    cout << dur << endl;
+
   } else {
     return;
   }

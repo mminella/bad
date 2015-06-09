@@ -40,7 +40,7 @@ int run( int argc, char * argv[] )
 
   File out( argv[2], O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR );
 
-  Node node{argv[1], "0"};
+  Node node{argv[1], "0", 3};
   node.Initialize();
 
   size_t siz = node.Size();
@@ -51,6 +51,16 @@ int run( int argc, char * argv[] )
 
   for ( auto & r : recs ) {
     out.write( r.str( Record::NO_LOC ) );
+  }
+
+  recs = node.Read( 5, 1 );
+  for ( auto & r : recs ) {
+    cout << "Record 6: " << r.diskloc() << endl;
+  }
+
+  recs = node.Read( 8, 1 );
+  for ( auto & r : recs ) {
+    cout << "Record 9: " << r.diskloc() << endl;
   }
 
   return EXIT_SUCCESS;
