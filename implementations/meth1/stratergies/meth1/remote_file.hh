@@ -32,6 +32,7 @@ private:
   size_type cached_;    // records cached (read-ahead)
   size_type readahead_; // read-ahead amount
   size_type low_cache_; // low-cache amount to start read-ahead
+  bool eof_;
 
 public:
   RemoteFile( Client c, size_type readahead, size_type low_cache = 0 );
@@ -44,7 +45,7 @@ public:
   void open( void );
   void seek( size_type offset );
   void prefetch( size_type size = 0 );
-  Record read( void );
+  std::vector<Record> read( void );
   size_type stat( void );
 
   Poller::Action RPCRunner( void );

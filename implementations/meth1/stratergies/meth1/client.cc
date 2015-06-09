@@ -23,6 +23,7 @@ Client::Client( Address node )
   , addr_{node}
   , rpcActive_{None_}
   , rpcPos_{0}
+  , rpcSize_{0}
   , cache_{}
   , lru_{}
   , size_{0}
@@ -46,6 +47,7 @@ void Client::sendRead( size_type pos, size_type size )
   checkNoRPC();
   rpcActive_ = Read_;
   rpcPos_ = pos;
+  rpcSize_ = size;
 
   int8_t rpc = 0;
   sock_.write( (char *)&rpc, 1 );
@@ -73,6 +75,11 @@ std::vector<Record> Client::recvRead( void )
   for ( size_type i = 0; i < nrecs; i++ ) {
     string r = sock_.read( Record::SIZE );
     recs.push_back( Record::ParseRecord( r, 0, true ) );
+  }
+
+  if ( size_ == 0 && nrecs != rpcSize_ ) {
+    // the node returns less than we requested only when at the end of the file
+    size_ = rpcPos_ + nrecs;
   }
 
   // should an extent be evicted from cache?
@@ -108,6 +115,10 @@ void Client::recvSize( void )
 bool Client::fillFromCache( vector<Record> & recs, size_type & pos,
                             size_type & size )
 {
+  if ( size == 0 ) {
+    return true;
+  }
+
   for ( auto const & buf : cache_ ) {
     if ( buf.fpos <= pos and pos < buf.fpos + buf.records.size() ) {
       size_type start = pos - buf.fpos;
@@ -167,10 +178,14 @@ vector<Record> Client::DoRead( size_type pos, size_type size )
   // wait for RPC to finish
   cv_->wait( lck );
 
-  // grab freshly retrieved data from cache
-  size_type bfpos = lru_.front();
-  if ( bfpos != pos ) {
+  // validate RPC was correct
+  if ( lru_.front() != pos ) {
     throw runtime_error( "new cached extent isn't what was expected" );
+  }
+
+  // Don't read past end of file (again, since may have reached eof with last read)
+  if ( size_ != 0 && pos + size > size_ ) {
+    size = size_ - pos;
   }
   
   // we let it fail this time, which it should only do if we are trying to read

@@ -50,6 +50,7 @@ private:
   /* rpc state */
   enum RPC { Read_, Size_, None_ } rpcActive_;
   size_type rpcPos_;
+  size_type rpcSize_;
 
   /* cache of buffer extents, kept sorted by buffer offset */
   std::vector<Buffer> cache_;
