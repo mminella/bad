@@ -27,8 +27,9 @@ void shell( Cluster & c, size_type records, size_type block_size,
 void check_usage( const int argc, const char * const argv[] )
 {
   if ( argc <= 5 ) {
-    throw runtime_error( "Usage: " + string( argv[0] )
-      + " [size] [read ahead] [block size] [out folder] [nodes...]" );
+    throw runtime_error(
+      "Usage: " + string( argv[0] ) +
+      " [size] [read ahead] [block size] [out folder] [nodes...]" );
   }
 }
 
@@ -138,4 +139,3 @@ void shell( Cluster & c, size_type records, size_type block_size,
 
   query++;
 }
-

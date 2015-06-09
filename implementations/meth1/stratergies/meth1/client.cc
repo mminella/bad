@@ -177,11 +177,12 @@ vector<Record> Client::DoRead( size_type pos, size_type size )
     throw runtime_error( "new cached extent isn't what was expected" );
   }
 
-  // Don't read past end of file (again, since may have reached eof with last read)
+  // Don't read past end of file (again, since may have reached eof with last
+  // read)
   if ( size_ != 0 && pos + size > size_ ) {
     size = size_ - pos;
   }
-  
+
   // we let it fail this time, which it should only do if we are trying to read
   // past the end of the file.
   fillFromCache( recs, pos, size );

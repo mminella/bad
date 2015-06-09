@@ -38,7 +38,6 @@ public:
   void Run( void );
 
 private:
-  
   void DoInitialize( void );
   std::vector<Record> DoRead( size_type pos, size_type size );
   size_type DoSize( void );

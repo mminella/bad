@@ -20,7 +20,8 @@ int run( int argc, char * argv[] );
 void check_usage( const int argc, const char * const argv[] )
 {
   if ( argc != 3 ) {
-    throw runtime_error( "Usage: " + string( argv[0] ) + " [node] [out file]" );
+    throw runtime_error( "Usage: " + string( argv[0] ) +
+                         " [node] [out file]" );
   }
 }
 
