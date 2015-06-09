@@ -34,30 +34,29 @@ Client::Client( Address node )
 
 void Client::DoInitialize( void ) { sock_.connect( addr_ ); }
 
-/* make sure we aren't already performing an RPC */
-void Client::checkNoRPC( void )
+void Client::waitOnRPC( unique_lock<mutex> & lck )
 {
-  if ( rpcActive_ != None_ ) {
-    throw runtime_error( "rpc already outstanding" );
+  while ( rpcActive_ != None_ ) {
+    cv_->wait( lck );
   }
 }
 
-void Client::sendRead( size_type pos, size_type size )
+void Client::sendRead( unique_lock<mutex> & lck, size_type pos, size_type siz )
 {
-  checkNoRPC();
+  waitOnRPC( lck );
   rpcActive_ = Read_;
   rpcPos_ = pos;
-  rpcSize_ = size;
+  rpcSize_ = siz;
 
   int8_t rpc = 0;
   sock_.write( (char *)&rpc, 1 );
   sock_.write( (char *)&pos, sizeof( size_type ) );
-  sock_.write( (char *)&size, sizeof( size_type ) );
+  sock_.write( (char *)&siz, sizeof( size_type ) );
 }
 
-void Client::sendSize( void )
+void Client::sendSize( unique_lock<mutex> & lck )
 {
-  checkNoRPC();
+  waitOnRPC( lck );
   rpcActive_ = Size_;
 
   int8_t rpc = 1;
@@ -149,7 +148,7 @@ bool Client::fillFromCache( vector<Record> & recs, size_type & pos,
 
 vector<Record> Client::DoRead( size_type pos, size_type size )
 {
-  unique_lock<std::mutex> lck{*mtx_};
+  unique_lock<mutex> lck{*mtx_};
   vector<Record> recs{};
 
   // Don't read past end of file
@@ -164,19 +163,13 @@ vector<Record> Client::DoRead( size_type pos, size_type size )
     return recs;
   }
 
-  if ( rpcActive_ == Size_ ) {
-    throw runtime_error( "need to perform Read RPC but Size RPC active" );
-  } else if ( rpcActive_ == Read_ ) {
-    if ( rpcPos_ != pos ) {
-      throw runtime_error( "outstanding Read RPC isn't at position needed" );
-    }
-  } else {
-    // perform read for remaining data missing from cache
-    sendRead( pos, size );
+  // perform read for remaining data missing from cache (but make sure we
+  // don't already have an RPC outstanding for same data)
+  if ( rpcActive_ != Read_ or rpcPos_ != pos ) {
+    sendRead( lck, pos, size );
   }
 
-  // wait for RPC to finish
-  cv_->wait( lck );
+  waitOnRPC( lck );
 
   // validate RPC was correct
   if ( lru_.front() != pos ) {
@@ -197,12 +190,12 @@ vector<Record> Client::DoRead( size_type pos, size_type size )
 
 Client::size_type Client::DoSize( void )
 {
-  unique_lock<std::mutex> lck{*mtx_};
+  unique_lock<mutex> lck{*mtx_};
   if ( size_ == 0 ) {
     if ( rpcActive_ != Size_ ) {
-      sendSize();
+      sendSize( lck );
     }
-    cv_->wait( lck );
+    waitOnRPC( lck );
   }
   return size_;
 }
@@ -210,7 +203,7 @@ Client::size_type Client::DoSize( void )
 Action Client::RPCRunner( void )
 {
   return Action{sock_, Direction::In, [this]() {
-    unique_lock<std::mutex> lck{*mtx_};
+    unique_lock<mutex> lck{*mtx_};
 
     switch ( rpcActive_ ) {
     case None_:
@@ -225,7 +218,7 @@ Action Client::RPCRunner( void )
     }
 
     rpcActive_ = None_;
-    cv_->notify_all();
+    cv_->notify_one();
 
     return ResultType::Continue;
   }};

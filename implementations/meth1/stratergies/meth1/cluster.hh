@@ -31,9 +31,9 @@ private:
   Poller poller_;
 
 public:
-  static constexpr size_type READ_AHEAD = 10;
+  static constexpr size_type READ_AHEAD = 1000;
 
-  Cluster( std::vector<Address> nodes, size_t read_ahead = READ_AHEAD );
+  Cluster( std::vector<Address> nodes, size_type read_ahead = READ_AHEAD );
 
 private:
   void DoInitialize( void );

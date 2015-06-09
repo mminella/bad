@@ -71,13 +71,14 @@ private:
   std::vector<Record> DoRead( size_type pos, size_type size );
   size_type DoSize( void );
 
-  void checkNoRPC( void );
+  void waitOnRPC( std::unique_lock<std::mutex> & lck );
   bool fillFromCache( std::vector<Record> & recs, size_type & pos,
                       size_type & size );
 
-  void sendRead( size_type pos, size_type size );
+  void sendRead( std::unique_lock<std::mutex> & lck, size_type pos,
+    size_type size );
   std::vector<Record> recvRead( void );
-  void sendSize( void );
+  void sendSize( std::unique_lock<std::mutex> & lck );
   void recvSize( void );
 
 public:
@@ -89,11 +90,17 @@ public:
 
   /* Setup a read to execute asynchronously, when done it'll be placed in the
    * Client's internal cache and available through 'Read' */
-  void prepareRead( size_type pos, size_type size ) { sendRead( pos, size ); }
+  void prepareRead( size_type pos, size_type size ) {
+    std::unique_lock<std::mutex> lck{*mtx_};
+    sendRead( lck, pos, size );
+  }
 
   /* Setup a size call to execute asynchronously, when done it'll be available
    * through the 'Size' method. */
-  void prepareSize( void ) { sendSize(); }
+  void prepareSize( void ) {
+    std::unique_lock<std::mutex> lck{*mtx_};
+    sendSize( lck );
+  }
 };
 }
 

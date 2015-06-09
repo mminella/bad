@@ -46,6 +46,8 @@ public:
   void seek( size_type offset );
   void prefetch( size_type size = 0 );
   std::vector<Record> read( void );
+  std::vector<Record> peek( void );
+  void next( void );
   size_type stat( void );
 
   Poller::Action RPCRunner( void );

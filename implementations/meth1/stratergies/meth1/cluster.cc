@@ -15,7 +15,7 @@
 using namespace std;
 using namespace meth1;
 
-Cluster::Cluster( vector<Address> nodes, size_t read_ahead )
+Cluster::Cluster( vector<Address> nodes, size_type read_ahead )
   : files_{}
   , poller_{}
 {
@@ -67,7 +67,7 @@ vector<Record> Cluster::DoRead( size_type pos, size_type size )
 
   // load first record from each remote
   for ( auto & f : files_ ) {
-    auto rs = f.read();
+    auto rs = f.peek();
     if ( rs.size() > 0 ) {
       heap.push( RecordNode{rs[0], &f} );
     }
@@ -81,7 +81,8 @@ vector<Record> Cluster::DoRead( size_type pos, size_type size )
     heap.pop();
 
     // advance that file
-    auto rs = next.f->read();
+    next.f->next();
+    auto rs = next.f->peek();
     if ( rs.size() > 0 ) {
       next.r = rs[0];
       heap.push( next );

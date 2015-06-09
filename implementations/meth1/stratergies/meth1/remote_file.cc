@@ -55,6 +55,20 @@ vector<Record> RemoteFile::read( void )
     return {};
   }
 
+  vector<Record> rec = peek();
+  if ( rec.size() > 0 ) {
+    next();
+  }
+
+  return rec;
+}
+
+vector<Record> RemoteFile::peek( void )
+{
+  if ( eof_ ) {
+    return {};
+  }
+
   // advance prefetch if low
   if ( cached_ <= low_cache_ ) {
     client_.prepareRead( fpos_ + cached_, readahead_ );
@@ -65,11 +79,17 @@ vector<Record> RemoteFile::read( void )
   vector<Record> rec = client_.Read( fpos_, 1 );
   if ( rec.size() == 0 ) {
     eof_ = true;
-  } else {
+  }
+
+  return rec;
+}
+
+void RemoteFile::next( void )
+{
+  if ( !eof_ ) {
     cached_--;
     fpos_++;
   }
-  return rec;
 }
 
 Poller::Action RemoteFile::RPCRunner( void ) { return client_.RPCRunner(); }
