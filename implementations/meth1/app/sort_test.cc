@@ -41,7 +41,7 @@ int run( int argc, char * argv[] )
   check_usage( argc, argv );
 
   File fdi( argv[1], O_RDONLY );
-  File fdo( argv[2], O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR );
+  File fdo( argv[2], O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR );
 
   vector<Record> recs{};
 

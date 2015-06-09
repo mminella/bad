@@ -45,14 +45,14 @@ int run( int argc, char * argv[] )
   string file_out{argv[3]};
   char ** addresses = argv + 4;
 
-  File out( file_out, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR );
+  File out( file_out, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR );
 
   auto addrs = vector<Address>( addresses, argv + argc );
   Cluster client{addrs, read_ahead};
   client.Initialize();
 
   auto recs = client.Read( 0, records );
-  for ( auto & r : recs ) {
+  for ( const auto & r : recs ) {
     out.write( r.str( Record::NO_LOC ) );
   }
 

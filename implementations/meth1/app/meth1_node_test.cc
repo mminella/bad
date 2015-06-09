@@ -38,7 +38,7 @@ int run( int argc, char * argv[] )
   sanity_check_env( argc );
   check_usage( argc, argv );
 
-  File out( argv[2], O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR );
+  File out( argv[2], O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR );
 
   Node node{argv[1], "0"};
   node.Initialize();
