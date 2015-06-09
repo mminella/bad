@@ -29,20 +29,22 @@ private:
   Record last_;
   size_type fpos_;
   size_type size_;
+  size_type max_mem_;
 
 public:
-  Node( std::string file, std::string port );
+  Node( std::string file, std::string port, size_type max_memory );
 
   /* run the node - list and respond to RPCs */
   void Run( void );
 
 private:
+  
   void DoInitialize( void );
   std::vector<Record> DoRead( size_type pos, size_type size );
   size_type DoSize( void );
 
-  std::vector<Record> linear_scan( File & in, const Record & after,
-                                   size_type size = 1 );
+  Record seek( size_type pos );
+  std::vector<Record> linear_scan( const Record & after, size_type size = 1 );
 
   void RPC_Read( TCPSocket & client );
   void RPC_Size( TCPSocket & client );

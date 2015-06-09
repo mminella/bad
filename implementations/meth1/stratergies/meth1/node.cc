@@ -25,12 +25,13 @@ static_assert( sizeof( vector<Record>::size_type ) >=
                "Vector<Record> max size is too small!" );
 
 /* Construct Node */
-Node::Node( string file, string port )
+Node::Node( string file, string port, size_type max_mem )
   : data_{file.c_str(), O_RDONLY}
   , port_{port}
   , last_{Record::MIN}
   , fpos_{0}
   , size_{0}
+  , max_mem_{max_mem}
 {
 }
 
@@ -100,17 +101,10 @@ void Node::DoInitialize( void ) { return; }
 /* Read a contiguous subset of the file starting from specified position. */
 vector<Record> Node::DoRead( size_type pos, size_type size )
 {
-  // establish starting record
-  Record after{Record::MIN};
-  if ( fpos_ == pos ) {
-    after = last_;
-  }
-
-  // TODO: don't handle a starting position that isn't a continuation of last
-  // time!
+  Record after = seek( pos );
 
   // read the records from disk
-  auto recs = linear_scan( data_, after, size );
+  auto recs = linear_scan( after, size );
   if ( recs.size() > 0 ) {
     last_ = recs.back();
     fpos_ = pos + recs.size();
@@ -123,15 +117,37 @@ vector<Record> Node::DoRead( size_type pos, size_type size )
 Node::size_type Node::DoSize( void )
 {
   if ( size_ == 0 ) {
-    linear_scan( data_, Record::MIN );
+    linear_scan( Record::MIN );
   }
   return size_;
 }
 
+/* seek returns the record that occurs just before `pos` so it can be passed to
+ * `linear_scan` */
+Record Node::seek( size_type pos )
+{
+  Record after{Record::MIN};
+
+  if ( fpos_ == pos ) {
+    // continuing from last time
+    after = last_;
+  } else {
+    // remember, retrieving the record just before `pos`
+    for ( size_type i = 0; i < pos; i += max_mem_ ) {
+      auto recs = linear_scan( after, min( pos - i, max_mem_ ) );
+      if ( recs.size() == 0 ) {
+        break;
+      }
+      after = recs.back();
+    }
+  }
+
+  return after;
+}
+
 /* Perform a full linear scan to return the next smallest record that occurs
  * after the 'after' record. */
-vector<Record> Node::linear_scan( File & in, const Record & after,
-                                  size_type size )
+vector<Record> Node::linear_scan( const Record & after, size_type size )
 {
   // TODO: Better to use pointers to Record? Or perhaps to change Record to
   // heap allocate?
@@ -141,8 +157,8 @@ vector<Record> Node::linear_scan( File & in, const Record & after,
   size_type i;
 
   for ( i = 0;; i++ ) {
-    Record next = Record::ParseRecord( in.read( Record::SIZE ), i, false );
-    if ( in.eof() ) {
+    Record next = Record::ParseRecord( data_.read( Record::SIZE ), i, false );
+    if ( data_.eof() ) {
       break;
     }
 
@@ -160,7 +176,7 @@ vector<Record> Node::linear_scan( File & in, const Record & after,
   size_ = i;
 
   // rewind the file
-  in.rewind();
+  data_.rewind();
 
   // sort final heap
   auto vrecs = recs.container();

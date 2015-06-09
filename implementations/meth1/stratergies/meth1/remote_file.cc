@@ -29,11 +29,16 @@ void RemoteFile::open( void ) { client_.Initialize(); }
 
 void RemoteFile::seek( size_type offset )
 {
-  if ( offset != fpos_ ) {
-    fpos_ = offset;
+  if ( offset < fpos_ ) {
     cached_ = 0;
     eof_ = false;
+  } else if ( offset < fpos_ + cached_ ) {
+    cached_ -= offset - fpos_;
+  } else if ( !eof_ ) {
+    cached_ = 0;
   }
+
+  fpos_ = offset;
 }
 
 void RemoteFile::prefetch( size_type size )
@@ -42,37 +47,36 @@ void RemoteFile::prefetch( size_type size )
     return;
   }
 
-  if ( size == 0 ) {
+  if ( size == 0 || size > readahead_ ) {
     size = readahead_;
   }
   client_.prepareRead( fpos_, size );
   cached_ = size;
 }
 
-vector<Record> RemoteFile::read( void )
+void RemoteFile::read_ahead( void )
 {
-  if ( eof_ ) {
-    return {};
+  // advance prefetch if low
+  if ( cached_ <= low_cache_ ) {
+    client_.prepareRead( fpos_ + cached_, readahead_ );
+    cached_ += readahead_;
+  }
+}
+
+void RemoteFile::next( void )
+{
+  if ( !eof_ ) {
+    cached_--;
+    fpos_++;
   }
 
-  vector<Record> rec = peek();
-  if ( rec.size() > 0 ) {
-    next();
-  }
-
-  return rec;
+  read_ahead();
 }
 
 vector<Record> RemoteFile::peek( void )
 {
   if ( eof_ ) {
     return {};
-  }
-
-  // advance prefetch if low
-  if ( cached_ <= low_cache_ ) {
-    client_.prepareRead( fpos_ + cached_, readahead_ );
-    cached_ += readahead_;
   }
 
   // read next record
@@ -84,12 +88,20 @@ vector<Record> RemoteFile::peek( void )
   return rec;
 }
 
-void RemoteFile::next( void )
+vector<Record> RemoteFile::read( void )
 {
-  if ( !eof_ ) {
-    cached_--;
-    fpos_++;
+  if ( eof_ ) {
+    return {};
   }
+
+  read_ahead();
+
+  vector<Record> rec = peek();
+  if ( rec.size() > 0 ) {
+    next();
+  }
+
+  return rec;
 }
 
 Poller::Action RemoteFile::RPCRunner( void ) { return client_.RPCRunner(); }

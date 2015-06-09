@@ -62,7 +62,7 @@ vector<Record> Cluster::DoRead( size_type pos, size_type size )
   // seek & prefetch all remote files
   for ( auto & f : files_ ) {
     f.seek( pos );
-    f.prefetch();
+    f.prefetch( size );
   }
 
   // load first record from each remote
@@ -81,11 +81,13 @@ vector<Record> Cluster::DoRead( size_type pos, size_type size )
     heap.pop();
 
     // advance that file
-    next.f->next();
-    auto rs = next.f->peek();
-    if ( rs.size() > 0 ) {
-      next.r = rs[0];
-      heap.push( next );
+    if ( recs.size() < size ) {
+      next.f->next();
+      auto rs = next.f->peek();
+      if ( rs.size() > 0 ) {
+        next.r = rs[0];
+        heap.push( next );
+      }
     }
   }
 

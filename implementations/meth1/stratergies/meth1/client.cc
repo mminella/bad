@@ -89,6 +89,7 @@ std::vector<Record> Client::recvRead( void )
       if ( buf.fpos == evict ) {
         // add to buffer cache, replacing evicted
         buf = {recs, rpcPos_};
+        break;
       }
     }
   } else {
@@ -222,4 +223,11 @@ Action Client::RPCRunner( void )
 
     return ResultType::Continue;
   }};
+}
+
+void Client::clearCache( void )
+{
+  std::unique_lock<std::mutex> lck{*mtx_};
+  cache_.clear();
+  lru_.clear();
 }

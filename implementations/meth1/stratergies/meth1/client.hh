@@ -101,6 +101,8 @@ public:
     std::unique_lock<std::mutex> lck{*mtx_};
     sendSize( lck );
   }
+
+  void clearCache( void );
 };
 }
 
