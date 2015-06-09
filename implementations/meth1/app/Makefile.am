@@ -4,7 +4,8 @@ bin_PROGRAMS = \
 	meth1_client_test \
 	meth1_cluster_test \
 	meth1_client \
-	meth1_node
+	meth1_node \
+	meth1_shell
 
 AM_CPPFLAGS = \
 	-I$(srcdir)/../lib \
@@ -24,3 +25,4 @@ meth1_cluster_test_SOURCES = meth1_cluster_test.cc
 
 meth1_node_SOURCES = meth1_node.cc
 meth1_client_SOURCES = meth1_client.cc
+meth1_shell_SOURCES = meth1_shell.cc

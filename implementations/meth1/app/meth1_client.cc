@@ -14,6 +14,8 @@
 using namespace std;
 using namespace meth1;
 
+using size_type = Implementation::size_type;
+
 int run( int argc, char * argv[] );
 
 void check_usage( const int argc, const char * const argv[] )
@@ -40,7 +42,7 @@ int run( int argc, char * argv[] )
   sanity_check_env( argc );
   check_usage( argc, argv );
 
-  Implementation::size_type records = stoul( argv[1] );
+  size_type records = stoul( argv[1] );
   size_t read_ahead = stoul( argv[2] );
   string file_out{argv[3]};
   char ** addresses = argv + 4;
