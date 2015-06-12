@@ -64,6 +64,10 @@ optparse = OptionParser.new do |opts|
   end
 end
 
+if ARGV.length == 0
+  optparse.parse %w[--help]
+end
+
 optparse.parse!
 
 if options[:key_name].nil?
