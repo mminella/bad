@@ -30,60 +30,68 @@ class Launcher
   # 32-bit instance
   UBUNTU_AMIS = {
     :"ap-northeast-1" =>
-      %w[ami-93876e93
-         ami-85876e85
-         ami-e1836ae1
-         ami-83876e83
-         ami-e98f66e9],
+      %w[ami-aa7da3aa
+         ami-607da360
+         ami-c44a94c4
+         ami-5e7da35e
+         ami-e0528ce0
+        ],
 
     :"ap-southeast-1" =>
-      %w[ami-66546234
-         ami-72546220
-         ami-8a5660d8
-         ami-4c54621e
-         ami-60695f32],
+      %w[ami-fae0daa8
+         ami-cae0da98
+         ami-c4edd796
+         ami-c4e0da96
+         ami-fcefd5ae
+        ],
 
     :"ap-southeast-2" =>
-      %w[ami-cd4e3ff7
-         ami-dd4e3fe7
-         ami-754e3f4f
-         ami-df4e3fe5
-         ami-714f3e4b],
+      %w[ami-cf047ff5
+         ami-e1047fdb
+         ami-37057e0d
+         ami-e3047fd9
+         ami-27077c1d
+        ],
 
     :"eu-west-1" =>
-      %w[ami-d7fd6ea0
-         ami-fbfd6e8c
-         ami-c1f467b6
-         ami-fdfd6e8a
-         ami-19f7646e],
+      %w[ami-85344af2
+         ami-97344ae0
+         ami-273c4250
+         ami-a9344ade
+         ami-6fc2bd18
+        ],
 
     :"sa-east-1" =>
-      %w[ami-a357eebe
-         ami-ad57eeb0
-         ami-f154edec
-         ami-b357eeae
-         ami-5d54ed40],
+      %w[ami-952eae88
+         ami-652eae78
+         ami-392dad24
+         ami-6b2eae76
+         ami-2f2cac32
+        ],
 
     :"us-east-1" =>
-      %w[ami-6089d208
-         ami-988ad1f0
-         ami-fc99c294
-         ami-808ad1e8
-         ami-32762d5a],
+      %w[ami-3b6a8050
+         ami-5f6a8034
+         ami-1305ef78
+         ami-5b6a8030
+         ami-fd0fe596
+        ],
 
     :"us-west-1" =>
-      %w[ami-cf7d998b
-         ami-397d997d
-         ami-837397c7
-         ami-3f7d997b
-         ami-3b70947f],
+      %w[ami-fb05efbf
+         ami-e305efa7
+         ami-2107ed65
+         ami-e105efa5
+         ami-2101eb65
+        ],
 
     :"us-west-2" =>
-      %w[ami-3b14370b
-         ami-cb1536fb
-         ami-3b10330b
-         ami-c71536f7
-         ami-0d0e2d3d],
+      %w[ami-ade2da9d
+         ami-ade1d99d
+         ami-bdedd58d
+         ami-abe1d99b
+         ami-2febd31f
+        ],
   }
 
   def initialize(options)

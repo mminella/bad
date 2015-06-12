@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 URL=$1
 PAGE=$( curl -s $URL )
@@ -9,6 +9,7 @@ if [ -z "$URL" ]; then
   echo "See http://cloud-images.ubuntu.com/releases/14.04/"
   echo ""
   echo "Example: ./fetchAMIHashes.sh  http://cloud-images.ubuntu.com/releases/14.04/release-20150305/"
+  exit 1
 fi
 
 parsePage() {
