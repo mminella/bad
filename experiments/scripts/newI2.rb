@@ -67,7 +67,7 @@ end
 optparse.parse!
 
 if options[:key_name].nil?
-  echo "Must set a public key (`-k`) to use!"
+  puts "Must set a public key (`-k`) to use!"
   exit 1
 end
 
