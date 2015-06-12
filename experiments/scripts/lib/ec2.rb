@@ -94,7 +94,7 @@ class Launcher
         ],
   }
 
-  def initialize(options)
+  def createEC2Client(region='us-east-1')
     keyID = ENV["BAD_AWS_ACCESS_KEY"]
     secret = ENV["BAD_AWS_SECRET_KEY"]
 
@@ -102,9 +102,14 @@ class Launcher
       raise Exception, "AWS Access keys not defined!"
     end
 
+    return AWS::EC2.new(:access_key_id => keyID,
+                        :secret_access_key => secret,
+                        :region => region)
+  end
+
+  def initialize(options)
     @options = options
-    @ec2 = AWS::EC2.new(:access_key_id => keyID,
-                        :secret_access_key => secret)
+    @ec2 = createEC2Client()
   end
 
   def interactive!
@@ -117,6 +122,8 @@ class Launcher
     puts ""
     print "[1-#{regions.size}]? "
     region = @ec2.regions[regions[gets.strip.to_i - 1]]
+
+    @ec2 = createEC2Client(region)
 
     # AZ
     puts ""
@@ -278,10 +285,11 @@ class Launcher
     if @options[:interactive]
       interactive!
     end
-
+    
     # configure creation
     region = @ec2.regions[@options[:zone][0..-2]]
     ami = UBUNTU_AMIS[region.name.to_sym][@options[:arch] * 3 + @options[:store]]
+    @ec2 = createEC2Client(region.name)
 
     config = {
       :image_id => ami,
@@ -294,7 +302,8 @@ class Launcher
     }
 
     if !@options[:placement_group].nil?
-      config[:placement_group] = @options[:placement_group]
+      pg = @options[:placement_group]
+      config[:placement_group] = pg
       pgs = @ec2.client.describe_placement_groups()[:placement_group_set]
       if pgs.nil? or pgs.all? { |i| i[:group_name] != pg }
         @ec2.client.create_placement_group(:group_name => pg,

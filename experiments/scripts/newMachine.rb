@@ -36,7 +36,7 @@ def parseName(opts, name)
 end
 
 optparse = OptionParser.new do |opts|
-  opts.banner = "Usage: #{$0} [options]"
+  opts.banner = "Usage: #{$0} [options]\nCreate a set of new EC2 instances."
 
   options[:interactive] = ARGV.length == 0
   opts.on("-i", "--interactive", "Ask for options interactively") do
@@ -113,6 +113,5 @@ end
 
 optparse.parse!
 
-puts "Launching..."
 Launcher.new(options).launch!
 
