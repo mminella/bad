@@ -2,23 +2,48 @@
 
 #
 # This script launches a new Amazon EC2 machine of the configuration you
-# select.
+# select. You can either run interactively, or by setting command line flags.
+#
+# Supported Options:
+# - :image_id, :zone, :group, :instance_type, :key_name, :terminate, :arch,
+#   :store, :count, :placement_group
 #
 
 require './lib/ec2.rb'
 require 'optparse'
 
+nameArg = nil
 options = {}
 
+def parseName(opts, name)
+  if opts[:count] == 1
+    opts[:name] = [name]
+  else
+    names = name.split(',')
+    if names.length > 1
+      if names.length != opts[:count]
+        $stderr.puts "Invalid number of names! (formant '<name1>,<name2>,...')"
+        exit 0
+      end
+    else
+      names = []
+      for i in 1..opts[:count] do
+        names += [ sprintf(name, i) ]
+      end
+    end
+    opts[:name] = names
+  end
+end
+
 optparse = OptionParser.new do |opts|
-  opts.banner = "Usage: #{$0} hostname [options]"
+  opts.banner = "Usage: #{$0} [options]"
 
   options[:interactive] = ARGV.length == 0
   opts.on("-i", "--interactive", "Ask for options interactively") do
     options[:interactive] = true
   end
 
-  options[:zone] = "us-east-1c"
+  options[:zone] = "ap-southeast-1a"
   opts.on("-z", "--zone AVAILABILITY_ZONE", "Availability zone to use") do |zone|
     options[:zone] = zone
   end
@@ -32,7 +57,7 @@ optparse = OptionParser.new do |opts|
     options[:group] = group
   end
 
-  options[:instance_type] = "m2.xlarge"
+  options[:instance_type] = "i2.xlarge"
   opts.on("-t", "--type INSTANCE_TYPE", "Instance type (t1.micro, m1.small...)") do |type|
     options[:instance_type] = type
   end
@@ -67,20 +92,22 @@ optparse = OptionParser.new do |opts|
   end
 
   options[:count] = 1
-  opts.on("-c", "--count", "Number of instances to launch") do |c|
+  opts.on("-c", "--count NUMBER", "Number of instances to launch") do |c|
     options[:count] = c.to_i
+    # we do this to make order of `--count` and `--name` irrelevant.
+    if !nameArg.nil?
+      parseName(options, nameArg)
+    end
   end
 
-  opts.on("-n", "--name", "Name of the new instance") do |name|
-    if options[:count] == 1
-      options[:name] = [name]
-    else
-      names = name.split(',')
-      if names.length != options[:count]
-        $stderr.puts "Invalid number of names! (formant '<name1>,<name2>,...')"
-      end
-      options[:name] = names
-    end
+  opts.on("-n", "--name NAME_PATTERN", "Name of the new instance") do |name|
+    nameArg = name
+    parseName(options, name)
+  end
+
+  options[:placement_group] = nil
+  opts.on("-p", "--placement PLACEMENT_GROUP", "Placement group to launch in") do |pg|
+    options[:placement_group] = pg
   end
 end
 

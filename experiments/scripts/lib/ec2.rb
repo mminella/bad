@@ -7,25 +7,23 @@ require 'optparse'
 
 class Launcher
 
+  # Just a subset of ones available
   INSTANCE_TYPES = %w[
-    t1.micro
-    m1.small
-    m1.medium
-    m1.large
-    m1.xlarge
-    c1.medium
-    c1.xlarge
-    m2.xlarge
-    m2.2xlarge
-    m2.4xlarge
+    t2.micro
+    m2.small
+    m3.medium
+    m3.large
+    m3.xlarge
+    m3.2xlarge
     r3.large
     r3.xlarge
     r3.2xlarge
     r3.4xlarge
     r3.8xlarge
-    cc1.4xlarge
-    cc2.8xlarge
-    cg1.4xlarge]
+    i2.xlarge
+    i2.2xlarge
+    i2.4xlarge
+    i2.8xlarge]
 
   # Hash of Ubuntu 14.04.1 AMIs by availability zone.
   # Array is in order 64-bit hvm-ssd, 64-bit ebs, 64-bit instance, 32-bit ebs,
@@ -89,9 +87,16 @@ class Launcher
   }
 
   def initialize(options)
+    keyID = ENV["BAD_AWS_ACCESS_KEY"]
+    secret = ENV["BAD_AWS_SECRET_KEY"]
+
+    if keyID.nil? or secret.nil?
+      raise Exception, "AWS Access keys not defined!"
+    end
+
     @options = options
-    @ec2 = AWS::EC2.new(:access_key_id => ENV["AWS_ACCESS_KEY"],
-                        :secret_access_key => ENV["AWS_SECRET_KEY"])
+    @ec2 = AWS::EC2.new(:access_key_id => keyID,
+                        :secret_access_key => secret)
   end
 
   def interactive!
@@ -146,7 +151,8 @@ class Launcher
     print "[1-2]? "
     @options[:arch] = gets.strip.to_i - 1
 
-    if !@options[:instance_type].start_with? "r3"
+    if !(@options[:instance_type].start_with? "r3" or
+         @options[:instance_type].start_with? "i2")
       puts ""
       puts "Which root storage would you like?"
       if @options[:arch] == 0
@@ -168,7 +174,8 @@ class Launcher
     end
 
     # Placement group for r3 nodes
-    if @options[:instance_type].start_with? "r3"
+    if @options[:instance_type].start_with? "r3" or
+        @options[:instance_type].start_with? "i2" 
       puts ""
       print "Placement group? "
       pg = gets.strip
@@ -180,9 +187,9 @@ class Launcher
           puts ""
           print "PG doesn't exist, create placement group [yes, no]? "
           ans = gets.strip
-          if ans == "y" || ans == "yes"
-            @ec2.client.create_placement_group(:group_name => pg,
-                                               :strategy => 'cluster')
+          if ans != "y" and ans != "yes"
+            puts "Can't use uncreated placement group!"
+            exit 0
           end
         end
       end
@@ -280,6 +287,11 @@ class Launcher
 
     if !@options[:placement_group].nil?
       config[:placement_group] = @options[:placement_group]
+      pgs = @ec2.client.describe_placement_groups()[:placement_group_set]
+      if pgs.nil? or pgs.all? { |i| i[:group_name] != pg }
+        @ec2.client.create_placement_group(:group_name => pg,
+                                           :strategy => 'cluster')
+      end
     end
 
     # create the instance(s)
@@ -322,4 +334,3 @@ class Launcher
   end
 
 end
-
