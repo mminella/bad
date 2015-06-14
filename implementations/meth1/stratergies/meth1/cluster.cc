@@ -56,7 +56,7 @@ struct RecordNode {
 vector<Record> Cluster::DoRead( size_type pos, size_type size )
 {
   vector<Record> recs;
-  recs.reserve( size );
+  // recs.reserve( size );
   mystl::priority_queue_min<RecordNode> heap{files_.size()};
 
   // seek & prefetch all remote files

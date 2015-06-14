@@ -70,7 +70,7 @@ std::vector<Record> Client::recvRead( void )
   size_type nrecs = *reinterpret_cast<const size_type *>( str.c_str() );
 
   vector<Record> recs{};
-  recs.reserve( nrecs );
+  // recs.reserve( nrecs );
   for ( size_type i = 0; i < nrecs; i++ ) {
     string r = sock_.read( Record::SIZE );
     recs.push_back( Record::ParseRecord( r, 0, true ) );
@@ -157,7 +157,7 @@ vector<Record> Client::DoRead( size_type pos, size_type size )
     size = size_ - pos;
   }
 
-  recs.reserve( size );
+  // recs.reserve( size );
 
   // fill from cache if possible
   if ( fillFromCache( recs, pos, size ) ) {
