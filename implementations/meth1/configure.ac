@@ -26,7 +26,7 @@ AC_SUBST([AM_CXXFLAGS], ["$DEF_CXXFLAGS"])
 # Checks for programs.
 AC_PROG_CXX
 AM_PROG_AR
-LT_INIT
+LT_INIT([disable-shared])
 
 # Checks for libraries.
 

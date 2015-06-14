@@ -18,6 +18,8 @@ LDADD = \
 	../stratergies/meth1/libmeth1.la \
 	-lpthread
 
+AM_LDFLAGS = -static -static-libstdc++ -static-libgcc
+
 sort_test_SOURCES = sort_test.cc
 meth1_node_test_SOURCES = meth1_node_test.cc
 meth1_client_test_SOURCES = meth1_client_test.cc

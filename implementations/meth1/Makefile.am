@@ -17,7 +17,7 @@ test: app/sort_test
 	@./app/sort_test test/in.100.recs .test-tmp/out.100.recs > /dev/null
 	@diff test/out.100.recs .test-tmp/out.100.recs && echo "PASSED"
 
-dist: app/meth1_node app/meth1_shell app/meth1_client
+bin-dist: app/meth1_node app/meth1_shell app/meth1_client
 	rm -Rf dist_root
 	mkdir -p dist_root/usr/bin
 	cp app/meth1_node dist_root/usr/bin/meth1_node

@@ -1,3 +1,7 @@
+# dist files
+bad.tar.gz
+dist_root
+
 # build files
 .deps
 .test-tmp/
