@@ -43,8 +43,6 @@ void Client::waitOnRPC( unique_lock<mutex> & lck )
 
 void Client::sendRead( unique_lock<mutex> & lck, size_type pos, size_type siz )
 {
-  cout << "client (send read): " << pos << ", " << siz << endl;
-
   waitOnRPC( lck );
   rpcActive_ = Read_;
   rpcPos_ = pos;
@@ -71,10 +69,8 @@ std::vector<Record> Client::recvRead( void )
   string str = sock_.read( sizeof( size_type ), true );
   size_type nrecs = *reinterpret_cast<const size_type *>( str.c_str() );
 
-  cout << "client (recv read): " << rpcPos_ << ", " << nrecs << endl;
-
   vector<Record> recs{};
-  // recs.reserve( nrecs );
+  recs.reserve( nrecs );
   for ( size_type i = 0; i < nrecs; i++ ) {
     string r = sock_.read( Record::SIZE, true );
     recs.push_back( Record::ParseRecord( r, 0, true ) );
@@ -156,14 +152,12 @@ vector<Record> Client::DoRead( size_type pos, size_type size )
   unique_lock<mutex> lck{*mtx_};
   vector<Record> recs{};
 
-  cout << "client (read): " << pos << ", " << size << endl;
-
   // Don't read past end of file
   if ( size_ != 0 && pos + size > size_ ) {
     size = size_ - pos;
   }
 
-  // recs.reserve( size );
+  recs.reserve( size );
 
   // fill from cache if possible
   if ( fillFromCache( recs, pos, size ) ) {
@@ -212,8 +206,6 @@ Action Client::RPCRunner( void )
 {
   return Action{sock_, Direction::In, [this]() {
     unique_lock<mutex> lck{*mtx_};
-
-    cout << "rpc recv" << endl;
 
     switch ( rpcActive_ ) {
     case None_:
