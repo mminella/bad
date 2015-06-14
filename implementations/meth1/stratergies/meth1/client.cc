@@ -68,15 +68,15 @@ void Client::sendSize( unique_lock<mutex> & lck )
 std::vector<Record> Client::recvRead( void )
 {
   // deserialize from the network
-  string str = sock_.read( sizeof( size_type ) );
+  string str = sock_.read( sizeof( size_type ), true );
   size_type nrecs = *reinterpret_cast<const size_type *>( str.c_str() );
 
-  cout << "client (recv read): " << rcpPos_ << ", " << nrecs << endl;
+  cout << "client (recv read): " << rpcPos_ << ", " << nrecs << endl;
 
   vector<Record> recs{};
   // recs.reserve( nrecs );
   for ( size_type i = 0; i < nrecs; i++ ) {
-    string r = sock_.read( Record::SIZE );
+    string r = sock_.read( Record::SIZE, true );
     recs.push_back( Record::ParseRecord( r, 0, true ) );
   }
 
@@ -112,7 +112,7 @@ std::vector<Record> Client::recvRead( void )
 
 void Client::recvSize( void )
 {
-  string str = sock_.read( sizeof( size_type ) );
+  string str = sock_.read( sizeof( size_type ), true );
   size_ = *reinterpret_cast<const size_type *>( str.c_str() );
 }
 
