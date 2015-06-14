@@ -43,6 +43,8 @@ void Client::waitOnRPC( unique_lock<mutex> & lck )
 
 void Client::sendRead( unique_lock<mutex> & lck, size_type pos, size_type siz )
 {
+  cout << "client (send read): " << pos << ", " << siz << endl;
+
   waitOnRPC( lck );
   rpcActive_ = Read_;
   rpcPos_ = pos;
@@ -68,6 +70,8 @@ std::vector<Record> Client::recvRead( void )
   // deserialize from the network
   string str = sock_.read( sizeof( size_type ) );
   size_type nrecs = *reinterpret_cast<const size_type *>( str.c_str() );
+
+  cout << "client (recv read): " << rcpPos_ << ", " << nrecs << endl;
 
   vector<Record> recs{};
   // recs.reserve( nrecs );
@@ -152,6 +156,8 @@ vector<Record> Client::DoRead( size_type pos, size_type size )
   unique_lock<mutex> lck{*mtx_};
   vector<Record> recs{};
 
+  cout << "client (read): " << pos << ", " << size << endl;
+
   // Don't read past end of file
   if ( size_ != 0 && pos + size > size_ ) {
     size = size_ - pos;
@@ -207,10 +213,12 @@ Action Client::RPCRunner( void )
   return Action{sock_, Direction::In, [this]() {
     unique_lock<mutex> lck{*mtx_};
 
+    cout << "rpc recv" << endl;
+
     switch ( rpcActive_ ) {
     case None_:
       // throw runtime_error( "socket ready to read but no rpc" );
-      break;
+      return ResultType::Continue;
     case Read_:
       recvRead();
       break;
