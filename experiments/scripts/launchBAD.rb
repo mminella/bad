@@ -11,6 +11,7 @@ require 'optparse'
 
 SSH_USER = 'ubuntu'
 SSH_PKEY = {} # default
+TAR_FILE = 'bad.tar.gz'
 
 nameArg = nil
 options = {}
@@ -105,11 +106,13 @@ Launcher.new(options).launch! do |instance|
   puts "Setting up instance (#{i})..."
   conf = Setup.new(node: instance.dns_name, user: SSH_USER, skey: SSH_PKEY)
   conf.setup!
-
   puts "Instance (#{i}) setup for B.A.D!"
 
+  # deploy bad
+  puts "Deploying B.A.D distribution..."
   deployer = Deploy.new(hostname: instance.dns_name, user: SSH_USER,
-                        skey: SSH_PKEY)
+                        skey: SSH_PKEY, distfile: TAR_FILE)
   deployer.deploy!
+  puts "B.A.D deployed and ready!"
 end
 

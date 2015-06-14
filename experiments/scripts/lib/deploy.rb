@@ -30,6 +30,10 @@ class Deploy
       @hostname = $stdin.gets.strip
     end
 
+    print "SSH username to login with? [ubuntu] "
+    @user = $stdin.gets.strip
+    @user = "ubuntu" if @user.length == 0
+
     if @skey.nil?
       print "Private Key to use? [default] "
       pkey = $stdin.gets.strip
