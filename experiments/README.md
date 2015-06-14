@@ -31,9 +31,9 @@ Parameters:
 
 Tests:
   1) Basic
-    - read ahead = all of memory
+    - read ahead = 10% of data file
     - block size = say 1 mb
     - max mem = all of memory (same as read ahead)
-    - data file size = 10G
+    - data file size = 100MB, 500MB, 1GB, 5GB, 10GB
     - operation = read whole file and write to disk sorted
 
