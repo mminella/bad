@@ -8,9 +8,11 @@ require 'net/ssh'
 require 'net/scp'
 require './lib/ssh'
 
+HOME = '/home/ubuntu'
+
 class Deploy
 
-  # { :hostname, :distfile, :sshopts, :reboot }
+  # { :hostname, :distfile, :user, :skey }
   def initialize(opts)
     set_opts(opts)
   end
@@ -18,8 +20,8 @@ class Deploy
   def set_opts(opts)
     @hostname = opts[:hostname] if !opts[:hostname].nil?
     @tarfile = opts[:distfile] if !opts[:distfile].nil?
-    @ssh_opts = opts[:sshopts] if !opts[:sshopts].nil?
-    @reboot = opts[:reboot] if !opts[:reboot].nil?
+    @user = opts[:user] if !opts[:user].nil?
+    @skey = opts[:skey] if !opts[:skey].nil?
   end
 
   def interactive!
@@ -28,22 +30,16 @@ class Deploy
       @hostname = $stdin.gets.strip
     end
 
-    if @ssh_opts.nil?
+    if @skey.nil?
       print "Private Key to use? [default] "
       pkey = $stdin.gets.strip
-      @ssh_opts = !pkey.empty? ? { :keys => [pkey]} : {}
+      @skey = !pkey.empty? ? { :keys => [pkey]} : {}
     end
 
     if @tarfile.nil?
-      print "Location of 'deploy.tar.gz'? [./] "
+      print "Location of 'bad.tar.gz'? [./] "
       @tarfile = $stdin.gets.strip
-      @tarfile = "deploy.tar.gz" if @tarfile.length == 0
-    end
-
-    if @reboot.nil?
-      print "Reboot machine at end? [n] "
-      @reboot = $stdin.gets.strip.downcase.chars.first
-      @reboot = 'n' if @reboot.nil? || @reboot.length == 0
+      @tarfile = "bad.tar.gz" if @tarfile.length == 0
     end
   end
 
@@ -53,13 +49,10 @@ class Deploy
       exit 1
     end
 
-    Net::SCP.start(@hostname, 'ubuntu', @ssh_opts).upload!(@tarfile, '/home/ubuntu/')
+    Net::SCP.start(@hostname, @user, @skey).upload!(@tarfile, HOME)
 
-    Net::SSH.start(@hostname, 'ubuntu', @ssh_opts) do |ssh|
-      ssh.root! "tar xvzf /home/ubuntu/#{@tarfile} -C /"
-      if @reboot == 'y'
-        ssh.root! "reboot"
-      end
+    Net::SSH.start(@hostname, @user, @skey) do |ssh|
+      ssh.root! "tar xvzf #{HOME}/#{@tarfile} -C /"
     end
   end
 

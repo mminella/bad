@@ -16,23 +16,19 @@ nameArg = nil
 options = {}
 
 def parseName(opts, name)
-  if opts[:count] == 1
-    opts[:name] = [name]
-  else
-    names = name.split(',')
-    if names.length > 1
-      if names.length != opts[:count]
-        $stderr.puts "Invalid number of names! (formant '<name1>,<name2>,...')"
-        exit 0
-      end
-    else
-      names = []
-      for i in 1..opts[:count] do
-        names += [ sprintf(name, i) ]
-      end
+  names = name.split(',')
+  if names.length > 1
+    if names.length != opts[:count]
+      $stderr.puts "Invalid number of names! (formant '<name1>,<name2>,...')"
+      exit 0
     end
-    opts[:name] = names
+  else
+    names = []
+    for i in 1..opts[:count] do
+      names += [ sprintf(name, i) ]
+    end
   end
+  opts[:name] = names
 end
 
 optparse = OptionParser.new do |opts|
