@@ -18,7 +18,12 @@ protected:
 
   unsigned int read_count_, write_count_;
 
+#ifdef __APPLE__
+  /* default stack size on OSX is only 512KB, so need to lower */
+  const static size_t BUFFER_SIZE = 1024 * 256;
+#else
   const static size_t BUFFER_SIZE = 1024 * 1024;
+#endif
 
   void register_read( void ) noexcept { read_count_++; }
   void register_write( void ) noexcept { write_count_++; }

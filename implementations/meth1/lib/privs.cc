@@ -1,6 +1,7 @@
 #include <fcntl.h>
 #include <pwd.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include <numeric>
 #include <vector>
@@ -11,6 +12,8 @@
 #include "util.hh"
 
 using namespace std;
+
+extern char **environ;
 
 /* Clear user environ. Should be done when running as root. */
 char ** clear_environ( void )

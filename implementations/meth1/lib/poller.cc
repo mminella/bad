@@ -58,18 +58,17 @@ Poller::Result Poller::poll( const int & timeout_ms )
       return Result::Type::Exit;
     }
 
+    // we only want to call callback if revents includes the event we asked for
     if ( pollfds_[i].revents & pollfds_[i].events ) {
-      /* we only want to call callback if revents includes
-         the event we asked for */
-      const auto count_before = actions_.at( i ).service_count();
-      auto result = actions_.at( i ).callback();
 
+      // const auto count_before = actions_.at( i ).service_count();
       // /* make sure action made some progress */
       // if ( count_before == actions_.at( i ).service_count() ) {
       //   throw runtime_error(
       //     "Poller: busy wait detected: callback did not read/write fd" );
       // }
 
+      auto result = actions_.at( i ).callback();
       switch ( result.result ) {
       case ResultType::Exit:
         return Result( Result::Type::Exit, result.exit_status );
