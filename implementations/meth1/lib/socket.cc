@@ -222,8 +222,10 @@ void TCPSocket::listen( const int backlog )
 /* accept a new incoming connection */
 TCPSocket TCPSocket::accept( void )
 {
+  Address addr = local_address();
+  int ipv = addr.domain();
   register_read();
-  return TCPSocket( FileDescriptor(
+  return TCPSocket( ipv, FileDescriptor(
     SystemCall( "accept", ::accept( fd_num(), nullptr, nullptr ) ) ) );
 }
 

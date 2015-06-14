@@ -19,7 +19,7 @@ using namespace meth1;
 using namespace PollerShortNames;
 
 Client::Client( Address node )
-  : sock_{}
+  : sock_{(IPVersion)(node.domain())}
   , addr_{node}
   , rpcActive_{None_}
   , rpcPos_{0}

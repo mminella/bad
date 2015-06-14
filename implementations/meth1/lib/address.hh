@@ -8,7 +8,7 @@
 #include <netdb.h>
 
 /* IP Vesion a socket should use */
-enum IPVersion { IPV4 = AF_INET, IPV6 = AF_INET6 };
+enum IPVersion : unsigned short { IPV4 = AF_INET, IPV6 = AF_INET6 };
 
 /* Address class for IPv4/IPv6 addresses */
 class Address

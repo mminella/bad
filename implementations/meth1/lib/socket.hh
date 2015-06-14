@@ -108,8 +108,8 @@ class TCPSocket : public Socket
 {
 private:
   /* private constructor used by accept() */
-  TCPSocket( FileDescriptor && fd )
-    : Socket( std::move( fd ), IPV6, SOCK_STREAM )
+  TCPSocket( int domain, FileDescriptor && fd )
+    : Socket( std::move( fd ), domain, SOCK_STREAM )
   {
   }
 

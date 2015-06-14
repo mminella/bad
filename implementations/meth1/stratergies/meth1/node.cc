@@ -38,9 +38,9 @@ Node::Node( string file, string port, size_type max_mem )
 /* run the node - list and respond to RPCs */
 void Node::Run( void )
 {
-  TCPSocket sock;
+  TCPSocket sock{IPV4};
   sock.set_reuseaddr();
-  sock.bind( {"::0", port_} );
+  sock.bind( {"0.0.0.0", port_} );
   sock.listen();
 
   while ( true ) {

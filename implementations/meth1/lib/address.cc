@@ -126,6 +126,8 @@ Address::Address( std::string ip )
     ip = ip.substr( 0, i );
   }
 
+  cout << "Address: " << ip << ", " << port << endl;
+
   *this = Address( ip, port );
 }
 
