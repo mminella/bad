@@ -209,7 +209,7 @@ Action Client::RPCRunner( void )
 
     switch ( rpcActive_ ) {
     case None_:
-      throw runtime_error( "socket ready to read but no rpc" );
+      // throw runtime_error( "socket ready to read but no rpc" );
       break;
     case Read_:
       recvRead();
