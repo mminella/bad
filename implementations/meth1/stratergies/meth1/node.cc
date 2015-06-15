@@ -149,6 +149,10 @@ Record Node::seek( size_type pos )
  * after the 'after' record. */
 vector<Record> Node::linear_scan( const Record & after, size_type size )
 {
+  static uint64_t pass = 0;
+
+  cout << "Linear scan " << pass++ << endl;
+
   // TODO: Better to use pointers to Record? Or perhaps to change Record to
   // heap allocate?
   mystl::priority_queue<Record> recs{size + 1};
