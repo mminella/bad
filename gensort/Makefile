@@ -9,15 +9,21 @@ USE_SUMP_PUMP=1
 BITS=
 CFLAGS=$(BITS) -O3 -Wall
 
+ifeq ($(CC),gcc)
+LIBRT=-lrt
+else
+LIBRT=
+endif
+
 all: gensort valsort
 
 ifeq ($(USE_SUMP_PUMP),1)
 # {
 gensort: gensort.c rand16.o rand16.h sump.o
-	gcc -g $(CFLAGS) -o gensort -DSUMP_PUMP gensort.c rand16.o sump.o -lz -lpthread -ldl -lrt
+	gcc -g $(CFLAGS) -o gensort -DSUMP_PUMP gensort.c rand16.o sump.o -lz -lpthread -ldl $(LIBRT)
 
 valsort: valsort.c rand16.o rand16.h sump.o
-	gcc -g $(CFLAGS) -o valsort -DSUMP_PUMP valsort.c rand16.o sump.o -lz -lpthread -ldl -lrt
+	gcc -g $(CFLAGS) -o valsort -DSUMP_PUMP valsort.c rand16.o sump.o -lz -lpthread -ldl $(LIBRT)
 
 sump.o: sump.c sump.h
 	gcc -g $(BITS) -Wall -Wno-char-subscripts -c -DSUMP_PUMP_NO_SORT sump.c

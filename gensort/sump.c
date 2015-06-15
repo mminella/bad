@@ -108,6 +108,18 @@ typedef int nsort_msg_t;        /* return status & error message numbers */
 
 #endif
 
+/* fixes OSX and other platforms that don't provide direct I/O */
+#if !defined(O_DIRECT)
+#define O_DIRECT 0
+#endif
+
+int MMAP_FLAGS =
+#if defined(__APPLE__)
+    MAP_ANON | MAP_PRIVATE;
+#else
+    MAP_PRIVATE;
+#endif
+
 /* values for the flags sump pump structure member
  */
 #define SP_UNICODE                      0x0001  /* not yet supported */
@@ -691,11 +703,15 @@ void sp_raise_error(sp_t sp, int error_code, const char *fmt, ...)
  */
 static void init_zero_fd()
 {
+#ifdef __APPLE__
+    Zero_fd = -1;
+#else
     pthread_mutex_lock(&Global_lock);
     if (Zero_fd <= 0)
         Zero_fd = open("/dev/zero", O_RDWR);
     pthread_mutex_unlock(&Global_lock);
     return;
+#endif
 }
 
 #endif
@@ -2100,7 +2116,7 @@ static void *file_writer_direct(void *arg)
     }
 #else
     init_zero_fd();
-    buf = mmap(NULL, alloc_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, Zero_fd, 0);
+    buf = mmap(NULL, alloc_size, PROT_READ | PROT_WRITE, MMAP_FLAGS, Zero_fd, 0);
     if (buf == MAP_FAILED)
     {
         sp_raise_error(sp, SP_MEM_ALLOC_ERROR,
@@ -2797,6 +2813,9 @@ sp_file_t sp_open_file_src(sp_t sp, const char *fname_mods)
 # else
         close(sp_src->fd);
         sp_src->fd = open(sp_src->fname, O_DIRECT);
+#if defined(__APPLE__)
+        fcntl(sp_src->fd, F_NOCACHE, 0);
+#endif
         if (sp_src->fd < 0)
             return (NULL);
 # endif
@@ -2973,6 +2992,9 @@ sp_file_t sp_open_file_dst(sp_t sp, unsigned out_index, const char *fname_mods)
 # else
         close(sp_dst->fd);
         sp_dst->fd = open(sp_dst->fname, O_DIRECT | O_WRONLY | O_CREAT, 0777);
+#if defined(__APPLE__)
+        fcntl(sp_dst->fd, F_NOCACHE, 0);
+#endif
         if (sp_dst->fd < 0)
             return (NULL);
 # endif
@@ -5317,7 +5339,7 @@ int sp_start(sp_t *caller_sp,
         init_zero_fd();
         sp->in_buf[i].in_buf = mmap(NULL, buf_size,
                                     PROT_READ | PROT_WRITE,
-                                    MAP_PRIVATE, Zero_fd, 0);
+                                    MMAP_FLAGS, Zero_fd, 0);
         if (sp->in_buf[i].in_buf == MAP_FAILED)
             return (SP_MEM_ALLOC_ERROR);
 #endif
