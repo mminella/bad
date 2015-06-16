@@ -15,25 +15,3 @@ i2.8xlarge    | 365,000   | 315,000
 First Write: performance degrades as the disk approaches being full.
 Recommended to leave 10% of disk un-partitioned to allow SSD controller to use
 it as a buffer to optimize writes.
-
-## Experiment 1
-
-Cluster setup:
-  - 1 i2.xlarge machine with data
-  - 1 i2.xlarge machine reading
-
-Parameters:
-  - read ahead
-  - block size
-  - max mem (in terms of records)
-  - data file size
-  - operation
-
-Tests:
-  1) Basic
-    - read ahead = 10% of data file
-    - block size = say 1 mb
-    - max mem = all of memory (same as read ahead)
-    - data file size = 100MB, 500MB, 1GB, 5GB, 10GB
-    - operation = read whole file and write to disk sorted
-
