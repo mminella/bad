@@ -100,6 +100,18 @@ void shell( Cluster & c, size_type records, size_type block_size,
     auto dur = chrono::duration_cast<chrono::seconds>( end - start ).count();
     cout << dur << endl;
 
+  } else if ( str == "all*" ) {
+    // 'all\n'           -- get all records (but don't write!)
+    auto start = chrono::high_resolution_clock::now();
+
+    for ( size_type i = 0; i < records; i += block_size ) {
+      vector<Record> recs = c.Read( i, block_size );
+    }
+
+    auto end = chrono::high_resolution_clock::now();
+    auto dur = chrono::duration_cast<chrono::seconds>( end - start ).count();
+    cout << dur << endl;
+
   } else if ( str == "all" ) {
     // 'all\n'           -- get all records
     auto start = chrono::high_resolution_clock::now();
@@ -108,9 +120,14 @@ void shell( Cluster & c, size_type records, size_type block_size,
 
     for ( size_type i = 0; i < records; i += block_size ) {
       vector<Record> recs = c.Read( i, block_size );
+
+      auto t1 = chrono::high_resolution_clock::now();
       for ( const auto & r : recs ) {
         out.write( r.str( Record::NO_LOC ) );
       }
+      auto t2  = chrono::high_resolution_clock::now();
+      auto dur = chrono::duration_cast<chrono::milliseconds>( t2 - t1 ).count();
+      cout << "* File write took: " << dur << "ms" << endl;
     }
 
     auto end = chrono::high_resolution_clock::now();

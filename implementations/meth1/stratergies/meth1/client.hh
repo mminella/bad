@@ -1,6 +1,7 @@
 #ifndef METH1_CLIENT_HH
 #define METH1_CLIENT_HH
 
+#include <chrono>
 #include <condition_variable>
 #include <list>
 #include <memory>
@@ -51,6 +52,7 @@ private:
   enum RPC { Read_, Size_, None_ } rpcActive_;
   size_type rpcPos_;
   size_type rpcSize_;
+  std::chrono::high_resolution_clock::time_point rpcStart_;
 
   /* cache of buffer extents, kept sorted by buffer offset */
   std::vector<Buffer> cache_;

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <chrono>
 #include <condition_variable>
 #include <iostream>
 #include <list>
@@ -24,6 +25,7 @@ Client::Client( Address node )
   , rpcActive_{None_}
   , rpcPos_{0}
   , rpcSize_{0}
+  , rpcStart_{}
   , cache_{}
   , lru_{}
   , size_{0}
@@ -47,6 +49,7 @@ void Client::sendRead( unique_lock<mutex> & lck, size_type pos, size_type siz )
   rpcActive_ = Read_;
   rpcPos_ = pos;
   rpcSize_ = siz;
+  rpcStart_ = chrono::high_resolution_clock::now();
 
   int8_t rpc = 0;
   sock_.write( (char *)&rpc, 1 );
@@ -58,6 +61,7 @@ void Client::sendSize( unique_lock<mutex> & lck )
 {
   waitOnRPC( lck );
   rpcActive_ = Size_;
+  rpcStart_ = chrono::high_resolution_clock::now();
 
   int8_t rpc = 1;
   sock_.write( (char *)&rpc, 1 );
@@ -65,6 +69,11 @@ void Client::sendSize( unique_lock<mutex> & lck )
 
 std::vector<Record> Client::recvRead( void )
 {
+  // timings -- read rpc
+  auto split = chrono::high_resolution_clock::now();
+  auto dur = chrono::duration_cast<chrono::milliseconds>( split - rpcStart_ ).count();
+  cout << "* Read RPC took: " << dur << "ms" << endl;
+
   // deserialize from the network
   string str = sock_.read( sizeof( size_type ), true );
   size_type nrecs = *reinterpret_cast<const size_type *>( str.c_str() );
@@ -80,6 +89,11 @@ std::vector<Record> Client::recvRead( void )
     // the node returns less than we requested only when at the end of the file
     size_ = rpcPos_ + nrecs;
   }
+
+  // timings -- deserialize
+  auto end = chrono::high_resolution_clock::now();
+  dur = chrono::duration_cast<chrono::milliseconds>( end - split ).count();
+  cout << "* Deserialize read RPC took: " << dur << "ms" << endl;
 
   // should an extent be evicted from cache?
   if ( lru_.size() >= MAX_CACHED_EXTENTS ) {
@@ -110,6 +124,11 @@ void Client::recvSize( void )
 {
   string str = sock_.read( sizeof( size_type ), true );
   size_ = *reinterpret_cast<const size_type *>( str.c_str() );
+
+  // timings -- size rpc
+  auto end = chrono::high_resolution_clock::now();
+  auto dur = chrono::duration_cast<chrono::milliseconds>( end - rpcStart_ ).count();
+  cout << "* Size RPC took: " << dur << "ms" << endl;
 }
 
 bool Client::fillFromCache( vector<Record> & recs, size_type & pos,

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <stdexcept>
 #include <vector>
 
@@ -126,6 +127,9 @@ Node::size_type Node::DoSize( void )
  * `linear_scan` */
 Record Node::seek( size_type pos )
 {
+  cout << "- Seek (" << pos << ")" << endl;
+  auto start = chrono::high_resolution_clock::now();
+
   Record after{Record::MIN};
 
   if ( fpos_ == pos ) {
@@ -142,6 +146,11 @@ Record Node::seek( size_type pos )
     }
   }
 
+  // seek timings
+  auto end = chrono::high_resolution_clock::now();
+  auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
+  cout << "* Seek took: " << dur << "ms" << endl;
+
   return after;
 }
 
@@ -151,7 +160,8 @@ vector<Record> Node::linear_scan( const Record & after, size_type size )
 {
   static uint64_t pass = 0;
 
-  cout << "Linear scan " << pass++ << endl;
+  cout << "- Linear scan " << pass++ << " (" << size << ")" << endl;
+  auto start = chrono::high_resolution_clock::now();
 
   // TODO: Better to use pointers to Record? Or perhaps to change Record to
   // heap allocate?
@@ -176,6 +186,11 @@ vector<Record> Node::linear_scan( const Record & after, size_type size )
     }
   }
 
+  // timings -- scan
+  auto split = chrono::high_resolution_clock::now();
+  auto dur   = chrono::duration_cast<chrono::milliseconds>( split - start ).count();
+  cout << "* Linear scan took: " << dur << "ms" << endl;
+
   // cache number of records on disk
   size_ = i;
 
@@ -185,6 +200,15 @@ vector<Record> Node::linear_scan( const Record & after, size_type size )
   // sort final heap
   auto vrecs = recs.container();
   sort_heap( vrecs.begin(), vrecs.end() );
+
+  // timings -- sort
+  auto end = chrono::high_resolution_clock::now();
+  dur = chrono::duration_cast<chrono::milliseconds>( end - split ).count();
+  cout << "* In-memory sort took: " << dur << "ms" << endl;
+
+  // timings -- total
+  dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
+  cout << "* Read took: " << dur << "ms" << endl;
 
   return vrecs;
 }
