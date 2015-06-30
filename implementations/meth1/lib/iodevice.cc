@@ -40,8 +40,8 @@ string IODevice::rread( size_t limit )
 string IODevice::read( size_t limit, bool read_all )
 {
   string str;
-  if ( read_all ) {
-    // str.reserve( limit );
+  if ( read_all and limit > 0 ) {
+    str.reserve( limit );
   }
 
   do {

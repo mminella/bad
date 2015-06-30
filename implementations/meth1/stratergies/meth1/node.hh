@@ -24,7 +24,7 @@ namespace meth1
 class Node : public Implementation
 {
 private:
-  File data_;
+  BufferedFile data_;
   std::string port_;
   Record last_;
   size_type fpos_;

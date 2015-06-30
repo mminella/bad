@@ -166,12 +166,12 @@ vector<Record> Node::linear_scan( const Record & after, size_type size )
   // TODO: Better to use pointers to Record? Or perhaps to change Record to
   // heap allocate?
   mystl::priority_queue<Record> recs{size + 1};
-  Record rmax = Record{Record::MAX};
 
   size_type i;
 
   for ( i = 0;; i++ ) {
-    Record next = Record::ParseRecord( data_.read( Record::SIZE ), i, false );
+    const char * rec_str = get<0>( data_.internal_read( Record::SIZE, true ) );
+    Record next = Record::ParseRecord( rec_str, i, false );
     if ( data_.eof() ) {
       break;
     }

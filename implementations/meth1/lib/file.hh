@@ -1,6 +1,8 @@
 #ifndef FILE_HH
 #define FILE_HH
 
+#include <tuple>
+
 #include "file_descriptor.hh"
 
 /* Unix file descriptors (sockets, files, etc.) */
@@ -32,6 +34,27 @@ public:
 
   /* rewind to begging of file */
   void rewind( void );
+};
+
+/* Buffered file. Only reads are buffered for now. */
+class BufferedFile : public File
+{
+private:
+  char buf_[BUFFER_SIZE];
+  size_t start_ = 0;
+  size_t end_ = 0;
+
+public:
+  /* inherit File constructors */
+  using File::File;
+
+  std::tuple<const char *, size_t> internal_read( size_t limit = BUFFER_SIZE,
+                                                  bool copy = false );
+
+protected:
+  /* base read and write methods */
+  virtual std::string rread( size_t limit = BUFFER_SIZE ) override;
+
 };
 
 #endif /* FILE_HH */
