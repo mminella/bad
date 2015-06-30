@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 #include <cassert>
+#include <cstring>
 #include <tuple>
 
 #include "file.hh"
@@ -52,7 +53,7 @@ BufferedFile::internal_read( size_t limit, bool copy )
       /* can completely fill from cache */
       const char * str = buf_ + start_;
       start_ += limit;
-      return {str, limit};
+      return make_tuple( str, limit );
     } else {
       /* move cached to start of buffer */
       memmove( buf_, buf_ + start_, end_ - start_ );
@@ -75,7 +76,7 @@ BufferedFile::internal_read( size_t limit, bool copy )
   /* return from cache */
   limit = min( static_cast<size_t>( n ), limit );
   start_ += limit;
-  return {buf_, limit};
+  return make_tuple( buf_, limit );
 }
 
 /* read method (internal) */
