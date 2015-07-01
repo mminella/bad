@@ -10,5 +10,5 @@ libbasicrts_la_SOURCES = util.hh util.cc \
 	exception.hh \
 	privs.hh privs.cc \
 	domain_socket.hh domain_socket.cc \
-	iodevice.hh iodevice.cc \
-	file.hh file.cc
+	file.hh file.cc \
+	buffered_io.hh

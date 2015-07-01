@@ -4,7 +4,7 @@
 #include <vector>
 #include <functional>
 
-#include "iodevice.hh"
+#include "file_descriptor.hh"
 #include "poller.hh"
 #include "util.hh"
 
@@ -24,11 +24,11 @@ public:
   /* Add an input event handler to the event loop for the file descriptor
    * specified. */
   void
-  add_simple_input_handler( const IODevice & io,
+  add_simple_input_handler( const FileDescriptor & fd,
                             const Poller::Action::CallbackType & callback )
   {
     poller_.add_action(
-      Poller::Action( io, Poller::Action::PollDirection::In, callback ) );
+      Poller::Action( fd, Poller::Action::PollDirection::In, callback ) );
   }
 
   /* Run the event loop, looping until an an event handler returns 'Exit'. */

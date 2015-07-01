@@ -12,9 +12,7 @@ using namespace PollerShortNames;
 void Poller::add_action( Poller::Action action )
 {
   actions_.push_back( action );
-  const int fd =
-    action.direction == POLLIN ? action.io.fd_r_num() : action.io.fd_w_num();
-  pollfds_.push_back( {fd, 0, 0} );
+  pollfds_.push_back( {action.fd.fd_num(), 0, 0} );
 }
 
 /* Run poll a single step */
@@ -24,8 +22,7 @@ Poller::Result Poller::poll( const int & timeout_ms )
 
   /* tell poll whether we care about each fd */
   for ( unsigned int i = 0; i < actions_.size(); i++ ) {
-    assert( pollfds_.at( i ).fd == actions_.at( i ).io.fd_r_num() or
-            pollfds_.at( i ).fd == actions_.at( i ).io.fd_w_num() );
+    assert( pollfds_.at( i ).fd == actions_.at( i ).fd.fd_num() );
 
     pollfds_.at( i ).events =
       ( actions_.at( i ).active and actions_.at( i ).when_interested() )
@@ -34,7 +31,7 @@ Poller::Result Poller::poll( const int & timeout_ms )
 
     /* don't poll in on fds that have had EOF */
     if ( actions_.at( i ).direction == Direction::In and
-         actions_.at( i ).io.eof() ) {
+         actions_.at( i ).fd.eof() ) {
       pollfds_.at( i ).events = 0;
     }
   }

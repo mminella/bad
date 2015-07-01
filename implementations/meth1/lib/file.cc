@@ -66,7 +66,7 @@ BufferedFile::internal_read( size_t limit, bool copy )
 
   /* cache empty, refill */
   ssize_t n = SystemCall( "read",
-    ::read( fd_r_, buf_ + end_, sizeof( buf_ ) - end_ ) );
+    ::read( fd_, buf_ + end_, sizeof( buf_ ) - end_ ) );
   if ( n == 0 ) {
     set_eof();
   }

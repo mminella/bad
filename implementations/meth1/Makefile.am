@@ -14,8 +14,8 @@ check-all:
 
 test: app/sort_test
 	@mkdir -p .test-tmp
-	@./app/sort_test test/in.100.recs .test-tmp/out.100.recs > /dev/null
-	@diff test/out.100.recs .test-tmp/out.100.recs && echo "PASSED"
+	@./app/sort_test test/in.s0000.e1000.recs .test-tmp/out.1000.recs > /dev/null
+	@diff test/out.1000.recs .test-tmp/out.1000.recs && echo "PASSED"
 
 bin-dist: app/meth1_node app/meth1_shell app/meth1_client
 	rm -Rf dist_root

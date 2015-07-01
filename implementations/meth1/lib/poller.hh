@@ -6,7 +6,7 @@
 
 #include <poll.h>
 
-#include "iodevice.hh"
+#include "file_descriptor.hh"
 
 /**
  * Poller provides a poll mechanism for implementing event loops. Event
@@ -39,17 +39,17 @@ public:
     using FilterType = std::function<bool(void)>;
     enum PollDirection : short { In = POLLIN, Out = POLLOUT };
 
-    const IODevice & io;
+    const FileDescriptor & fd;
     PollDirection direction;
     CallbackType callback;
     FilterType when_interested;
     bool active;
 
     /* An action to run when a file descriptor is ready. */
-    Action( const IODevice & s_io, PollDirection s_direction,
+    Action( const FileDescriptor & s_fd, PollDirection s_direction,
             const CallbackType & s_callback,
             const FilterType & s_when_interested = []() { return true; } )
-      : io( s_io )
+      : fd( s_fd )
       , direction( s_direction )
       , callback( s_callback )
       , when_interested( s_when_interested )
@@ -59,7 +59,7 @@ public:
 
     unsigned int service_count( void ) const
     {
-      return direction == In ? io.read_count() : io.write_count();
+      return direction == In ? fd.read_count() : fd.write_count();
     }
   };
 

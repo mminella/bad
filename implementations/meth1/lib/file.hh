@@ -40,7 +40,7 @@ public:
 class BufferedFile : public File
 {
 private:
-  char buf_[BUFFER_SIZE];
+  char buf_[MAX_READ_SIZE];
   size_t start_ = 0;
   size_t end_ = 0;
 
@@ -48,12 +48,12 @@ public:
   /* inherit File constructors */
   using File::File;
 
-  std::tuple<const char *, size_t> internal_read( size_t limit = BUFFER_SIZE,
+  std::tuple<const char *, size_t> internal_read( size_t limit = MAX_READ_SIZE,
                                                   bool copy = false );
 
 protected:
   /* base read and write methods */
-  virtual std::string rread( size_t limit = BUFFER_SIZE ) override;
+  virtual std::string rread( size_t limit = MAX_READ_SIZE ) override;
 
 };
 
