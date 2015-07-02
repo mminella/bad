@@ -3,14 +3,14 @@
  * sorting using C++ algorithm sort implementation.
  */
 #include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <chrono>
 #include <vector>
 
-#include "buffered_io.hh"
 #include "exception.hh"
-#include "file.hh"
 #include "util.hh"
 
 #include "record.hh"
@@ -43,26 +43,27 @@ int run( int argc, char * argv[] )
   sanity_check_env( argc );
   check_usage( argc, argv );
 
-  BufferedIO<File> fdi( {argv[1], O_RDONLY} );
-  BufferedIO<File> fdo( {argv[2], O_WRONLY | O_CREAT | O_TRUNC,
-                                  S_IRUSR | S_IWUSR} );
+  FILE *fdi = fopen( argv[1], "r" );
+  FILE *fdo = fopen( argv[2], "w" );
 
-  vector<Record> recs;
+  vector<Record> recs{};
   // PERF: avoid copying partial vectors
   recs.reserve( 10485700 );
 
   auto t1 = chrono::high_resolution_clock::now();
 
   // read
+  char r[Record::SIZE];
+
   for ( uint64_t i = 0;; i++ ) {
-    // PERF: Avoid copy from buffer to string.
-    const char * r = get<0>( fdi.buffer_read( Record::SIZE, true ) );
-    if ( fdi.eof() ) {
+    size_t n = fread( r, Record::SIZE, 1, fdi );
+    if ( n == 0 ) {
       break;
     }
     // PERF: Avoid copy into array, construct in-place.
     recs.emplace_back( r, i, true );
   }
+  fclose( fdi );
   auto t2 = chrono::high_resolution_clock::now();
 
   // sort
@@ -71,10 +72,11 @@ int run( int argc, char * argv[] )
 
   // write
   for ( auto & r : recs ) {
-    fdo.write( r.str( Record::NO_LOC ) );
+    fwrite( r.str( Record::NO_LOC ).c_str(), Record::SIZE, 1, fdo );
   }
-  fdo.flush( true );
-  fdo.iodevice().fsync();
+  fflush( fdo );
+  fsync( fileno( fdo ) );
+  fclose( fdo );
   auto t4 = chrono::high_resolution_clock::now();
 
   // stats
@@ -87,8 +89,7 @@ int run( int argc, char * argv[] )
   cout << "Sort  took " << t32 << "ms" << endl;
   cout << "Write took " << t43 << "ms" << endl;
   cout << "Total took " << t41 << "ms" << endl;
-  cout << "Read calls " << fdi.read_count() << endl;
-  cout << "Writ calls " << fdo.write_count() << endl;
 
   return EXIT_SUCCESS;
 }
+

@@ -12,6 +12,7 @@
 #include "record.hh"
 
 #include "address.hh"
+#include "buffered_io.hh"
 #include "event_loop.hh"
 #include "exception.hh"
 #include "file.hh"
@@ -27,7 +28,7 @@ static_assert( sizeof( vector<Record>::size_type ) >=
 
 /* Construct Node */
 Node::Node( string file, string port, size_type max_mem )
-  : data_{file.c_str(), O_RDONLY}
+  : data_{{file.c_str(), O_RDONLY}}
   , port_{port}
   , last_{Record::MIN}
   , fpos_{0}
@@ -118,7 +119,7 @@ vector<Record> Node::DoRead( size_type pos, size_type size )
 Node::size_type Node::DoSize( void )
 {
   if ( size_ == 0 ) {
-    linear_scan( Record::MIN );
+    linear_scan( Record::MAX );
   }
   return size_;
 }
@@ -170,7 +171,7 @@ vector<Record> Node::linear_scan( const Record & after, size_type size )
   size_type i;
 
   for ( i = 0;; i++ ) {
-    const char * rec_str = get<0>( data_.internal_read( Record::SIZE, true ) );
+    const char * rec_str = get<0>( data_.buffer_read( Record::SIZE, true ) );
     Record next = Record::ParseRecord( rec_str, i, false );
     if ( data_.eof() ) {
       break;
@@ -178,9 +179,9 @@ vector<Record> Node::linear_scan( const Record & after, size_type size )
 
     if ( after < next ) {
       if ( recs.size() < size ) {
-        recs.push( next.clone() );
+        recs.emplace( rec_str, i, true );
       } else if ( next < recs.top() ) {
-        recs.push( next.clone() );
+        recs.emplace( rec_str, i, true );
         recs.pop();
       }
     }
@@ -195,11 +196,11 @@ vector<Record> Node::linear_scan( const Record & after, size_type size )
   size_ = i;
 
   // rewind the file
-  data_.rewind();
+  data_.iodevice().rewind();
 
   // sort final heap
-  auto vrecs = recs.container();
-  sort_heap( vrecs.begin(), vrecs.end() );
+  auto & vrecs = recs.container();
+  sort( vrecs.begin(), vrecs.end() );
 
   // timings -- sort
   auto end = chrono::high_resolution_clock::now();

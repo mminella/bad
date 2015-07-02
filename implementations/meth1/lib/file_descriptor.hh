@@ -3,10 +3,13 @@
 
 #include <string>
 
+template <typename IOType> class BufferedIO;
+
 /* Unix file descriptors (sockets, files, etc.) */
 class FileDescriptor
 {
 public:
+  template <typename IOType> friend class BufferedIO;
   using iterator_type = std::string::const_iterator;
 
 protected:
@@ -57,10 +60,8 @@ public:
   std::string read( size_t limit = MAX_READ_SIZE, bool read_all = false );
 
   /* write methods */
-  ssize_t write( const char * buffer, size_t count, bool write_all = true );
   iterator_type write( const std::string & buffer, bool write_all = true );
-  iterator_type write( const iterator_type & begin,
-                       const iterator_type & end );
+  ssize_t write( const char * buffer, size_t count, bool write_all = true );
 };
 
 #endif /* FILE_DESCRIPTOR_HH */

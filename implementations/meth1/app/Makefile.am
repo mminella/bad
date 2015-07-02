@@ -5,7 +5,8 @@ bin_PROGRAMS = \
 	meth1_cluster_test \
 	meth1_client \
 	meth1_node \
-	meth1_shell
+	meth1_shell \
+	sort_test_cfiles
 
 AM_CPPFLAGS = \
 	-I$(srcdir)/../lib \
@@ -21,6 +22,8 @@ LDADD = \
 AM_LDFLAGS = -static -static-libstdc++
 
 sort_test_SOURCES = sort_test.cc
+sort_test_cfiles_SOURCES = sort_test_cfiles.cc
+
 meth1_node_test_SOURCES = meth1_node_test.cc
 meth1_client_test_SOURCES = meth1_client_test.cc
 meth1_cluster_test_SOURCES = meth1_cluster_test.cc

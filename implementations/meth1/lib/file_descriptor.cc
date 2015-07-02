@@ -1,6 +1,7 @@
 #include <unistd.h>
 
 #include <cassert>
+#include <iostream>
 
 #include "file_descriptor.hh"
 #include "exception.hh"
@@ -90,49 +91,36 @@ ssize_t FileDescriptor::wwrite( const char * buffer, size_t count )
     throw runtime_error( "nothing to write" );
   }
 
-  ssize_t bytes_written =
-    SystemCall( "write", ::write( fd_, buffer, count ) );
-  if ( bytes_written == 0 ) {
+  ssize_t n = SystemCall( "write", ::write( fd_, buffer, count ) );
+  if ( n == 0 ) {
     throw runtime_error( "write returned 0" );
   }
 
   register_write();
 
-  return bytes_written;
+  return n;
 }
 
 /* write a cstring (external) */
 ssize_t FileDescriptor::write( const char * buffer, size_t count, bool write_all )
 {
-  size_t bytes_written{0};
+  size_t n{0};
 
   do {
-    bytes_written = wwrite( buffer, count );
-  } while ( write_all and bytes_written < count );
+    n += wwrite( buffer + n, count - n );
+  } while ( write_all and n < count );
 
-  return bytes_written;
+  return n;
 }
 
-/* attempt to write a portion of a string */
-string::const_iterator
-FileDescriptor::write( const string::const_iterator & begin,
-                       const string::const_iterator & end )
-{
-  if ( begin >= end ) {
-    throw runtime_error( "nothing to write" );
-  }
-
-  return begin + wwrite( &*begin, end - begin );
-}
-
-/* write method */
+/* write string */
 FileDescriptor::iterator_type
 FileDescriptor::write( const std::string & buffer, bool write_all )
 {
   auto it = buffer.begin();
 
   do {
-    it = write( it, buffer.end() );
+    it += wwrite( &*it, buffer.end() - it );
   } while ( write_all and ( it != buffer.end() ) );
 
   return it;

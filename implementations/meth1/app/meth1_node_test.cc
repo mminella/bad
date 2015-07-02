@@ -1,6 +1,7 @@
 #include <fcntl.h>
 
 #include <algorithm>
+#include <chrono>
 #include <vector>
 
 #include "exception.hh"
@@ -36,33 +37,47 @@ int main( int argc, char * argv[] )
 
 int run( int argc, char * argv[] )
 {
+  // startup
   sanity_check_env( argc );
   check_usage( argc, argv );
 
-  File out( argv[2], O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR );
+  BufferedIO<File> out( {argv[2], O_WRONLY | O_CREAT | O_TRUNC,
+                                  S_IRUSR | S_IWUSR} );
+  auto t1 = chrono::high_resolution_clock::now();
 
+  // start node
   Node node{argv[1], "0", 3};
   node.Initialize();
+  auto t2 = chrono::high_resolution_clock::now();
 
+  // size
   size_t siz = node.Size();
-  cout << "Size: " << siz << endl;
+  auto t3 = chrono::high_resolution_clock::now();
 
+  // read records + sort
   auto recs = node.Read( 0, siz );
-  cout << "Recs: " << recs.size() << endl;
+  auto t4 = chrono::high_resolution_clock::now();
 
+  // write out records
   for ( auto & r : recs ) {
     out.write( r.str( Record::NO_LOC ) );
   }
+  out.flush( true );
+  out.iodevice().fsync();
+  auto t5 = chrono::high_resolution_clock::now();
 
-  recs = node.Read( 5, 1 );
-  for ( auto & r : recs ) {
-    cout << "Record 6: " << r.diskloc() << endl;
-  }
+  // stats
+  auto t21 = chrono::duration_cast<chrono::milliseconds>( t2 - t1 ).count();
+  auto t32 = chrono::duration_cast<chrono::milliseconds>( t3 - t2 ).count();
+  auto t43 = chrono::duration_cast<chrono::milliseconds>( t4 - t3 ).count();
+  auto t54 = chrono::duration_cast<chrono::milliseconds>( t5 - t4 ).count();
+  auto t51 = chrono::duration_cast<chrono::milliseconds>( t5 - t1 ).count();
 
-  recs = node.Read( 8, 1 );
-  for ( auto & r : recs ) {
-    cout << "Record 9: " << r.diskloc() << endl;
-  }
+  cout << "Start took " << t21 << "ms" << endl;
+  cout << "Size  took " << t32 << "ms" << endl;
+  cout << "Read  took " << t43 << "ms (buffered + sort)" << endl;
+  cout << "Write took " << t54 << "ms" << endl;
+  cout << "Total took " << t51 << "ms" << endl;
 
   return EXIT_SUCCESS;
 }

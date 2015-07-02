@@ -45,14 +45,14 @@ private:
   /* Copy external storage into our own storage */
   void copy( void );
 
+public:
+  /* Construct an empty record. */
+  Record( limit_t lim );
+
   /* Construct from c string read from disk. By default simply uses the storage
    * passed in (so needs to remain valid for life of Record). But if `copy` is
    * true, an internal private copy of the record will be made. */
   Record( const char * s, size_type diskloc, bool copy = false );
-
-public:
-  /* Construct an empty record. */
-  Record( limit_t lim );
 
   /* Allow copy, but no move */
   Record( const Record & other, bool deep_copy = false );

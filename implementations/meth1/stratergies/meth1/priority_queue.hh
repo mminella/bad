@@ -31,7 +31,7 @@ public:
 
   size_type capacity( void ) const { return this->c.capacity(); }
 
-  std::vector<T> container( void ) { return this->c; }
+  std::vector<T> & container( void ) { return this->c; }
 };
 
 template <class T>

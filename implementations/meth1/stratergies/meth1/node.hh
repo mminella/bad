@@ -7,6 +7,7 @@
 
 #include "record.hh"
 
+#include "buffered_io.hh"
 #include "file.hh"
 #include "socket.hh"
 
@@ -24,7 +25,7 @@ namespace meth1
 class Node : public Implementation
 {
 private:
-  BufferedFile data_;
+  BufferedIO<File> data_;
   std::string port_;
   Record last_;
   size_type fpos_;
