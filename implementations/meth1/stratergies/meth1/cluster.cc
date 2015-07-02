@@ -55,6 +55,13 @@ struct RecordNode {
 
 vector<Record> Cluster::DoRead( size_type pos, size_type size )
 {
+  // PERF: Copying all records!
+  // PERF: Better to copy each sorted record immediately to an output buffer
+  // rather than have an intermediate vector.
+  // PERF: Probably slightly better to call `DoRead` once and process whole
+  // file, than use it in blocks.
+
+  // Sorting all 
   vector<Record> recs;
   recs.reserve( size );
   mystl::priority_queue_min<RecordNode> heap{files_.size()};

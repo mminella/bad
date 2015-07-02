@@ -47,7 +47,7 @@ void Node::Run( void )
 
   while ( true ) {
     try {
-      auto client = sock.accept();
+      BufferedIO<TCPSocket> client {{sock.accept()}, false, true};
 
       while ( true ) {
         string str = client.read( 1 );
@@ -73,7 +73,7 @@ void Node::Run( void )
   }
 }
 
-void Node::RPC_Read( TCPSocket & client )
+void Node::RPC_Read( BufferedIO<TCPSocket> & client )
 {
   // parse arguments
   string str = client.read( 2 * sizeof( size_type ), true );
@@ -89,12 +89,14 @@ void Node::RPC_Read( TCPSocket & client )
   for ( auto const & r : recs ) {
     client.write( r.str( Record::NO_LOC ) );
   }
+  client.flush( true );
 }
 
-void Node::RPC_Size( TCPSocket & client )
+void Node::RPC_Size( BufferedIO<TCPSocket> & client )
 {
   size_type siz = Size();
   client.write( reinterpret_cast<const char *>( &siz ), sizeof( size_type ) );
+  client.flush( true );
 }
 
 /* Initialization routine */

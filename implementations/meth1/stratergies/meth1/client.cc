@@ -5,12 +5,14 @@
 #include <list>
 #include <memory>
 #include <mutex>
+#include <tuple>
 #include <vector>
 
 #include "implementation.hh"
 
 #include "client.hh"
 
+#include "buffered_io.hh"
 #include "exception.hh"
 #include "poller.hh"
 #include "socket.hh"
@@ -20,7 +22,7 @@ using namespace meth1;
 using namespace PollerShortNames;
 
 Client::Client( Address node )
-  : sock_{(IPVersion)(node.domain())}
+  : sock_{{(IPVersion)(node.domain())}, BufferedIO<TCPSocket>::BUFFER_SIZE, 0}
   , addr_{node}
   , rpcActive_{None_}
   , rpcPos_{0}
@@ -34,7 +36,7 @@ Client::Client( Address node )
 {
 }
 
-void Client::DoInitialize( void ) { sock_.connect( addr_ ); }
+void Client::DoInitialize( void ) { sock_.iodevice().connect( addr_ ); }
 
 void Client::waitOnRPC( unique_lock<mutex> & lck )
 {
@@ -51,10 +53,12 @@ void Client::sendRead( unique_lock<mutex> & lck, size_type pos, size_type siz )
   rpcSize_ = siz;
   rpcStart_ = chrono::high_resolution_clock::now();
 
-  int8_t rpc = 0;
-  sock_.write( (char *)&rpc, 1 );
-  sock_.write( (char *)&pos, sizeof( size_type ) );
-  sock_.write( (char *)&siz, sizeof( size_type ) );
+  char data[1 + 2 * sizeof( size_type )];
+  data[0] = 0;
+  *reinterpret_cast<size_type *>( &data + 1 ) = pos;
+  *reinterpret_cast<size_type *>( &data + 1 + sizeof( size_type ) ) = siz;
+
+  sock_.write( data, 1 + 2 * sizeof( size_type ) );
 }
 
 void Client::sendSize( unique_lock<mutex> & lck )
@@ -75,14 +79,14 @@ std::vector<Record> Client::recvRead( void )
   cout << "* Read RPC took: " << dur << "ms" << endl;
 
   // deserialize from the network
-  string str = sock_.read( sizeof( size_type ), true );
-  size_type nrecs = *reinterpret_cast<const size_type *>( str.c_str() );
+  const char * str = get<0>( sock_.buffer_read( sizeof( size_type ), true, sizeof( size_type ) ) );
+  size_type nrecs = *reinterpret_cast<const size_type *>( str );
 
   vector<Record> recs{};
   recs.reserve( nrecs );
   for ( size_type i = 0; i < nrecs; i++ ) {
-    string r = sock_.read( Record::SIZE, true );
-    recs.push_back( Record::ParseRecord( r, 0, true ) );
+    const char * r = get<0>( sock_.buffer_read( Record::SIZE, true, (nrecs - i) * Record::SIZE ) );
+    recs.emplace_back( r, 0, true );
   }
 
   if ( size_ == 0 && nrecs != rpcSize_ ) {
@@ -108,7 +112,7 @@ std::vector<Record> Client::recvRead( void )
     }
   } else {
     // add to buffer cache
-    cache_.push_back( {recs, rpcPos_} );
+    cache_.emplace_back( recs, rpcPos_ );
   }
 
   // maintain sort invariant
@@ -122,8 +126,8 @@ std::vector<Record> Client::recvRead( void )
 
 void Client::recvSize( void )
 {
-  string str = sock_.read( sizeof( size_type ), true );
-  size_ = *reinterpret_cast<const size_type *>( str.c_str() );
+  const char * str = get<0>( sock_.buffer_read( sizeof( size_type ), true, sizeof( size_type ) ) );
+  size_ = *reinterpret_cast<const size_type *>( str );
 
   // timings -- size rpc
   auto end = chrono::high_resolution_clock::now();
@@ -223,7 +227,7 @@ Client::size_type Client::DoSize( void )
 
 Action Client::RPCRunner( void )
 {
-  return Action{sock_, Direction::In, [this]() {
+  return Action{sock_.iodevice(), Direction::In, [this]() {
     unique_lock<mutex> lck{*mtx_};
 
     switch ( rpcActive_ ) {

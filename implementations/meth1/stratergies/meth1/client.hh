@@ -11,6 +11,7 @@
 #include "implementation.hh"
 
 #include "address.hh"
+#include "buffered_io.hh"
 #include "exception.hh"
 #include "file.hh"
 #include "poller.hh"
@@ -30,6 +31,8 @@ namespace meth1
 class Client : public Implementation
 {
 private:
+  /* how many records to read from the network in one go */
+  static constexpr size_t NET_BLOCK_SIZE = 100;
   static constexpr size_t MAX_CACHED_EXTENTS = 3;
 
   /* A cache of records with starting position recorded */
@@ -45,7 +48,7 @@ private:
   };
 
   /* network state */
-  TCPSocket sock_;
+  BufferedIO<TCPSocket> sock_;
   Address addr_;
 
   /* rpc state */

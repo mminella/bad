@@ -46,8 +46,8 @@ private:
   Record seek( size_type pos );
   std::vector<Record> linear_scan( const Record & after, size_type size = 1 );
 
-  void RPC_Read( TCPSocket & client );
-  void RPC_Size( TCPSocket & client );
+  void RPC_Read( BufferedIO<TCPSocket> & client );
+  void RPC_Size( BufferedIO<TCPSocket> & client );
 };
 }
 

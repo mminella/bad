@@ -24,31 +24,64 @@ public:
 
   using iterator_type = std::string::const_iterator;
 
-private:
   const static size_t BUFFER_SIZE = 4096;
 
+private:
   /* buffers */
   std::unique_ptr<char> rbuf_;
   std::unique_ptr<char> wbuf_;
-  size_t rstart_ = 0, rend_ = 0, rsize_ = 0;
-  size_t wstart_ = 0, wend_ = 0, wsize_ = 0;
+  const size_t rsize_ = 0, wsize_ = 0;
+  size_t rstart_ = 0, rend_ = 0;
+  size_t wstart_ = 0, wend_ = 0;
 
   /* underlying device */
   IOType io_;
 
-  ssize_t wwrite( const char * buffer, size_t count );
+  ssize_t read_raw( char * buf, size_t count );
+  ssize_t write_raw( const char * buf, size_t count );
+  ssize_t wwrite( const char * buf, size_t count );
 
 public: /* BufferedIO API */
 
   /* BufferedIO takes ownership of the file descriptor. You can access the
    * underlying type through `iodevice`. */
-  BufferedIO( IOType && io )
+  BufferedIO( IOType && io, size_t rbuf = BUFFER_SIZE, size_t wbuf = BUFFER_SIZE )
     : rbuf_{ new char[BUFFER_SIZE]() }
-    , wbuf_{ new char[BUFFER_SIZE]() }
-    , rsize_{ BUFFER_SIZE }
-    , wsize_{ BUFFER_SIZE }
+    , wbuf_{ wbuf ? new char[BUFFER_SIZE]() : nullptr }
+    , rsize_{ rbuf }
+    , wsize_{ wbuf }
     , io_{ std::move( io ) }
   {
+  }
+
+  /* move */
+  BufferedIO( BufferedIO && other ) noexcept
+    : rbuf_{ std::move( other.rbuf_ ) }
+    , wbuf_{ std::move( other.wbuf_ ) }
+    , rsize_{ other.rsize_ }
+    , wsize_{other.wsize_}
+    , rstart_{other.rstart_}
+    , rend_{other.rend_}
+    , wstart_{other.wstart_}
+    , wend_{other.wend_}
+    , io_{ std::move( other.io_ ) }
+  {
+  }
+
+  BufferedIO & operator=( BufferedIO && other ) noexcept
+  {
+    if ( this != &other ) {
+      rbuf_ = std::move( other.rbuf_ );
+      wbuf_ = std::move( other.wbuf_ );
+      rsize_ = other.rsize_;
+      wsize_ = other.wsize_;
+      rstart_ = other.rstart_;
+      rend_ = other.rend_;
+      wstart_ = other.wstart_;
+      wend_ = other.wend_;
+      io_ = std::move( other.io_ );
+    }
+    return *this;
   }
 
   /* accessors */
@@ -60,9 +93,11 @@ public: /* BufferedIO API */
 
   /* read method */
   std::tuple<const char *, size_t> buffer_read( size_t limit = BUFFER_SIZE,
-                                                bool copy = false );
+                                                bool read_all = false,
+                                                size_t read_ahead = BUFFER_SIZE );
 
-  std::string read( size_t limit = BUFFER_SIZE, bool read_all = false )
+  std::string read( size_t limit = BUFFER_SIZE, bool read_all = false,
+                    size_t read_ahead = BUFFER_SIZE )
   {
     std::string str;
     if ( read_all and limit > 0 ) {
@@ -72,7 +107,8 @@ public: /* BufferedIO API */
     size_t n;
     const char * cstr;
     do {
-      std::tie( cstr, n ) = BufferedIO::buffer_read( limit - str.size() );
+      std::tie( cstr, n ) = BufferedIO::buffer_read( limit - str.size(),
+                                                     read_all, read_ahead );
       str += std::string( cstr, n );
     } while ( read_all and str.size() < limit );
 
@@ -109,10 +145,22 @@ public: /* BufferedIO API */
   ~BufferedIO() { flush( true ); }
 };
 
-/* base read */
+/* raw (direct) read */
+template <typename IOType>
+ssize_t BufferedIO<IOType>::read_raw( char * buf, size_t count )
+{
+  ssize_t n = SystemCall( "read", ::read( io_.fd_num(), buf, count ) );
+  if ( n == 0 ) {
+    io_.set_eof();
+  }
+  io_.register_read();
+  return n;
+}
+
+/* buffered read */
 template <typename IOType>
 std::tuple<const char *, size_t>
-BufferedIO<IOType>::buffer_read( size_t limit, bool copy )
+BufferedIO<IOType>::buffer_read( size_t limit, bool read_all, size_t read_ahead )
 {
   if ( limit == 0 ) {
     throw std::runtime_error( "asked to read 0" );
@@ -123,9 +171,15 @@ BufferedIO<IOType>::buffer_read( size_t limit, bool copy )
   /* can't return large segments than our buffer */
   limit = std::min( limit, rsize_ );
 
+  /* direct read if not buffered */
+  if ( rsize_ == 0 ) {
+    ssize_t n = read_raw( buf, limit );
+    return std::make_tuple( buf, n );
+  }
+
   /* can fill (at least partially) from cache */
   if ( rstart_ < rend_ ) {
-    if ( !copy ) { limit = std::min( limit, rend_ - rstart_ ); }
+    if ( !read_all ) { limit = std::min( limit, rend_ - rstart_ ); }
 
     if ( limit <= rend_ - rstart_ ) {
       /* can completely fill from cache */
@@ -143,12 +197,8 @@ BufferedIO<IOType>::buffer_read( size_t limit, bool copy )
   }
 
   /* cache empty, refill */
-  ssize_t n = SystemCall( "read",
-    ::read( io_.fd_num(), buf + rend_, rsize_ - rend_ ) );
-  if ( n == 0 ) {
-    io_.set_eof();
-  }
-  io_.register_read();
+  read_ahead = std::min( read_ahead - rend_, rsize_ - rend_ );
+  ssize_t n = read_raw( buf + rend_, read_ahead );
   rend_ += n;
 
   /* return from cache */
@@ -157,18 +207,35 @@ BufferedIO<IOType>::buffer_read( size_t limit, bool copy )
   return std::make_tuple( buf, limit );
 }
 
-/* base write */
+/* raw (direct) write */
 template <typename IOType>
-ssize_t BufferedIO<IOType>::wwrite( const char * buffer, size_t count)
+ssize_t BufferedIO<IOType>::write_raw( const char * buf, size_t count)
+{
+  ssize_t n = SystemCall( "write", ::write( io_.fd_num(), buf, count ) );
+  if ( n == 0 ) {
+    throw std::runtime_error( "write returned 0" );
+  }
+  io_.register_write();
+  return n;
+}
+
+/* buffered write */
+template <typename IOType>
+ssize_t BufferedIO<IOType>::wwrite( const char * buf, size_t count)
 {
   if ( count == 0 ) {
     throw std::runtime_error( "nothing to write" );
   }
 
+  /* direct write since buffer disabled */
+  if ( wsize_ == 0 ) {
+    return write_raw( buf, count );
+  }
+
   /* copy to available buffer space */
   size_t limit = std::min( count, wsize_ - wend_ );
   if ( limit > 0 ) {
-    std::memcpy( wbuf_.get() + wend_, buffer, limit );
+    std::memcpy( wbuf_.get() + wend_, buf, limit );
     wend_ += limit;
   }
 
@@ -191,12 +258,7 @@ ssize_t BufferedIO<IOType>::flush( bool flush_all )
   ssize_t n {0};
 
   do {
-    n = SystemCall( "write",
-      ::write( io_.fd_num(), wbuf_.get() + wstart_, wend_ - wstart_ ) );
-    if ( n == 0 ) {
-      throw std::runtime_error( "write returned 0" );
-    }
-    io_.register_write();
+    n = write_raw( wbuf_.get() + wstart_, wend_ - wstart_ );
     wstart_ += n;
   } while ( flush_all and wstart_ != wend_ );
 
