@@ -36,6 +36,7 @@ Client::Client( Address node )
 {
 }
 
+// void Client::DoInitialize( void ) { sock_.connect( addr_ ); }
 void Client::DoInitialize( void ) { sock_.iodevice().connect( addr_ ); }
 
 void Client::waitOnRPC( unique_lock<mutex> & lck )
@@ -78,14 +79,14 @@ std::vector<Record> Client::recvRead( void )
   cout << "* Read RPC took: " << dur << "ms" << endl;
 
   // deserialize from the network
-  const char * str = get<0>( sock_.buffer_read( sizeof( size_type ), true, sizeof( size_type ) ) );
-  size_type nrecs = *reinterpret_cast<const size_type *>( str );
+  string str = sock_.read( sizeof( size_type ), true, sizeof( size_type ) );
+  size_type nrecs = *reinterpret_cast<const size_type *>( str.c_str() );
 
   vector<Record> recs{};
   recs.reserve( nrecs );
   for ( size_type i = 0; i < nrecs; i++ ) {
-    const char * r = get<0>( sock_.buffer_read( Record::SIZE, true, (nrecs - i) * Record::SIZE ) );
-    recs.emplace_back( r, 0, true );
+    string r = sock_.read( Record::SIZE, true, (nrecs - i) * Record::SIZE );
+    recs.emplace_back( r.c_str(), 0, true );
   }
 
   if ( size_ == 0 && nrecs != rpcSize_ ) {
@@ -125,8 +126,8 @@ std::vector<Record> Client::recvRead( void )
 
 void Client::recvSize( void )
 {
-  const char * str = get<0>( sock_.buffer_read( sizeof( size_type ), true, sizeof( size_type ) ) );
-  size_ = *reinterpret_cast<const size_type *>( str );
+  string str = sock_.read( sizeof( size_type ), true, sizeof( size_type ) );
+  size_ = *reinterpret_cast<const size_type *>( str.c_str() );
 
   // timings -- size rpc
   auto end = chrono::high_resolution_clock::now();
@@ -227,6 +228,7 @@ Client::size_type Client::DoSize( void )
 Action Client::RPCRunner( void )
 {
   return Action{sock_.iodevice(), Direction::In, [this]() {
+  // return Action{sock_, Direction::In, [this]() {
     unique_lock<mutex> lck{*mtx_};
 
     switch ( rpcActive_ ) {
