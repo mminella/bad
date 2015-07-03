@@ -7,6 +7,7 @@
 require './lib/ec2'
 require './lib/setup'
 require './lib/deploy'
+
 require 'optparse'
 
 SSH_USER = 'ubuntu'

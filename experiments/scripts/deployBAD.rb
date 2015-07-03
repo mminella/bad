@@ -4,25 +4,35 @@
 # This script deploys B.A.D to an EC2 machine.
 #
 
-require 'net/ssh'
-require 'net/scp'
 require './lib/deploy'
 
-hostname = ARGV[0]
+require 'net/ssh'
+require 'net/scp'
+require 'optparse'
 
-if !ARGV[0]
-  puts "This is the B.A.D deploy script."
-  puts ""
-  print "Hostname? "
-  hostname = $stdin.gets.strip
-elsif ARGV[0] == "help" || ARGV[0] == "--help" || ARGV[0] == "-h"
-  puts "Usage: " + __FILE__ + " [hostname]"
-  exit 0
+options = {:defaults => false}
+
+optparse = OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options] [hosts]
+    \nDeploy a `bad.tar.gz` to a set of machines\n\n"
+
+  opts.on("-d", "--defaults", "Use default settings") do |key|
+    options[:defaults] = true
+  end
 end
 
-deployer = Deploy.new(hostname: hostname)
-deployer.interactive!
-deployer.deploy!
+if ARGV.length == 0
+  optparse.parse %w[--help]
+end
+
+optparse.parse!
+
+ARGV.each do |host|
+  deployer = Deploy.new(hostname: host)
+  if options[:defaults]
+    deployer.set_opts(distfile: 'bad.tar.gz', user: 'ubuntu', skey: {})
+  end
+  deployer.deploy!
+end
 
 puts "\nB.A.D deployed!"
-
