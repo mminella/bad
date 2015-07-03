@@ -4,6 +4,7 @@
 #include <cassert>
 #include <chrono>
 #include <stdexcept>
+#include <tuple>
 #include <vector>
 
 #include "node.hh"
@@ -50,7 +51,7 @@ void Node::Run( void )
       BufferedIO<TCPSocket> client {{sock.accept()}, false, true};
 
       while ( true ) {
-        string str = client.read( 1 );
+        const char * str = get<0>( client.buffer_read( 1, true ) );
         if ( client.eof() ) {
           break;
         }
@@ -76,9 +77,9 @@ void Node::Run( void )
 void Node::RPC_Read( BufferedIO<TCPSocket> & client )
 {
   // parse arguments
-  string str = client.read( 2 * sizeof( size_type ), true );
-  size_type pos = *( reinterpret_cast<const size_type *>( str.c_str() ) );
-  size_type amt = *( reinterpret_cast<const size_type *>( str.c_str() ) + 1 );
+  const char * str = get<0>( client.buffer_read( 2 * sizeof( size_type ), true ) );
+  size_type pos = *( reinterpret_cast<const size_type *>( str ) );
+  size_type amt = *( reinterpret_cast<const size_type *>( str ) + 1 );
 
   // perform read
   vector<Record> recs = Read( pos, amt );

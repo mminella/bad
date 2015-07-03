@@ -30,7 +30,7 @@ private:
   /* buffers */
   std::unique_ptr<char> rbuf_;
   std::unique_ptr<char> wbuf_;
-  const size_t rsize_ = 0, wsize_ = 0;
+  bool rbuffered_, wbuffered_;
   size_t rstart_ = 0, rend_ = 0;
   size_t wstart_ = 0, wend_ = 0;
 
@@ -45,11 +45,11 @@ public: /* BufferedIO API */
 
   /* BufferedIO takes ownership of the file descriptor. You can access the
    * underlying type through `iodevice`. */
-  BufferedIO( IOType && io, size_t rbuf = BUFFER_SIZE, size_t wbuf = BUFFER_SIZE )
+  BufferedIO( IOType && io, bool rbuf = true, bool wbuf = true)
     : rbuf_{ new char[BUFFER_SIZE]() }
-    , wbuf_{ wbuf ? new char[BUFFER_SIZE]() : nullptr }
-    , rsize_{ rbuf }
-    , wsize_{ wbuf }
+    , wbuf_{ wbuf ? new char[BUFFER_SIZE] : nullptr }
+    , rbuffered_{ rbuf }
+    , wbuffered_{ wbuf }
     , io_{ std::move( io ) }
   {
   }
@@ -58,8 +58,8 @@ public: /* BufferedIO API */
   BufferedIO( BufferedIO && other ) noexcept
     : rbuf_{ std::move( other.rbuf_ ) }
     , wbuf_{ std::move( other.wbuf_ ) }
-    , rsize_{ other.rsize_ }
-    , wsize_{other.wsize_}
+    , rbuffered_{other.rbuffered_}
+    , wbuffered_{other.wbuffered_}
     , rstart_{other.rstart_}
     , rend_{other.rend_}
     , wstart_{other.wstart_}
@@ -73,8 +73,8 @@ public: /* BufferedIO API */
     if ( this != &other ) {
       rbuf_ = std::move( other.rbuf_ );
       wbuf_ = std::move( other.wbuf_ );
-      rsize_ = other.rsize_;
-      wsize_ = other.wsize_;
+      rbuffered_ = other.rbuffered_;
+      wbuffered_ = other.wbuffered_;
       rstart_ = other.rstart_;
       rend_ = other.rend_;
       wstart_ = other.wstart_;
@@ -169,10 +169,10 @@ BufferedIO<IOType>::buffer_read( size_t limit, bool read_all, size_t read_ahead 
   char * buf = rbuf_.get();
 
   /* can't return large segments than our buffer */
-  limit = std::min( limit, rsize_ );
+  limit = std::min( limit, BUFFER_SIZE );
 
   /* direct read if not buffered */
-  if ( rsize_ == 0 ) {
+  if ( !rbuffered_ ) {
     ssize_t n = read_raw( buf, limit );
     return std::make_tuple( buf, n );
   }
@@ -197,7 +197,7 @@ BufferedIO<IOType>::buffer_read( size_t limit, bool read_all, size_t read_ahead 
   }
 
   /* cache empty, refill */
-  read_ahead = std::min( read_ahead - rend_, rsize_ - rend_ );
+  read_ahead = std::min( read_ahead - rend_, BUFFER_SIZE - rend_ );
   ssize_t n = read_raw( buf + rend_, read_ahead );
   rend_ += n;
 
@@ -228,12 +228,12 @@ ssize_t BufferedIO<IOType>::wwrite( const char * buf, size_t count)
   }
 
   /* direct write since buffer disabled */
-  if ( wsize_ == 0 ) {
+  if ( !wbuffered_ ) {
     return write_raw( buf, count );
   }
 
   /* copy to available buffer space */
-  size_t limit = std::min( count, wsize_ - wend_ );
+  size_t limit = std::min( count, BUFFER_SIZE - wend_ );
   if ( limit > 0 ) {
     std::memcpy( wbuf_.get() + wend_, buf, limit );
     wend_ += limit;

@@ -22,7 +22,7 @@ using namespace meth1;
 using namespace PollerShortNames;
 
 Client::Client( Address node )
-  : sock_{{(IPVersion)(node.domain())}, BufferedIO<TCPSocket>::BUFFER_SIZE, 0}
+  : sock_{{(IPVersion)(node.domain())}, true, false}
   , addr_{node}
   , rpcActive_{None_}
   , rpcPos_{0}
@@ -55,9 +55,8 @@ void Client::sendRead( unique_lock<mutex> & lck, size_type pos, size_type siz )
 
   char data[1 + 2 * sizeof( size_type )];
   data[0] = 0;
-  *reinterpret_cast<size_type *>( &data + 1 ) = pos;
-  *reinterpret_cast<size_type *>( &data + 1 + sizeof( size_type ) ) = siz;
-
+  *reinterpret_cast<size_type *>( data + 1 ) = pos;
+  *reinterpret_cast<size_type *>( data + 1 + sizeof( size_type ) ) = siz;
   sock_.write( data, 1 + 2 * sizeof( size_type ) );
 }
 
