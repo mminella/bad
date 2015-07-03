@@ -26,5 +26,6 @@ bin-dist: app/meth1_node app/meth1_shell app/meth1_client
 	cp app/meth1_node dist_root/usr/bin/meth1_node
 	cp app/meth1_shell dist_root/usr/bin/meth1_shell
 	cp app/meth1_client dist_root/usr/bin/meth1_client
+	cp scripts/clear_buffers.sh dist_root/usr/bin/clear_buffers
 	tar cvzf bad.tar.gz -C dist_root .
 
