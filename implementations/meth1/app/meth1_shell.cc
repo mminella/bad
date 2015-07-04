@@ -10,9 +10,8 @@
 #include "exception.hh"
 #include "util.hh"
 
-// #include "record.hh"
-//
 #include "implementation.hh"
+
 #include "cluster.hh"
 
 using namespace std;
@@ -47,7 +46,6 @@ int main( int argc, char * argv[] )
 void run( int argc, char * argv[] )
 {
   // check started OK
-  sanity_check_env( argc );
   check_usage( argc, argv );
 
   // get arguments

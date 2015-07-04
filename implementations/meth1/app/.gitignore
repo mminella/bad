@@ -1,3 +1,4 @@
+echo_server
 meth1_client
 meth1_client_test
 meth1_cluster_test

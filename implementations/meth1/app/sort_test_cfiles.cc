@@ -40,7 +40,6 @@ int main( int argc, char * argv[] )
 int run( int argc, char * argv[] )
 {
   // startup
-  sanity_check_env( argc );
   check_usage( argc, argv );
 
   FILE *fdi = fopen( argv[1], "r" );

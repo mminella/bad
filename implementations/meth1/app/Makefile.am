@@ -1,11 +1,12 @@
 bin_PROGRAMS = \
-	sort_test \
-	meth1_node_test \
+	echo_server \
+	meth1_client \
 	meth1_client_test \
 	meth1_cluster_test \
-	meth1_client \
 	meth1_node \
+	meth1_node_test \
 	meth1_shell \
+	sort_test \
 	sort_test_cfiles
 
 AM_CPPFLAGS = \
@@ -31,3 +32,5 @@ meth1_cluster_test_SOURCES = meth1_cluster_test.cc
 meth1_node_SOURCES = meth1_node.cc
 meth1_client_SOURCES = meth1_client.cc
 meth1_shell_SOURCES = meth1_shell.cc
+
+echo_server_SOURCES = echo_server.cc

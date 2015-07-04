@@ -1,272 +1,79 @@
 #ifndef BUFFERED_IO_HH
 #define BUFFERED_IO_HH
 
-#include <unistd.h>
-
-#include <cstring>
 #include <iostream>
 #include <memory>
 #include <string>
-#include <tuple>
+#include <utility>
 
-#include "exception.hh"
+#include "io_device.hh"
 
-class FileDescriptor;
-
-/* Wrapper around a FileDescriptor subclass to buffer reads and/or writes. */
-template <typename IOType>
-class BufferedIO
+/* Wrapper around an IODevice to buffer reads and/or writes. */
+class BufferedIO : public IODevice
 {
-public:
-  /* ensure we instantiate from a FileDescriptor sub-class */
-  static_assert(std::is_base_of<FileDescriptor, IOType>::value,
-    "IOType not derived from FileDescriptor");
-
-  using iterator_type = std::string::const_iterator;
-
-  const static size_t BUFFER_SIZE = 4096;
-
 private:
   /* buffers */
   std::unique_ptr<char> rbuf_;
   std::unique_ptr<char> wbuf_;
-  bool rbuffered_, wbuffered_;
   size_t rstart_ = 0, rend_ = 0;
   size_t wstart_ = 0, wend_ = 0;
 
-  /* underlying device */
-  IOType io_;
+  /* underlying file descriptor */
+  IODevice & io_;
 
-  ssize_t read_raw( char * buf, size_t count );
-  ssize_t write_raw( const char * buf, size_t count );
-  ssize_t wwrite( const char * buf, size_t count );
+  /* base buffer read method */
+  std::pair<const char *, size_t> rread_buf( size_t limit, bool read_all );
 
-public: /* BufferedIO API */
+  /* implement read + write */
+  size_t rread( char * buf, size_t limit ) override;
+  std::string rread( size_t limit = MAX_READ ) override;
+  size_t wwrite( const char * buf, size_t nbytes ) override;
 
-  /* BufferedIO takes ownership of the file descriptor. You can access the
-   * underlying type through `iodevice`. */
-  BufferedIO( IOType && io, bool rbuf = true, bool wbuf = true)
-    : rbuf_{ new char[BUFFER_SIZE]() }
-    , wbuf_{ wbuf ? new char[BUFFER_SIZE] : nullptr }
-    , rbuffered_{ rbuf }
-    , wbuffered_{ wbuf }
-    , io_{ std::move( io ) }
-  {
-  }
+protected:
+  /* io device state */
+  bool get_eof( void ) const noexcept override { return io_.eof(); }
+  void set_eof( void ) noexcept override {}
+  void reset_eof( void ) noexcept override {}
 
-  /* move */
-  BufferedIO( BufferedIO && other ) noexcept
-    : rbuf_{ std::move( other.rbuf_ ) }
-    , wbuf_{ std::move( other.wbuf_ ) }
-    , rbuffered_{other.rbuffered_}
-    , wbuffered_{other.wbuffered_}
-    , rstart_{other.rstart_}
-    , rend_{other.rend_}
-    , wstart_{other.wstart_}
-    , wend_{other.wend_}
-    , io_{ std::move( other.io_ ) }
-  {
-  }
+public:
+  static const size_t BUFFER_SIZE = 4096;
 
-  BufferedIO & operator=( BufferedIO && other ) noexcept
-  {
-    if ( this != &other ) {
-      rbuf_ = std::move( other.rbuf_ );
-      wbuf_ = std::move( other.wbuf_ );
-      rbuffered_ = other.rbuffered_;
-      wbuffered_ = other.wbuffered_;
-      rstart_ = other.rstart_;
-      rend_ = other.rend_;
-      wstart_ = other.wstart_;
-      wend_ = other.wend_;
-      io_ = std::move( other.io_ );
-    }
-    return *this;
-  }
+  /* constructor */
+  BufferedIO( IODevice & io );
 
-  /* accessors */
-  IOType & iodevice( void ) noexcept { return io_; }
-  const int & fd_num( void ) const noexcept { return io_.fd_num(); }
-  const bool & eof( void ) const noexcept { return io_.eof(); }
-  unsigned int read_count( void ) const noexcept { return io_.read_count(); }
-  unsigned int write_count( void ) const noexcept { return io_.write_count(); }
+  /* buffer read method */
+  std::pair<const char *, size_t> read_buf( size_t limit = BUFFER_SIZE );
+  std::pair<const char *, size_t> read_buf_all( size_t nbytes );
 
-  /* read method */
-  std::tuple<const char *, size_t> buffer_read( size_t limit = BUFFER_SIZE,
-                                                bool read_all = false,
-                                                size_t read_ahead = BUFFER_SIZE );
-
-  std::string read( size_t limit = BUFFER_SIZE, bool read_all = false,
-                    size_t read_ahead = BUFFER_SIZE )
-  {
-    std::string str;
-    if ( read_all and limit > 0 ) {
-      str.reserve( limit );
-    }
-
-    size_t n;
-    const char * cstr;
-    do {
-      std::tie( cstr, n ) = BufferedIO::buffer_read( limit - str.size(),
-                                                     read_all, read_ahead );
-      str += std::string( cstr, n );
-    } while ( read_all and str.size() < limit );
-
-    return str;
-  }
-
-  /* write methods */
-  ssize_t write( const char * buffer, size_t count, bool write_all = true )
-  {
-    size_t n{0};
-
-    do {
-      n += wwrite( buffer + n, count - n );
-    } while ( write_all and n < count );
-
-    return n;
-  }
-
-  iterator_type write( const std::string & buffer, bool write_all = true )
-  {
-    auto it = buffer.begin();
-
-    do {
-      it += wwrite( &*it, buffer.end() - it );
-    } while ( write_all and it != buffer.end() );
-
-    return it;
-  }
-  
   /* flush */
-  ssize_t flush( bool flush_all = true );
+  size_t flush( bool flush_all = true );
 
   /* destructor */
   ~BufferedIO() { flush( true ); }
 };
 
-/* raw (direct) read */
+/* A version of BufferedIO that takes ownership of the IODevice */
 template <typename IOType>
-ssize_t BufferedIO<IOType>::read_raw( char * buf, size_t count )
+class BufferedIO_O : public BufferedIO
 {
-  ssize_t n = SystemCall( "read", ::read( io_.fd_num(), buf, count ) );
-  if ( n == 0 ) {
-    io_.set_eof();
-  }
-  io_.register_read();
-  return n;
-}
+/* ensure we instantiate from a IODevice sub-class */
+static_assert( std::is_base_of<IODevice, IOType>::value,
+               "IOType not derived from IODevice" );
+private:
+  IOType io_;
 
-/* buffered read */
-template <typename IOType>
-std::tuple<const char *, size_t>
-BufferedIO<IOType>::buffer_read( size_t limit, bool read_all, size_t read_ahead )
-{
-  if ( limit == 0 ) {
-    throw std::runtime_error( "asked to read 0" );
-  }
+public:
+  BufferedIO_O( IOType && io )
+    : BufferedIO( io_ )
+    , io_{ std::move( io ) }
+  {}
 
-  char * buf = rbuf_.get();
+  BufferedIO_O( BufferedIO_O && other )
+    : BufferedIO( io_ )
+    , io_{ std::move( other.io_ ) }
+  {}
 
-  /* can't return large segments than our buffer */
-  limit = std::min( limit, BUFFER_SIZE );
-
-  /* direct read if not buffered */
-  if ( !rbuffered_ ) {
-    ssize_t n = read_raw( buf, limit );
-    return std::make_tuple( buf, n );
-  }
-
-  /* can fill (at least partially) from cache */
-  if ( rstart_ < rend_ ) {
-    if ( !read_all ) { limit = std::min( limit, rend_ - rstart_ ); }
-
-    if ( limit <= rend_ - rstart_ ) {
-      /* can completely fill from cache */
-      const char * str = buf + rstart_;
-      rstart_ += limit;
-      return std::make_tuple( str, limit );
-    } else {
-      /* move cached to start of buffer */
-      memmove( buf, buf + rstart_, rend_ - rstart_ );
-      rend_ = rend_ - rstart_;
-      rstart_ = 0;
-    }
-  } else {
-    rstart_ = rend_ = 0;
-  }
-
-  /* cache empty, refill */
-  read_ahead = std::min( read_ahead - rend_, BUFFER_SIZE - rend_ );
-  ssize_t n = read_raw( buf + rend_, read_ahead );
-  rend_ += n;
-
-  /* return from cache */
-  limit = std::min( static_cast<size_t>( n ), limit );
-  rstart_ += limit;
-  return std::make_tuple( buf, limit );
-}
-
-/* raw (direct) write */
-template <typename IOType>
-ssize_t BufferedIO<IOType>::write_raw( const char * buf, size_t count)
-{
-  ssize_t n = SystemCall( "write", ::write( io_.fd_num(), buf, count ) );
-  if ( n == 0 ) {
-    throw std::runtime_error( "write returned 0" );
-  }
-  io_.register_write();
-  return n;
-}
-
-/* buffered write */
-template <typename IOType>
-ssize_t BufferedIO<IOType>::wwrite( const char * buf, size_t count)
-{
-  if ( count == 0 ) {
-    throw std::runtime_error( "nothing to write" );
-  }
-
-  /* direct write since buffer disabled */
-  if ( !wbuffered_ ) {
-    return write_raw( buf, count );
-  }
-
-  /* copy to available buffer space */
-  size_t limit = std::min( count, BUFFER_SIZE - wend_ );
-  if ( limit > 0 ) {
-    std::memcpy( wbuf_.get() + wend_, buf, limit );
-    wend_ += limit;
-  }
-
-  /* buffer full so flush */
-  if ( limit != count ) {
-    flush( false );
-  }
-
-  return limit;
-}
-
-/* flush */
-template <typename IOType>
-ssize_t BufferedIO<IOType>::flush( bool flush_all )
-{
-  if ( wstart_ == wend_ ) {
-    return 0;
-  }
-
-  ssize_t n {0};
-
-  do {
-    n = write_raw( wbuf_.get() + wstart_, wend_ - wstart_ );
-    wstart_ += n;
-  } while ( flush_all and wstart_ != wend_ );
-
-  if ( wstart_ == wend_ ) {
-    wstart_ = wend_ = 0;
-  }
-
-  return n;
-}
+  IOType & io() noexcept { return io_; }
+};
 
 #endif /* BUFFERED_IO_HH */

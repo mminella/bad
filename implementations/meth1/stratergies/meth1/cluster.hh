@@ -3,14 +3,14 @@
 
 #include <vector>
 
-#include "implementation.hh"
-
-#include "remote_file.hh"
-
 #include "address.hh"
 #include "file.hh"
 #include "poller.hh"
 #include "socket.hh"
+
+#include "implementation.hh"
+
+#include "remote_file.hh"
 
 /**
  * Strategy 1.

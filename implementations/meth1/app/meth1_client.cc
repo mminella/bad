@@ -7,8 +7,8 @@
 #include "util.hh"
 
 #include "record.hh"
-
 #include "implementation.hh"
+
 #include "cluster.hh"
 
 using namespace std;
@@ -39,7 +39,6 @@ int main( int argc, char * argv[] )
 
 int run( int argc, char * argv[] )
 {
-  sanity_check_env( argc );
   check_usage( argc, argv );
 
   size_type records = stoul( argv[1] );

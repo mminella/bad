@@ -2,15 +2,15 @@
 #include <thread>
 #include <vector>
 
+#include "exception.hh"
+#include "poller.hh"
+#include "socket.hh"
+
 #include "implementation.hh"
 
 #include "client.hh"
 #include "cluster.hh"
 #include "priority_queue.hh"
-
-#include "exception.hh"
-#include "poller.hh"
-#include "socket.hh"
 
 using namespace std;
 using namespace meth1;

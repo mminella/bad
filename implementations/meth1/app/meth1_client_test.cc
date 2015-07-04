@@ -38,7 +38,6 @@ int main( int argc, char * argv[] )
 
 int run( int argc, char * argv[] )
 {
-  sanity_check_env( argc );
   check_usage( argc, argv );
 
   File out( argv[2], O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR );

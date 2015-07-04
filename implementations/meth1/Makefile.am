@@ -14,11 +14,23 @@ check-all:
 
 test: app/sort_test app/meth1_node_test
 	@mkdir -p .test-tmp
+	
 	@./app/sort_test test/in.s0000.e1000.recs .test-tmp/out.1000.recs > /dev/null
-	@diff test/out.1000.recs .test-tmp/out.1000.recs && echo "PASSED 1" || echo "FAILED 1"
+	@diff test/out.1000.recs .test-tmp/out.1000.recs > /dev/null && \
+		echo "sort test : PASSED" || \
+		echo "sort test : FAILED"
 	@rm .test-tmp/out.1000.recs
+	
 	@./app/meth1_node_test test/in.s0000.e1000.recs .test-tmp/out.1000.recs > /dev/null
-	@diff test/out.1000.recs .test-tmp/out.1000.recs && echo "PASSED 2" || echo "FAILED 2"
+	@diff test/out.1000.recs .test-tmp/out.1000.recs > /dev/null && \
+		echo "node test : PASSED" || \
+		echo "node test : FAILED"
+	@rm .test-tmp/out.1000.recs
+	
+	@./app/sort_test_cfiles test/in.s0000.e1000.recs .test-tmp/out.1000.recs > /dev/null
+	@diff test/out.1000.recs .test-tmp/out.1000.recs > /dev/null && \
+		echo "csort test: PASSED" || \
+		echo "csort test: FAILED"
 
 bin-dist: app/meth1_node app/meth1_shell app/meth1_client
 	rm -Rf dist_root

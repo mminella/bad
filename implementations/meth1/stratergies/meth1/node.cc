@@ -7,17 +7,16 @@
 #include <tuple>
 #include <vector>
 
-#include "node.hh"
-#include "priority_queue.hh"
-
-#include "record.hh"
-
 #include "address.hh"
 #include "buffered_io.hh"
-#include "event_loop.hh"
 #include "exception.hh"
 #include "file.hh"
 #include "socket.hh"
+
+#include "record.hh"
+
+#include "node.hh"
+#include "priority_queue.hh"
 
 using namespace std;
 using namespace meth1;
@@ -48,10 +47,10 @@ void Node::Run( void )
 
   while ( true ) {
     try {
-      BufferedIO<TCPSocket> client {{sock.accept()}, false, true};
+      BufferedIO_O<TCPSocket> client {sock.accept()};
 
       while ( true ) {
-        const char * str = get<0>( client.buffer_read( 1, true ) );
+        const char * str = client.read_buf_all( 1 ).first;
         if ( client.eof() ) {
           break;
         }
@@ -74,10 +73,10 @@ void Node::Run( void )
   }
 }
 
-void Node::RPC_Read( BufferedIO<TCPSocket> & client )
+void Node::RPC_Read( BufferedIO_O<TCPSocket> & client )
 {
   // parse arguments
-  const char * str = get<0>( client.buffer_read( 2 * sizeof( size_type ), true ) );
+  const char * str = client.read_buf_all( 2 * sizeof( size_type ) ).first;
   size_type pos = *( reinterpret_cast<const size_type *>( str ) );
   size_type amt = *( reinterpret_cast<const size_type *>( str ) + 1 );
 
@@ -86,17 +85,17 @@ void Node::RPC_Read( BufferedIO<TCPSocket> & client )
   size_type siz = recs.size();
 
   // serialize results to wire
-  client.write( reinterpret_cast<const char *>( &siz ), sizeof( size_type ) );
+  client.write_all( reinterpret_cast<const char *>( &siz ), sizeof( size_type ) );
   for ( auto const & r : recs ) {
-    client.write( r.str( Record::NO_LOC ) );
+    client.write_all( r.str( Record::NO_LOC ) );
   }
   client.flush( true );
 }
 
-void Node::RPC_Size( BufferedIO<TCPSocket> & client )
+void Node::RPC_Size( BufferedIO_O<TCPSocket> & client )
 {
   size_type siz = Size();
-  client.write( reinterpret_cast<const char *>( &siz ), sizeof( size_type ) );
+  client.write_all( reinterpret_cast<const char *>( &siz ), sizeof( size_type ) );
   client.flush( true );
 }
 
@@ -174,7 +173,7 @@ vector<Record> Node::linear_scan( const Record & after, size_type size )
   size_type i;
 
   for ( i = 0;; i++ ) {
-    const char * rec_str = get<0>( data_.buffer_read( Record::SIZE, true ) );
+    const char * rec_str = data_.read_buf_all( Record::SIZE ).first;
     Record next = Record::ParseRecord( rec_str, i, false );
     if ( data_.eof() ) {
       break;
@@ -199,7 +198,7 @@ vector<Record> Node::linear_scan( const Record & after, size_type size )
   size_ = i;
 
   // rewind the file
-  data_.iodevice().rewind();
+  data_.io().rewind();
 
   // sort final heap
   auto & vrecs = recs.container();

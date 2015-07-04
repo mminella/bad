@@ -40,12 +40,11 @@ int main( int argc, char * argv[] )
 int run( int argc, char * argv[] )
 {
   // startup
-  sanity_check_env( argc );
   check_usage( argc, argv );
 
-  BufferedIO<File> fdi( {argv[1], O_RDONLY} );
-  BufferedIO<File> fdo( {argv[2], O_WRONLY | O_CREAT | O_TRUNC,
-                                  S_IRUSR | S_IWUSR} );
+  BufferedIO_O<File> fdi( {argv[1], O_RDONLY} );
+  BufferedIO_O<File> fdo( {argv[2], O_WRONLY | O_CREAT | O_TRUNC,
+                                    S_IRUSR | S_IWUSR} );
 
   vector<Record> recs;
   // PERF: avoid copying partial vectors
@@ -56,7 +55,7 @@ int run( int argc, char * argv[] )
   // read
   for ( uint64_t i = 0;; i++ ) {
     // PERF: Avoid copy from buffer to string.
-    const char * r = get<0>( fdi.buffer_read( Record::SIZE, true ) );
+    const char * r = fdi.read_buf( Record::SIZE ).first;
     if ( fdi.eof() ) {
       break;
     }
@@ -71,10 +70,10 @@ int run( int argc, char * argv[] )
 
   // write
   for ( auto & r : recs ) {
-    fdo.write( r.str( Record::NO_LOC ) );
+    fdo.write_all( r.str( Record::NO_LOC ) );
   }
   fdo.flush( true );
-  fdo.iodevice().fsync();
+  fdo.io().fsync();
   auto t4 = chrono::high_resolution_clock::now();
 
   // stats
@@ -87,8 +86,10 @@ int run( int argc, char * argv[] )
   cout << "Sort  took " << t32 << "ms" << endl;
   cout << "Write took " << t43 << "ms" << endl;
   cout << "Total took " << t41 << "ms" << endl;
-  cout << "Read calls " << fdi.read_count() << endl;
-  cout << "Writ calls " << fdo.write_count() << endl;
+  cout << "Read calls (buf) " << fdi.read_count() << endl;
+  cout << "Writ calls (buf) " << fdo.write_count() << endl;
+  cout << "Read calls (dir) " << fdi.io().read_count() << endl;
+  cout << "Writ calls (dir) " << fdo.io().write_count() << endl;
 
   return EXIT_SUCCESS;
 }

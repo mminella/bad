@@ -1,7 +1,8 @@
 #ifndef PIPE_HH
 #define PIPE_HH
 
-#include "address.hh"
+#include <utility>
+
 #include "file_descriptor.hh"
 
 /* class for unix pipes */
@@ -11,22 +12,16 @@ public:
   enum class Side { Read, Write };
 
 private:
-  Side side_;
+  const Side side_;
 
 protected:
-  Pipe( const int fd, const Side side );
+  Pipe( int fd, Side side ) noexcept;
 
 public:
-  /* static constructor for a pipe pair */
+  /* construct a pipe, returning the two end-points */
   static std::pair<Pipe, Pipe> NewPair( void );
 
-  /* forbid copying */
-  Pipe( const Pipe & other ) = delete;
-  const Pipe & operator=( const Pipe & other ) = delete;
-
-  /* allow move constructor */
-  Pipe( Pipe && other );
-
+  /* which side of the pipe do we have? */
   const Side & side( void ) const { return side_; }
 };
 

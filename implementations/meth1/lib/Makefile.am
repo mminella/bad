@@ -1,14 +1,16 @@
 noinst_LTLIBRARIES = libbasicrts.la
 
-libbasicrts_la_SOURCES = util.hh util.cc \
-	file_descriptor.hh file_descriptor.cc \
+libbasicrts_la_SOURCES = \
 	address.hh address.cc \
-	socket.hh socket.cc \
-	poller.hh poller.cc \
-	timestamp.hh timestamp.cc \
-	pipe.hh pipe.cc \
-	exception.hh \
-	privs.hh privs.cc \
+	buffered_io.hh buffered_io.cc \
 	domain_socket.hh domain_socket.cc \
+	exception.hh \
 	file.hh file.cc \
-	buffered_io.hh
+	file_descriptor.hh file_descriptor.cc \
+	io_device.hh io_device.cc \
+	pipe.hh pipe.cc \
+	poller.hh poller.cc \
+	privs.hh privs.cc \
+	socket.hh socket.cc \
+	timestamp.hh timestamp.cc \
+	util.hh util.cc

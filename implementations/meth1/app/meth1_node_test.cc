@@ -38,11 +38,10 @@ int main( int argc, char * argv[] )
 int run( int argc, char * argv[] )
 {
   // startup
-  sanity_check_env( argc );
   check_usage( argc, argv );
 
-  BufferedIO<File> out( {argv[2], O_WRONLY | O_CREAT | O_TRUNC,
-                                  S_IRUSR | S_IWUSR} );
+  BufferedIO_O<File> out( {argv[2], O_WRONLY | O_CREAT | O_TRUNC,
+                                    S_IRUSR | S_IWUSR} );
   auto t1 = chrono::high_resolution_clock::now();
 
   // start node
@@ -60,10 +59,10 @@ int run( int argc, char * argv[] )
 
   // write out records
   for ( auto & r : recs ) {
-    out.write( r.str( Record::NO_LOC ) );
+    out.write_all( r.str( Record::NO_LOC ) );
   }
   out.flush( true );
-  out.iodevice().fsync();
+  out.io().fsync();
   auto t5 = chrono::high_resolution_clock::now();
 
   // stats
@@ -73,6 +72,10 @@ int run( int argc, char * argv[] )
   auto t54 = chrono::duration_cast<chrono::milliseconds>( t5 - t4 ).count();
   auto t51 = chrono::duration_cast<chrono::milliseconds>( t5 - t1 ).count();
 
+  cout << "-----------------------" << endl;
+  cout << "Size       " << siz << endl;
+  cout << "Records    " << recs.size() << endl;
+  cout << "-----------------------" << endl;
   cout << "Start took " << t21 << "ms" << endl;
   cout << "Size  took " << t32 << "ms" << endl;
   cout << "Read  took " << t43 << "ms (buffered + sort)" << endl;

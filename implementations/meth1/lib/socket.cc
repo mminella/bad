@@ -21,13 +21,12 @@ Socket::Socket( FileDescriptor && fd, int domain, int type )
   socklen_t len;
 
   /* verify domain */
-  len = sizeof( actual_value );
 #ifdef linux
+  len = sizeof( actual_value );
   SystemCall( "getsockopt", getsockopt( fd_num(), SOL_SOCKET, SO_DOMAIN,
                                         &actual_value, &len ) );
 #else
-  Address addr = local_address();
-  actual_value = addr.domain();
+  actual_value = local_address().domain();
   len = sizeof( actual_value );
 #endif
   if ( ( len != sizeof( actual_value ) ) or ( actual_value != domain ) ) {
@@ -43,55 +42,51 @@ Socket::Socket( FileDescriptor && fd, int domain, int type )
   }
 }
 
-/* move constructor */
-Socket::Socket( Socket && other ) noexcept : FileDescriptor( move( other ) ) {}
-
-/* move assignment */
-Socket & Socket::operator=( Socket && other ) noexcept
+/* set socket option */
+template <typename option_t>
+void Socket::setsockopt( const int level, const int option,
+                         const option_t & option_value )
 {
-  if ( this != &other ) {
-    *static_cast<FileDescriptor *>( this ) =
-      move( static_cast<FileDescriptor &&>( other ) );
-  }
-  return *this;
+  SystemCall( "setsockopt",
+              ::setsockopt( fd_num(), level, option, &option_value,
+                            sizeof( option_value ) ) );
 }
 
-/* get the local or peer address the socket is connected to */
-Address Socket::get_address(
-  const std::string & name_of_function,
-  const std::function<int(int, sockaddr *, socklen_t *)> & function ) const
-{
-  Address::raw address;
-  socklen_t size = sizeof( address );
-
-  SystemCall( name_of_function,
-              function( fd_num(), &address.as_sockaddr, &size ) );
-
-  return Address( address, size );
-}
-
+/* get the local address the socket is connected to */
 Address Socket::local_address( void ) const
 {
-  return get_address( "getsockname", getsockname );
+  Address::raw addr;
+  socklen_t n = sizeof( addr );
+  SystemCall( "getsockname", getsockname( fd_num(), &addr.as_sockaddr, &n ) );
+  return {addr, n};
 }
 
+/* allow local address to be reused sooner, at the cost of some robustness */
+void Socket::set_reuseaddr( void )
+{
+  setsockopt( SOL_SOCKET, SO_REUSEADDR, int( true ) );
+}
+
+/* get the peer address the socket is connected to */
 Address Socket::peer_address( void ) const
 {
-  return get_address( "getpeername", getpeername );
+  Address::raw addr;
+  socklen_t n = sizeof( addr );
+  SystemCall( "getpeername", getpeername( fd_num(), &addr.as_sockaddr, &n ) );
+  return {addr, n};
 }
 
 /* bind socket to a specified local address (usually to listen/accept) */
-void Socket::bind( const Address & address )
+void Socket::bind( const Address & addr )
 {
-  SystemCall( "bind",
-              ::bind( fd_num(), &address.to_sockaddr(), address.size() ) );
+  SystemCall( "bind", ::bind( fd_num(), &addr.to_sockaddr(), addr.size() ) );
 }
 
 /* connect socket to a specified peer address */
-void Socket::connect( const Address & address )
+void Socket::connect( const Address & addr )
 {
-  SystemCall( "connect",
-              ::connect( fd_num(), &address.to_sockaddr(), address.size() ) );
+  SystemCall(
+    "connect", ::connect( fd_num(), &addr.to_sockaddr(), addr.size() ) );
 }
 
 /* receive datagram and where it came from */
@@ -181,25 +176,6 @@ void UDPSocket::sendto( const Address & destination, const string & payload )
   }
 }
 
-/* send datagram to specified address */
-void UDPSocket::sendto( const Address & destination,
-                        const string::const_iterator & begin,
-                        const string::const_iterator & end )
-{
-  if ( begin >= end ) {
-    throw runtime_error( "nothing to write" );
-  }
-
-  ssize_t bytes_sent = SystemCall(
-    "sendto", ::sendto( fd_num(), &*begin, end - begin, 0,
-                        &destination.to_sockaddr(), destination.size() ) );
-  register_write();
-
-  if ( bytes_sent != end - begin ) {
-    throw runtime_error( "datagram payload too big for sendto()" );
-  }
-}
-
 /* send datagram to connected address */
 void UDPSocket::send( const string & payload )
 {
@@ -213,6 +189,16 @@ void UDPSocket::send( const string & payload )
   }
 }
 
+/* turn on timestamps on receipt */
+void UDPSocket::set_timestamps( void )
+{
+#if defined( SO_TIMESTAMPNS )
+  setsockopt( SOL_SOCKET, SO_TIMESTAMPNS, int( true ) );
+#elif defined( SO_TIMESTAMP )
+  setsockopt( SOL_SOCKET, SO_TIMESTAMP, int( true ) );
+#endif
+}
+
 /* mark the socket as listening for incoming connections */
 void TCPSocket::listen( const int backlog )
 {
@@ -224,68 +210,7 @@ TCPSocket TCPSocket::accept( void )
 {
   Address addr = local_address();
   int ipv = addr.domain();
+  int fd = SystemCall( "accept", ::accept( fd_num(), nullptr, nullptr ) );
   register_read();
-  return TCPSocket( ipv, FileDescriptor(
-    SystemCall( "accept", ::accept( fd_num(), nullptr, nullptr ) ) ) );
-}
-
-/* set socket option */
-template <typename option_type>
-void Socket::setsockopt( const int level, const int option,
-                         const option_type & option_value )
-{
-  SystemCall( "setsockopt",
-              ::setsockopt( fd_num(), level, option, &option_value,
-                            sizeof( option_value ) ) );
-}
-
-/* allow local address to be reused sooner, at the cost of some robustness */
-void Socket::set_reuseaddr( void )
-{
-  setsockopt( SOL_SOCKET, SO_REUSEADDR, int( true ) );
-}
-
-/* turn on timestamps on receipt */
-void UDPSocket::set_timestamps( void )
-{
-#if defined( SO_TIMESTAMPNS )
-  setsockopt( SOL_SOCKET, SO_TIMESTAMPNS, int( true ) );
-#elif defined( SO_TIMESTAMP )
-  setsockopt( SOL_SOCKET, SO_TIMESTAMP, int( true ) );
-#endif
-}
-
-RAWSocket::RAWSocket( const IPVersion ipv )
-  : Socket( ipv, SOCK_RAW, IPPROTO_RAW )
-{
-  const int opt = 1;
-  SystemCall( "setsockopt", ::setsockopt( fd_num(), IPPROTO_IP, IP_HDRINCL,
-                                          &opt, sizeof( opt ) ) );
-}
-
-/* send datagram to specified address */
-void RAWSocket::sendto( const Address & destination, const string & payload )
-{
-  const ssize_t bytes_sent = SystemCall(
-    "sendto", ::sendto( fd_num(), payload.data(), payload.size(), 0,
-                        &destination.to_sockaddr(), destination.size() ) );
-
-  register_write();
-
-  if ( size_t( bytes_sent ) != payload.size() ) {
-    throw runtime_error( "datagram payload too big for sendto()" );
-  }
-}
-
-/* send datagram to connected address */
-void RAWSocket::send( const string & payload )
-{
-  const ssize_t bytes_sent = SystemCall(
-    "send", ::send( fd_num(), payload.data(), payload.size(), 0 ) );
-
-  register_write();
-
-  if ( size_t( bytes_sent ) != payload.size() ) {
-    throw runtime_error( "datagram payload too big for send()" );
-  }
+  return {{fd}, ipv};
 }

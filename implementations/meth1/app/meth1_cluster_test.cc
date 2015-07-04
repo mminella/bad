@@ -35,7 +35,6 @@ int main( int argc, char * argv[] )
 
 int run( int argc, char * argv[] )
 {
-  sanity_check_env( argc );
   check_usage( argc, argv );
 
   auto addrs = vector<Address>( argv + 1, argv + argc );

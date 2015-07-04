@@ -10,21 +10,15 @@
 
 using namespace std;
 
-/* construct from fd number */
-File::File( int fd )
-  : FileDescriptor( fd )
+/* construct by opening file at path given */
+File::File( const string & path, int flags )
+  : FileDescriptor( SystemCall( "open", ::open( path.c_str(), flags ) ) )
 {
 }
 
 /* construct by opening file at path given */
-File::File( const char * path, int flags )
-  : File( SystemCall( "open", ::open( path, flags ) ) )
-{
-}
-
-/* construct by opening file at path given */
-File::File( const char * path, int flags, mode_t mode )
-  : File( SystemCall( "open", ::open( path, flags, mode ) ) )
+File::File( const string & path, int flags, mode_t mode )
+  : FileDescriptor( SystemCall( "open", ::open( path.c_str(), flags, mode ) ) )
 {
 }
 

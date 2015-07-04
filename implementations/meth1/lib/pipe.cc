@@ -1,21 +1,16 @@
+#include <unistd.h>
+
+#include <utility>
+
 #include "pipe.hh"
 #include "exception.hh"
-
-#include <unistd.h>
 
 using namespace std;
 
 /* construct from fd number */
-Pipe::Pipe( const int fd, const Side side )
+Pipe::Pipe( int fd, Side side ) noexcept
   : FileDescriptor{fd}
   , side_{side}
-{
-}
-
-/* move constructor */
-Pipe::Pipe( Pipe && other )
-  : FileDescriptor{move( other )}
-  , side_{other.side_}
 {
 }
 

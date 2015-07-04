@@ -58,14 +58,15 @@ Poller::Result Poller::poll( const int & timeout_ms )
     // we only want to call callback if revents includes the event we asked for
     if ( pollfds_[i].revents & pollfds_[i].events ) {
 
-      // const auto count_before = actions_.at( i ).service_count();
-      // /* make sure action made some progress */
-      // if ( count_before == actions_.at( i ).service_count() ) {
-      //   throw runtime_error(
-      //     "Poller: busy wait detected: callback did not read/write fd" );
-      // }
+      const auto count_before = actions_.at( i ).service_count();
+      const auto result = actions_.at( i ).callback();
 
-      auto result = actions_.at( i ).callback();
+      /* make sure action made some progress */
+      if ( count_before == actions_.at( i ).service_count() ) {
+        throw runtime_error(
+          "Poller: busy wait detected: callback did not read/write fd" );
+      }
+
       switch ( result.result ) {
       case ResultType::Exit:
         return Result( Result::Type::Exit, result.exit_status );
@@ -78,4 +79,16 @@ Poller::Result Poller::poll( const int & timeout_ms )
   }
 
   return Result::Type::Success;
+}
+
+/* Run the poller in a loop until an an event handler returns 'Exit'. Return
+ * the exit status of the result. */
+int Poller::loop( void )
+{
+  while ( true ) {
+    const auto poll_result = poll( -1 );
+    if ( poll_result.result == Poller::Result::Type::Exit ) {
+      return poll_result.exit_status;
+    }
+  }
 }

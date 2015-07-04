@@ -1,6 +1,7 @@
 #ifndef POLLER_HH
 #define POLLER_HH
 
+#include <cstdlib>
 #include <functional>
 #include <vector>
 
@@ -101,6 +102,10 @@ public:
    * a timeout occurs before any event occurs, a 'Timeout' result is returned.
    */
   Result poll( const int & timeout_ms );
+
+  /* Run the poller in a loop until an an event handler returns 'Exit'. Return
+   * the exit status of the result. */
+  int loop( void );
 };
 
 namespace PollerShortNames

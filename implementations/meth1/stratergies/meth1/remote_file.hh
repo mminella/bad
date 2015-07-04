@@ -3,10 +3,11 @@
 
 #include <vector>
 
-#include "client.hh"
+#include "address.hh"
+
 #include "implementation.hh"
 
-#include "address.hh"
+#include "client.hh"
 
 /**
  * Strategy 1.

@@ -2,12 +2,15 @@
 #include <sys/types.h>
 #include <sys/un.h>
 
+#include <utility>
+
 #include "domain_socket.hh"
 #include "exception.hh"
 #include "util.hh"
 
 using namespace std;
 
+/* construct a unix domain socket pair */
 pair<UnixDomainSocket, UnixDomainSocket> UnixDomainSocket::NewPair( void )
 {
   int pipe[2];
@@ -15,7 +18,8 @@ pair<UnixDomainSocket, UnixDomainSocket> UnixDomainSocket::NewPair( void )
   return make_pair( UnixDomainSocket( pipe[0] ), UnixDomainSocket( pipe[1] ) );
 }
 
-void UnixDomainSocket::send_fd( FileDescriptor & fd )
+/* send a file descriptor over a unix domain socket */
+void UnixDomainSocket::send_fd( const FileDescriptor & fd )
 {
   msghdr message_header;
   zero( message_header );
@@ -31,14 +35,14 @@ void UnixDomainSocket::send_fd( FileDescriptor & fd )
   *reinterpret_cast<int *>( CMSG_DATA( control_message ) ) = fd.fd_num();
   message_header.msg_controllen = control_message->cmsg_len;
 
-  if ( 0 !=
-       SystemCall( "sendmsg", sendmsg( fd_num(), &message_header, 0 ) ) ) {
+  if ( SystemCall( "sendmsg", sendmsg( fd_num(), &message_header, 0 ) ) ) {
     throw runtime_error( "send_fd: sendmsg unexpectedly sent data" );
   }
 
   register_write();
 }
 
+/* receive a file descriptor over a unix domain socket */
 FileDescriptor UnixDomainSocket::recv_fd( void )
 {
   msghdr message_header;
@@ -48,8 +52,7 @@ FileDescriptor UnixDomainSocket::recv_fd( void )
   message_header.msg_control = control_buffer;
   message_header.msg_controllen = sizeof( control_buffer );
 
-  if ( 0 !=
-       SystemCall( "recvmsg", recvmsg( fd_num(), &message_header, 0 ) ) ) {
+  if ( SystemCall( "recvmsg", recvmsg( fd_num(), &message_header, 0 ) ) ) {
     throw runtime_error( "recv_fd: recvmsg unexpectedly received data" );
   }
 

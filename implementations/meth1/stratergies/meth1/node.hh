@@ -1,15 +1,14 @@
 #ifndef METH1_NODE_HH
 #define METH1_NODE_HH
 
-#include "implementation.hh"
-
-#include "priority_queue.hh"
-
-#include "record.hh"
-
 #include "buffered_io.hh"
 #include "file.hh"
 #include "socket.hh"
+
+#include "implementation.hh"
+#include "record.hh"
+
+#include "priority_queue.hh"
 
 /**
  * Stratergy 1.
@@ -25,7 +24,7 @@ namespace meth1
 class Node : public Implementation
 {
 private:
-  BufferedIO<File> data_;
+  BufferedIO_O<File> data_;
   std::string port_;
   Record last_;
   size_type fpos_;
@@ -46,8 +45,8 @@ private:
   Record seek( size_type pos );
   std::vector<Record> linear_scan( const Record & after, size_type size = 1 );
 
-  void RPC_Read( BufferedIO<TCPSocket> & client );
-  void RPC_Size( BufferedIO<TCPSocket> & client );
+  void RPC_Read( BufferedIO_O<TCPSocket> & client );
+  void RPC_Size( BufferedIO_O<TCPSocket> & client );
 };
 }
 

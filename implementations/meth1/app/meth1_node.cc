@@ -36,7 +36,6 @@ int main( int argc, char * argv[] )
 
 int run( int argc, char * argv[] )
 {
-  sanity_check_env( argc );
   check_usage( argc, argv );
 
   Node node{argv[3], argv[2], stoul( argv[1] )};

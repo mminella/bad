@@ -8,14 +8,14 @@
 #include <mutex>
 #include <vector>
 
-#include "implementation.hh"
-
 #include "address.hh"
 #include "buffered_io.hh"
 #include "exception.hh"
 #include "file.hh"
 #include "poller.hh"
 #include "socket.hh"
+
+#include "implementation.hh"
 
 /**
  * Strategy 1.
@@ -48,7 +48,7 @@ private:
   };
 
   /* network state */
-  BufferedIO<TCPSocket> sock_;
+  BufferedIO_O<TCPSocket> sock_;
   Address addr_;
 
   /* rpc state */
