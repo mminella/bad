@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include <algorithm>
 #include <cstring>
 #include <memory>
@@ -56,7 +58,7 @@ pair<const char *, size_t> BufferedIO::rread_buf( size_t limit, bool read_all )
   /* return from cache */
   limit = min( rend_, limit );
   rstart_ += limit;
-  return make_tuple( buf, limit );
+  return make_pair( buf, limit );
 }
 
 pair<const char *, size_t> BufferedIO::read_buf( size_t limit )
@@ -105,11 +107,12 @@ size_t BufferedIO::wwrite( const char * buf, size_t nbytes )
   }
 
   /* buffer full so flush */
-  if ( limit != nbytes ) {
+  if ( wend_ == BUFFER_SIZE ) {
     flush( false );
   }
 
   return limit;
+  // return io_.write( buf, nbytes );
 }
 
 /* flush */
@@ -126,7 +129,7 @@ size_t BufferedIO::flush( bool flush_all )
     n = io_.write( wbuf_.get() + wstart_, wend_ - wstart_ );
   }
   wstart_ += n;
-  
+
   if ( wstart_ == wend_ ) {
     wstart_ = wend_ = 0;
   }
