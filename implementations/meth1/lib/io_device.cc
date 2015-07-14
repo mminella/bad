@@ -78,6 +78,8 @@ size_t IODevice::write( const char * buf, size_t nbytes )
 {
   if ( nbytes == 0 ) {
     throw runtime_error( "nothing to write" );
+  } else if ( buf == nullptr ) {
+    throw runtime_error( "null buffer for write" );
   }
 
   size_t n = wwrite( buf, nbytes );

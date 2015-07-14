@@ -29,6 +29,9 @@ protected:
   void register_write( void ) noexcept { write_count_++; }
 
 public:
+  /* destructor */
+  virtual ~IODevice() {};
+
   /* accessors */
   bool eof( void ) const noexcept { return get_eof(); }
   unsigned int read_count( void ) const noexcept { return read_count_; }

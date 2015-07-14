@@ -1,6 +1,7 @@
 #ifndef UTIL_HH
 #define UTIL_HH
 
+#include <cstring>
 #include <string>
 #include <vector>
 
