@@ -2,6 +2,9 @@
 bad.tar.gz
 dist_root
 
+# generated test files
+test/recs-1gb
+
 # build files
 .deps
 .test-tmp/

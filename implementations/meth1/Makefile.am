@@ -2,6 +2,8 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = lib sort stratergies app
 
+.PHONY: format check-all test bin-dist recs-1gb
+
 format:
 	@list='$(SUBDIRS)'; for subdir in $$list; do \
      find $$subdir -iregex '.*\.\(cc\|hh\)$$' -exec clang-format -i {} +; \
@@ -43,4 +45,7 @@ bin-dist: app/meth1_node app/meth1_shell app/meth1_client
 	cp app/meth1_node_test dist_root/usr/bin/meth1_node_test
 	cp scripts/clear_buffers.sh dist_root/usr/bin/clear_buffers
 	tar cvzf bad.tar.gz -C dist_root .
+
+recs-1gb:
+	../../gensort/gensort 10485700 test/recs-1gb
 
