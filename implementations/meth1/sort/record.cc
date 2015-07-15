@@ -56,14 +56,14 @@ Record::Record( const Record & other, bool deep_copy )
   }
 }
 
-/* Assignment */
+/* Copy assignment */
 Record & Record::operator=( const Record & other )
 {
   if ( this != &other ) {
     diskloc_ = other.diskloc_;
-    copied_ = other.copied_;
     key_r_ = other.key_r_;
     val_r_ = other.val_r_;
+    copied_ = other.copied_;
 
     if ( copied_ ) {
       copy();
@@ -76,7 +76,7 @@ Record & Record::operator=( const Record & other )
 string Record::str( loc_t locinfo ) const
 {
   string buf{key_r_, KEY_LEN};
-  buf.append( val_, VAL_LEN );
+  buf.append( val_r_, VAL_LEN );
   if ( locinfo == WITH_LOC ) {
     buf.append( reinterpret_cast<const char *>( &diskloc_ ),
                 sizeof( size_type ) );
@@ -96,3 +96,4 @@ Record Record::ParseRecordWithLoc( const char * s, bool copy )
   r.diskloc_ = *reinterpret_cast<const size_type *>( s + SIZE );
   return r;
 }
+

@@ -81,6 +81,8 @@ int run( int argc, char * argv[] )
   cout << "Read  took " << t43 << "ms (buffered + sort)" << endl;
   cout << "Write took " << t54 << "ms" << endl;
   cout << "Total took " << t51 << "ms" << endl;
+  cout << "Writ calls (buf) " << out.write_count() << endl;
+  cout << "Writ calls (dir) " << out.io().write_count() << endl;
 
   return EXIT_SUCCESS;
 }
