@@ -15,38 +15,32 @@
 
 using namespace std;
 
-int run( int argc, char * argv[] );
+// sizes of records
+static constexpr size_t KEY_BYTES = 10;
+static constexpr size_t VAL_BYTES = 90;
+static constexpr size_t REC_BYTES = KEY_BYTES + VAL_BYTES;
+static constexpr size_t NRECS = 10485706;
 
-void check_usage( const int argc, const char * const argv[] )
-{
-  if ( argc != 3 ) {
-    throw runtime_error( "Usage: " + string( argv[0] ) + " [file] [out]" );
-  }
-}
+// large array for record values
+static char * all_vals = new char[ NRECS * VAL_BYTES ];
+static char * cur_v = all_vals;
 
-int main( int argc, char * argv[] )
-{
-  try {
-    run( argc, argv );
-  } catch ( const exception & e ) {
-    print_exception( e );
-    return EXIT_FAILURE;
-  }
-  return EXIT_SUCCESS;
-}
-
-static constexpr size_t NRECS = 10485700;
-static constexpr size_t REC_BYTES = NRECS * 100;
-
+// our record struct
 struct Rec
 {
+  // Pulling the key inline with Rec improves sort performance by 2x. Appears
+  // to be due to saving an indirection during sort.
   char   key_[10];
-  char * rec_;
+
+  char * val_;
   size_t loc_;
 
-  Rec( char * s, size_t loc ) : rec_{s}, loc_{loc}
+  Rec( char * r, size_t loc ) : val_{r+KEY_BYTES}, loc_{loc}
   {
-    memcpy( key_, rec_, 10 );
+    memcpy( key_, r, KEY_BYTES );
+    memcpy( cur_v, val_, VAL_BYTES );
+    val_ = cur_v;
+    cur_v += VAL_BYTES;
   }
 
   /* Comparison */
@@ -60,41 +54,40 @@ struct Rec
   {
     int cmp = memcmp( key_, b.key_, 10 );
     if ( cmp == 0 ) {
-      if ( loc_ < b.loc_ ) {
-        cmp = -1;
-      }
-      if ( loc_ > b.loc_ ) {
-        cmp = 1;
-      }
+      if ( loc_ < b.loc_ ) { cmp = -1; }
+      else if ( loc_ > b.loc_ ) { cmp = 1; }
     }
     return cmp;
   }
+
+  size_t write( FILE *fdo )
+  {
+    size_t n = 0;
+    n += fwrite( key_, KEY_BYTES, 1, fdo );
+    n += fwrite( val_, VAL_BYTES, 1, fdo );
+    return n;
+  }
 };
 
-int run( int argc, char * argv[] )
+int run( char * argv[] )
 {
   // startup
-  check_usage( argc, argv );
-
   FILE *fdi = fopen( argv[1], "r" );
   FILE *fdo = fopen( argv[2], "w" );
 
-  char * all_recs = new char[ REC_BYTES ];
-
   vector<Rec> recs{};
-  recs.reserve( 10485700 );
+  recs.reserve( NRECS );
 
   auto t1 = chrono::high_resolution_clock::now();
 
   // read
-  char * r = all_recs;
+  char r[REC_BYTES];
   for ( uint64_t i = 0;; i++ ) {
-    size_t n = fread( r, 100, 1, fdi );
+    size_t n = fread( r, REC_BYTES, 1, fdi );
     if ( n == 0 ) {
       break;
     }
     recs.emplace_back( r, i );
-    r += 100;
   }
   fclose( fdi );
   auto t2 = chrono::high_resolution_clock::now();
@@ -105,7 +98,7 @@ int run( int argc, char * argv[] )
 
   // write
   for ( auto & r : recs ) {
-    fwrite( r.rec_, 100, 1, fdo );
+    r.write( fdo );
   }
   fflush( fdo );
   fsync( fileno( fdo ) );
@@ -126,4 +119,21 @@ int run( int argc, char * argv[] )
   return EXIT_SUCCESS;
 }
 
+void check_usage( const int argc, const char * const argv[] )
+{
+  if ( argc != 3 ) {
+    throw runtime_error( "Usage: " + string( argv[0] ) + " [file] [out]" );
+  }
+}
 
+int main( int argc, char * argv[] )
+{
+  try {
+    check_usage( argc, argv );
+    run( argv );
+  } catch ( const exception & e ) {
+    print_exception( e );
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
