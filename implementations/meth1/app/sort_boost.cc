@@ -1,73 +1,91 @@
 /**
  * Test program. Takes gensort file as input and reads whole thing into memory,
  * sorting using C++ algorithm sort implementation.
+ *
+ * This version uses boost sorting algorithms.
  */
 #include <fcntl.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <algorithm>
 #include <chrono>
+#include <cstdlib>
 #include <vector>
 
 #include "exception.hh"
 #include "util.hh"
 
+#include <boost/sort/spreadsort/string_sort.hpp>
+
 using namespace std;
+using namespace boost::sort::spreadsort;
 
 // sizes of records
 static constexpr size_t KEY_BYTES = 10;
 static constexpr size_t VAL_BYTES = 90;
 static constexpr size_t REC_BYTES = KEY_BYTES + VAL_BYTES;
-static constexpr size_t NRECS = 10485700;
 
 // large array for record values
-static char * all_vals = new char[ NRECS * VAL_BYTES ];
-static char * cur_v = all_vals;
+static char * all_vals;
+static char * cur_v;
 
 // our record struct
 struct Rec
 {
   // Pulling the key inline with Rec improves sort performance by 2x. Appears
   // to be due to saving an indirection during sort.
-  char   key_[10];
-
+  char key_[KEY_BYTES];
   char * val_;
-  size_t loc_;
 
-  Rec( char * r, size_t loc ) : val_{r+KEY_BYTES}, loc_{loc}
+  Rec() : val_{nullptr} {}
+
+  inline void read( FILE *fdi )
   {
-    memcpy( key_, r, KEY_BYTES );
-    memcpy( cur_v, val_, VAL_BYTES );
     val_ = cur_v;
     cur_v += VAL_BYTES;
+    fread( key_, KEY_BYTES, 1, fdi );
+    fread( val_, VAL_BYTES, 1, fdi );
   }
 
-  /* Comparison */
-  bool operator<( const Rec & b ) const
-  {
-    return compare( b ) < 0 ? true : false;
-  }
-
-  /* we compare on key first, and then on diskloc_ */
-  int compare( const Rec & b ) const
-  {
-    int cmp = memcmp( key_, b.key_, 10 );
-    if ( cmp == 0 ) {
-      if ( loc_ < b.loc_ ) { cmp = -1; }
-      else if ( loc_ > b.loc_ ) { cmp = 1; }
-    }
-    return cmp;
-  }
-
-  size_t write( FILE *fdo )
+  inline size_t write( FILE *fdo ) const
   {
     size_t n = 0;
     n += fwrite( key_, KEY_BYTES, 1, fdo );
     n += fwrite( val_, VAL_BYTES, 1, fdo );
     return n;
   }
-};
+
+  inline bool operator<( const Rec & b ) const
+  {
+    return compare( b ) < 0 ? true : false;
+  }
+
+  inline int compare( const Rec & b ) const
+  {
+    return memcmp( key_, b.key_, KEY_BYTES );
+  }
+
+  inline const char * data( void ) const
+  {
+    return key_;
+  }
+
+  inline unsigned char operator[]( size_t offset ) const
+  {
+    return key_[offset];
+  }
+
+  inline size_t size( void ) const
+  {
+    return KEY_BYTES;
+  }
+} __attribute__((packed));
+
+// All records (key + ptr to value)
+static vector<Rec> all_recs{};
 
 int run( char * argv[] )
 {
@@ -75,30 +93,31 @@ int run( char * argv[] )
   FILE *fdi = fopen( argv[1], "r" );
   FILE *fdo = fopen( argv[2], "w" );
 
-  vector<Rec> recs{};
-  recs.reserve( NRECS );
+  // get filesize
+  struct stat st;
+  fstat( fileno( fdi ), &st );
+  size_t nrecs = st.st_size / REC_BYTES;
+
+  // setup space for data
+  cur_v = all_vals = new char[ nrecs * VAL_BYTES ];
+  all_recs = vector<Rec>( nrecs );
 
   auto t1 = chrono::high_resolution_clock::now();
 
   // read
-  char r[REC_BYTES];
-  for ( uint64_t i = 0;; i++ ) {
-    size_t n = fread( r, REC_BYTES, 1, fdi );
-    if ( n == 0 ) {
-      break;
-    }
-    recs.emplace_back( r, i );
+  for ( uint64_t i = 0; i < nrecs; i++ ) {
+    all_recs[i].read( fdi );
   }
   fclose( fdi );
   auto t2 = chrono::high_resolution_clock::now();
 
   // sort
-  sort( recs.begin(), recs.end() );
+  string_sort( all_recs.begin(), all_recs.end() );
   auto t3 = chrono::high_resolution_clock::now();
 
   // write
-  for ( auto & r : recs ) {
-    r.write( fdo );
+  for ( uint64_t i = 0; i < nrecs; i++ ) {
+    all_recs[i].write( fdo );
   }
   fflush( fdo );
   fsync( fileno( fdo ) );
@@ -137,3 +156,5 @@ int main( int argc, char * argv[] )
   }
   return EXIT_SUCCESS;
 }
+
+

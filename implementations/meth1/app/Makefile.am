@@ -8,7 +8,9 @@ bin_PROGRAMS = \
 	meth1_shell \
 	sort_test \
 	sort_test_cfiles \
-	sort_simple
+	sort_simple \
+	sort_overlap \
+	sort_boost
 
 AM_CPPFLAGS = \
 	-I$(srcdir)/../lib \
@@ -26,6 +28,8 @@ AM_LDFLAGS = -static -static-libstdc++
 sort_test_SOURCES = sort_test.cc
 sort_test_cfiles_SOURCES = sort_test_cfiles.cc
 sort_simple_SOURCES = sort_simple.cc
+sort_overlap_SOURCES = sort_overlap.cc
+sort_boost_SOURCES = sort_boost.cc
 
 meth1_node_test_SOURCES = meth1_node_test.cc
 meth1_client_test_SOURCES = meth1_client_test.cc

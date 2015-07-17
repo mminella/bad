@@ -18,6 +18,9 @@ public:
 
   /* force file contents to disk */
   void fsync( void );
+
+  /* file size */
+  size_t size( void );
 };
 
 #endif /* FILE_HH */

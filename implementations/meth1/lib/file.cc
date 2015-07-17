@@ -1,4 +1,5 @@
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include <cassert>
@@ -33,4 +34,12 @@ void File::rewind( void )
 void File::fsync( void )
 {
   SystemCall( "fsync", ::fsync( fd_num() ) );
+}
+
+/* file size */
+size_t File::size( void )
+{
+  struct stat st;
+  fstat( fd_num(), &st );
+  return st.st_size;
 }

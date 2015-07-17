@@ -28,7 +28,6 @@ private:
   std::string port_;
   Record last_;
   size_type fpos_;
-  size_type size_;
   size_type max_mem_;
 
 public:

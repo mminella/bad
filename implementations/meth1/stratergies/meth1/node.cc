@@ -32,7 +32,6 @@ Node::Node( string file, string port, size_type max_mem )
   , port_{port}
   , last_{Record::MIN}
   , fpos_{0}
-  , size_{0}
   , max_mem_{max_mem}
 {
 }
@@ -120,10 +119,7 @@ vector<Record> Node::DoRead( size_type pos, size_type size )
 /* Return the the number of records on disk */
 Node::size_type Node::DoSize( void )
 {
-  if ( size_ == 0 ) {
-    linear_scan( Record::MAX );
-  }
-  return size_;
+  return data_.io().size() / Record::SIZE;
 }
 
 /* seek returns the record that occurs just before `pos` so it can be passed to
@@ -193,9 +189,6 @@ vector<Record> Node::linear_scan( const Record & after, size_type size )
   auto split = chrono::high_resolution_clock::now();
   auto dur   = chrono::duration_cast<chrono::milliseconds>( split - start ).count();
   cout << "* Linear scan took: " << dur << "ms" << endl;
-
-  // cache number of records on disk
-  size_ = i;
 
   // rewind the file
   data_.io().rewind();
