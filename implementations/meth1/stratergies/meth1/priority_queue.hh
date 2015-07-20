@@ -4,8 +4,6 @@
 #include <queue>
 #include <vector>
 
-#include "exception.hh"
-
 namespace mystl
 {
 

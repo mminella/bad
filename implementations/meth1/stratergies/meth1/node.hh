@@ -8,8 +8,6 @@
 #include "implementation.hh"
 #include "record.hh"
 
-#include "priority_queue.hh"
-
 /**
  * Stratergy 1.
  * - No upfront work.
@@ -27,22 +25,22 @@ private:
   BufferedIO_O<File> data_;
   std::string port_;
   Record last_;
-  size_type fpos_;
-  size_type max_mem_;
+  uint64_t fpos_;
+  uint64_t max_mem_;
 
 public:
-  Node( std::string file, std::string port, size_type max_memory );
+  Node( std::string file, std::string port, uint64_t max_memory );
 
-  /* run the node - list and respond to RPCs */
+  /* Run the node - list and respond to RPCs */
   void Run( void );
 
 private:
   void DoInitialize( void );
-  std::vector<Record> DoRead( size_type pos, size_type size );
-  size_type DoSize( void );
+  std::vector<Record> DoRead( uint64_t pos, uint64_t size );
+  uint64_t DoSize( void );
 
-  Record seek( size_type pos );
-  std::vector<Record> linear_scan( const Record & after, size_type size = 1 );
+  Record seek( uint64_t pos );
+  std::vector<Record> linear_scan( const Record & after, uint64_t size = 1 );
 
   void RPC_Read( BufferedIO_O<TCPSocket> & client );
   void RPC_Size( BufferedIO_O<TCPSocket> & client );

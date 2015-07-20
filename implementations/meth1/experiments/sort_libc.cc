@@ -1,17 +1,22 @@
 /**
- * Test program. Takes gensort file as input and reads whole thing into memory,
- * sorting using C++ algorithm sort implementation.
+ * Simplest sort program possible (in-memory, one-machine).
+ *
+ * - Uses C file IO.
+ * - Uses own Record struct.
+ * - Use C++ std::sort method + std::vector.
  */
 #include <fcntl.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <algorithm>
 #include <chrono>
+#include <cstring>
+#include <iostream>
+#include <system_error>
 #include <vector>
-
-#include "exception.hh"
-#include "util.hh"
 
 using namespace std;
 
@@ -19,19 +24,17 @@ using namespace std;
 static constexpr size_t KEY_BYTES = 10;
 static constexpr size_t VAL_BYTES = 90;
 static constexpr size_t REC_BYTES = KEY_BYTES + VAL_BYTES;
-static constexpr size_t NRECS = 10485700;
 
 // large array for record values
-static char * all_vals = new char[ NRECS * VAL_BYTES ];
-static char * cur_v = all_vals;
+static char * all_vals;
+static char * cur_v;
 
 // our record struct
 struct Rec
 {
   // Pulling the key inline with Rec improves sort performance by 2x. Appears
   // to be due to saving an indirection during sort.
-  char   key_[10];
-
+  char key_[KEY_BYTES];
   char * val_;
   size_t loc_;
 
@@ -52,7 +55,7 @@ struct Rec
   /* we compare on key first, and then on diskloc_ */
   int compare( const Rec & b ) const
   {
-    int cmp = memcmp( key_, b.key_, 10 );
+    int cmp = memcmp( key_, b.key_, KEY_BYTES );
     if ( cmp == 0 ) {
       if ( loc_ < b.loc_ ) { cmp = -1; }
       else if ( loc_ > b.loc_ ) { cmp = 1; }
@@ -69,14 +72,19 @@ struct Rec
   }
 };
 
-int run( char * argv[] )
+int run( char * fin, char * fout )
 {
-  // startup
-  FILE *fdi = fopen( argv[1], "r" );
-  FILE *fdo = fopen( argv[2], "w" );
+  FILE *fdi = fopen( fin, "r" );
+  FILE *fdo = fopen( fout, "w" );
 
+  // setup space for data
+  struct stat st;
+  fstat( fileno( fdi ), &st );
+  size_t nrecs = st.st_size / REC_BYTES;
+
+  cur_v = all_vals = new char[ nrecs * VAL_BYTES ];
   vector<Rec> recs{};
-  recs.reserve( NRECS );
+  recs.reserve( nrecs );
 
   auto t1 = chrono::high_resolution_clock::now();
 
@@ -130,10 +138,11 @@ int main( int argc, char * argv[] )
 {
   try {
     check_usage( argc, argv );
-    run( argv );
+    run( argv[1], argv[2] );
   } catch ( const exception & e ) {
-    print_exception( e );
+    cerr << e.what() << endl;
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
 }
+

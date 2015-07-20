@@ -1,9 +1,10 @@
 /**
- * Test program. Takes gensort file as input and reads whole thing into memory,
- * sorting using C++ algorithm sort implementation.
+ * Adaptation of `sort_libc` to use libbasicrts.
+ *
+ * - Uses BufferedIO file IO.
+ * - Uses libsort record type.
+ * - Use C++ std::sort method + std::vector.
  */
-#include <fcntl.h>
-
 #include <algorithm>
 #include <chrono>
 #include <vector>
@@ -11,56 +12,30 @@
 #include "buffered_io.hh"
 #include "exception.hh"
 #include "file.hh"
-#include "util.hh"
 
 #include "record.hh"
 
 using namespace std;
 
-int run( int argc, char * argv[] );
-
-void check_usage( const int argc, const char * const argv[] )
+int run( char * fin, char * fout )
 {
-  if ( argc != 3 ) {
-    throw runtime_error( "Usage: " + string( argv[0] ) + " [file] [out]" );
-  }
-}
-
-int main( int argc, char * argv[] )
-{
-  try {
-    run( argc, argv );
-  } catch ( const exception & e ) {
-    print_exception( e );
-    return EXIT_FAILURE;
-  }
-  return EXIT_SUCCESS;
-}
-
-int run( int argc, char * argv[] )
-{
-  // startup
-  check_usage( argc, argv );
-
-  BufferedIO_O<File> fdi( {argv[1], O_RDONLY} );
-  BufferedIO_O<File> fdo( {argv[2], O_WRONLY | O_CREAT | O_TRUNC,
-                                    S_IRUSR | S_IWUSR} );
-
+  // get in/out files
+  BufferedIO_O<File> fdi( {fin, O_RDONLY} );
+  BufferedIO_O<File> fdo( {fout, O_WRONLY | O_CREAT | O_TRUNC,
+                                 S_IRUSR | S_IWUSR} );
+  size_t nrecs = fdi.io().size() / Record::SIZE;
   vector<Record> recs;
-  // PERF: avoid copying partial vectors
-  recs.reserve( 10485700 );
+  recs.reserve( nrecs );
 
   auto t1 = chrono::high_resolution_clock::now();
 
   // read
   for ( uint64_t i = 0;; i++ ) {
-    // PERF: Avoid copy from buffer to string.
     const char * r = fdi.read_buf( Record::SIZE ).first;
     if ( fdi.eof() ) {
       break;
     }
-    // PERF: Avoid copy into array, construct in-place.
-    recs.emplace_back( r, i, true );
+    recs.emplace_back( r, i );
   }
   auto t2 = chrono::high_resolution_clock::now();
 
@@ -70,7 +45,7 @@ int run( int argc, char * argv[] )
 
   // write
   for ( auto & r : recs ) {
-    fdo.write_all( r.str( Record::NO_LOC ) );
+    r.write( fdo );
   }
   fdo.flush( true );
   fdo.io().fsync();
@@ -93,3 +68,23 @@ int run( int argc, char * argv[] )
 
   return EXIT_SUCCESS;
 }
+
+void check_usage( const int argc, const char * const argv[] )
+{
+  if ( argc != 3 ) {
+    throw runtime_error( "Usage: " + string( argv[0] ) + " [file] [out]" );
+  }
+}
+
+int main( int argc, char * argv[] )
+{
+  try {
+    check_usage( argc, argv );
+    run( argv[1], argv[2] );
+  } catch ( const exception & e ) {
+    print_exception( e );
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+

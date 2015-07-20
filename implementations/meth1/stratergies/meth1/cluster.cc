@@ -1,10 +1,7 @@
-#include <algorithm>
 #include <thread>
 #include <vector>
 
-#include "exception.hh"
 #include "poller.hh"
-#include "socket.hh"
 
 #include "implementation.hh"
 
@@ -15,7 +12,7 @@
 using namespace std;
 using namespace meth1;
 
-Cluster::Cluster( vector<Address> nodes, size_type read_ahead )
+Cluster::Cluster( vector<Address> nodes, uint64_t read_ahead )
   : files_{}
   , poller_{}
 {
@@ -43,17 +40,24 @@ void Cluster::DoInitialize( void )
 struct RecordNode {
   Record r;
   RemoteFile * f;
-  RecordNode( Record rr, RemoteFile * ff )
-    : r{rr}
-    , f{ff}
+
+  RecordNode( Record rr, RemoteFile * ff ) : r{rr}, f{ff} {}
+  RecordNode( const RecordNode & rn ) : r{rn.r}, f{rn.f} {}
+
+  RecordNode & operator=( const RecordNode & rn )
   {
+    if ( this != &rn ) {
+      r = rn.r;
+      f = rn.f;
+    }
+    return *this;
   }
 
   bool operator<( const RecordNode & b ) const { return r < b.r; }
   bool operator>( const RecordNode & b ) const { return r > b.r; }
 };
 
-vector<Record> Cluster::DoRead( size_type pos, size_type size )
+vector<Record> Cluster::DoRead( uint64_t pos, uint64_t size )
 {
   // PERF: Copying all records!
   // PERF: Better to copy each sorted record immediately to an output buffer
@@ -81,7 +85,7 @@ vector<Record> Cluster::DoRead( size_type pos, size_type size )
   }
 
   // merge all remote files
-  for ( size_type i = 0; i < size and !heap.empty(); i++ ) {
+  for ( uint64_t i = 0; i < size and !heap.empty(); i++ ) {
     // grab next record
     RecordNode next{heap.top()};
     recs.push_back( next.r );
@@ -101,12 +105,12 @@ vector<Record> Cluster::DoRead( size_type pos, size_type size )
   return recs;
 }
 
-Cluster::size_type Cluster::DoSize( void )
+uint64_t Cluster::DoSize( void )
 {
   // TODO: need multi-cast?
 
   // retrieve and merge results
-  size_type siz{0};
+  uint64_t siz{0};
   for ( auto & f : files_ ) {
     siz += f.stat();
   }

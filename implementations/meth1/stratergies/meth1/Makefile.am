@@ -1,11 +1,11 @@
 noinst_LTLIBRARIES = libmeth1.la
 
 libmeth1_la_SOURCES = \
-	node.hh node.cc \
 	client.hh client.cc \
 	cluster.hh cluster.cc \
-	remote_file.hh remote_file.cc \
-	priority_queue.hh
+	node.hh node.cc \
+	priority_queue.hh \
+	remote_file.hh remote_file.cc
 
 libmeth1_la_CPPFLAGS = \
 	-I$(srcdir)/.. \

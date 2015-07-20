@@ -1,11 +1,11 @@
-#include <fcntl.h>
-
-#include <algorithm>
+/**
+ * Do a local machine sort using the method1::Node backend.
+ */
 #include <chrono>
-#include <vector>
+#include <iostream>
+#include <system_error>
 
 #include "exception.hh"
-#include "util.hh"
 
 #include "record.hh"
 
@@ -14,38 +14,14 @@
 using namespace std;
 using namespace meth1;
 
-int run( int argc, char * argv[] );
-
-void check_usage( const int argc, const char * const argv[] )
+int run( char * fin, char * fout )
 {
-  if ( argc != 3 ) {
-    throw runtime_error( "Usage: " + string( argv[0] ) +
-                         " [file] [out file]" );
-  }
-}
-
-int main( int argc, char * argv[] )
-{
-  try {
-    run( argc, argv );
-  } catch ( const exception & e ) {
-    print_exception( e );
-    return EXIT_FAILURE;
-  }
-  return EXIT_SUCCESS;
-}
-
-int run( int argc, char * argv[] )
-{
-  // startup
-  check_usage( argc, argv );
-
-  BufferedIO_O<File> out( {argv[2], O_WRONLY | O_CREAT | O_TRUNC,
-                                    S_IRUSR | S_IWUSR} );
+  BufferedIO_O<File> out( {fout, O_WRONLY | O_CREAT | O_TRUNC,
+                                 S_IRUSR | S_IWUSR} );
   auto t1 = chrono::high_resolution_clock::now();
 
   // start node
-  Node node{argv[1], "0", 3};
+  Node node{fin, "0", 3};
   node.Initialize();
   auto t2 = chrono::high_resolution_clock::now();
 
@@ -59,7 +35,7 @@ int run( int argc, char * argv[] )
 
   // write out records
   for ( auto & r : recs ) {
-    out.write_all( r.str( Record::NO_LOC ) );
+    r.write( out );
   }
   out.flush( true );
   out.io().fsync();
@@ -86,3 +62,24 @@ int run( int argc, char * argv[] )
 
   return EXIT_SUCCESS;
 }
+
+void check_usage( const int argc, const char * const argv[] )
+{
+  if ( argc != 3 ) {
+    throw runtime_error( "Usage: " + string( argv[0] ) +
+                         " [file] [out file]" );
+  }
+}
+
+int main( int argc, char * argv[] )
+{
+  try {
+    check_usage( argc, argv );
+    run( argv[1], argv[2] );
+  } catch ( const exception & e ) {
+    print_exception( e );
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+

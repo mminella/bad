@@ -6,10 +6,8 @@
 #include "address.hh"
 #include "file.hh"
 #include "poller.hh"
-#include "socket.hh"
 
 #include "implementation.hh"
-
 #include "remote_file.hh"
 
 /**
@@ -31,14 +29,12 @@ private:
   Poller poller_;
 
 public:
-  static constexpr size_type READ_AHEAD = 1000;
-
-  Cluster( std::vector<Address> nodes, size_type read_ahead = READ_AHEAD );
+  Cluster( std::vector<Address> nodes, uint64_t read_ahead );
 
 private:
   void DoInitialize( void );
-  std::vector<Record> DoRead( size_type pos, size_type size );
-  size_type DoSize( void );
+  std::vector<Record> DoRead( uint64_t pos, uint64_t size );
+  uint64_t DoSize( void );
 };
 }
 

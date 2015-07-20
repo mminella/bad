@@ -1,9 +1,9 @@
 /**
- * Test program. Takes gensort file as input and reads whole thing into memory,
- * sorting using C++ algorithm sort implementation.
+ * Adaptation of `sort_boost` to overlap reading IO with sorting of the file.
  *
- * This version tries to overlap the read IO with sorting. It also uses
- * boot::string_sort for the sorting algorithm.
+ * - Uses C file IO + seperate reader thread (sync with mutex + cv).
+ * - Uses own Record struct.
+ * - Use boost::spreadsort + std::vector.
  */
 #include <fcntl.h>
 #include <stdio.h>
@@ -15,12 +15,10 @@
 #include <chrono>
 #include <condition_variable>
 #include <cstdlib>
+#include <iostream>
 #include <mutex>
 #include <thread>
 #include <vector>
-
-#include "exception.hh"
-#include "util.hh"
 
 #include <boost/sort/spreadsort/string_sort.hpp>
 
@@ -49,17 +47,7 @@ struct Rec
 
   Rec() : val_{nullptr} {}
 
-  bool operator<( const Rec & b ) const
-  {
-    return compare( b ) < 0 ? true : false;
-  }
-
-  int compare( const Rec & b ) const
-  {
-    return memcmp( key_, b.key_, KEY_BYTES );
-  }
-
-  void read( FILE *fdi )
+  inline void read( FILE *fdi )
   {
     val_ = cur_v;
     cur_v += VAL_BYTES;
@@ -67,32 +55,42 @@ struct Rec
     fread( val_, VAL_BYTES, 1, fdi );
   }
 
-  size_t write( FILE *fdo )
+  inline size_t write( FILE *fdo )
   {
     size_t n = 0;
     n += fwrite( key_, KEY_BYTES, 1, fdo );
     n += fwrite( val_, VAL_BYTES, 1, fdo );
     return n;
   }
+
+  inline bool operator<( const Rec & b ) const
+  {
+    return compare( b ) < 0 ? true : false;
+  }
+
+  inline int compare( const Rec & b ) const
+  {
+    return memcmp( key_, b.key_, KEY_BYTES );
+  }
+
+  inline const char * data( void ) const
+  {
+    return key_;
+  }
+
+  inline unsigned char operator[]( size_t offset ) const
+  {
+    return key_[offset];
+  }
+
+  inline size_t size( void ) const
+  {
+    return KEY_BYTES;
+  }
 } __attribute__((packed));
 
 // All records (key + ptr to value)
 static vector<Rec> all_recs{};
-
-// operators for string_sort
-struct bracket {
-  inline unsigned char operator()(const Rec &r, size_t offset) const
-  {
-    return r.key_[offset];
-  }
-};
-
-struct getsize {
-  inline size_t operator()(const Rec &) const
-  {
-    return KEY_BYTES;
-  }
-};
 
 // overlapping chunks
 static mutex mtx;
@@ -138,11 +136,10 @@ size_t get_next_chunk( void )
   return r;
 }
 
-int run( char * argv[] )
+int run( char * fin, char * fout )
 {
-  // startup
-  FILE *fdi = fopen( argv[1], "r" );
-  FILE *fdo = fopen( argv[2], "w" );
+  FILE *fdi = fopen( fin, "r" );
+  FILE *fdo = fopen( fout, "w" );
 
   auto t1 = chrono::high_resolution_clock::now();
 
@@ -161,8 +158,7 @@ int run( char * argv[] )
   while ( sorted_recs < nrecs ) {
     size_t next = get_next_chunk();
     ffs = chrono::high_resolution_clock::now();
-    string_sort( all_recs.begin() + sorted_recs, all_recs.begin() + next,
-                 bracket(), getsize() );
+    string_sort( all_recs.begin() + sorted_recs, all_recs.begin() + next );
     inplace_merge( all_recs.begin(), all_recs.begin() + sorted_recs,
                    all_recs.begin() + next );
     sorted_recs = next;
@@ -211,9 +207,9 @@ int main( int argc, char * argv[] )
 {
   try {
     check_usage( argc, argv );
-    run( argv );
+    run( argv[1], argv[2] );
   } catch ( const exception & e ) {
-    print_exception( e );
+    cerr << e.what() << endl;
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;

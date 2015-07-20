@@ -19,27 +19,20 @@ private:
   virtual uint64_t DoSize( void ) = 0;
 
 public:
-  using size_type = uint64_t;
-
-  /* Constructors */
-  Implementation() {}
-  Implementation( const Implementation & ) = default;
-  Implementation( Implementation && ) = default;
-  Implementation & operator=( const Implementation & ) = default;
-  Implementation & operator=( Implementation && ) = default;
+  /* Destructor */
   virtual ~Implementation() {}
 
   /* Initialization routine */
   void Initialize( void ) { DoInitialize(); };
 
   /* Read a contiguous subset of the file starting from specified position. */
-  std::vector<Record> Read( size_type pos, size_type size )
+  std::vector<Record> Read( uint64_t pos, uint64_t size )
   {
     return DoRead( pos, size );
   };
 
   /* Return the the number of records on disk */
-  size_type Size( void ) { return DoSize(); };
+  uint64_t Size( void ) { return DoSize(); };
 };
 
 #endif /* IMPLEMENTATION_HH */

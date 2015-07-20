@@ -1,19 +1,24 @@
-#include <fcntl.h>
-
-#include <algorithm>
-#include <vector>
+/**
+ * Run the backend node for method 1.
+ */
+#include <system_error>
 
 #include "exception.hh"
-#include "util.hh"
-
 #include "record.hh"
-
 #include "node.hh"
 
 using namespace std;
 using namespace meth1;
 
-int run( int argc, char * argv[] );
+int run( const char * mem, const char * port, const char * file)
+{
+
+  Node node{file, port, stoul( mem )};
+  node.Initialize();
+  node.Run();
+
+  return EXIT_SUCCESS;
+}
 
 void check_usage( const int argc, const char * const argv[] )
 {
@@ -26,7 +31,8 @@ void check_usage( const int argc, const char * const argv[] )
 int main( int argc, char * argv[] )
 {
   try {
-    run( argc, argv );
+    check_usage( argc, argv );
+    run( argv[1], argv[2], argv[3] );
   } catch ( const exception & e ) {
     print_exception( e );
     return EXIT_FAILURE;
@@ -34,13 +40,3 @@ int main( int argc, char * argv[] )
   return EXIT_SUCCESS;
 }
 
-int run( int argc, char * argv[] )
-{
-  check_usage( argc, argv );
-
-  Node node{argv[3], argv[2], stoul( argv[1] )};
-  node.Initialize();
-  node.Run();
-
-  return EXIT_SUCCESS;
-}

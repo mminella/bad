@@ -1,8 +1,10 @@
 /**
- * Test program. Takes gensort file as input and reads whole thing into memory,
- * sorting using C++ algorithm sort implementation.
+ * Adaptation of `sort_libc` to use Boost Spreadsort for sorting instead of C++
+ * std::sort.
  *
- * This version uses boost sorting algorithms.
+ * - Uses C file IO.
+ * - Uses own Record struct.
+ * - Use boost::spreadsort + std::vector.
  */
 #include <fcntl.h>
 #include <stdio.h>
@@ -13,10 +15,9 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdlib>
+#include <iostream>
+#include <system_error>
 #include <vector>
-
-#include "exception.hh"
-#include "util.hh"
 
 #include <boost/sort/spreadsort/string_sort.hpp>
 
@@ -84,23 +85,18 @@ struct Rec
   }
 } __attribute__((packed));
 
-// All records (key + ptr to value)
-static vector<Rec> all_recs{};
-
-int run( char * argv[] )
+int run( char * fin, char * fout )
 {
-  // startup
-  FILE *fdi = fopen( argv[1], "r" );
-  FILE *fdo = fopen( argv[2], "w" );
+  FILE *fdi = fopen( fin, "r" );
+  FILE *fdo = fopen( fout, "w" );
 
-  // get filesize
+  // setup space for data
   struct stat st;
   fstat( fileno( fdi ), &st );
   size_t nrecs = st.st_size / REC_BYTES;
 
-  // setup space for data
   cur_v = all_vals = new char[ nrecs * VAL_BYTES ];
-  all_recs = vector<Rec>( nrecs );
+  vector<Rec> all_recs = vector<Rec>( nrecs );
 
   auto t1 = chrono::high_resolution_clock::now();
 
@@ -149,12 +145,11 @@ int main( int argc, char * argv[] )
 {
   try {
     check_usage( argc, argv );
-    run( argv );
+    run( argv[1], argv[2] );
   } catch ( const exception & e ) {
-    print_exception( e );
+    cerr << e.what() << endl;
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
 }
-
 

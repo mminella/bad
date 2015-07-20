@@ -36,7 +36,10 @@ Client::Client( Address node )
 {
 }
 
-void Client::DoInitialize( void ) { sock_.io().connect( addr_ ); }
+void Client::DoInitialize( void )
+{
+  sock_.io().connect( addr_ );
+}
 
 void Client::waitOnRPC( unique_lock<mutex> & lck )
 {
@@ -45,7 +48,7 @@ void Client::waitOnRPC( unique_lock<mutex> & lck )
   }
 }
 
-void Client::sendRead( unique_lock<mutex> & lck, size_type pos, size_type siz )
+void Client::sendRead( unique_lock<mutex> & lck, uint64_t pos, uint64_t siz )
 {
   waitOnRPC( lck );
   rpcActive_ = Read_;
@@ -53,12 +56,11 @@ void Client::sendRead( unique_lock<mutex> & lck, size_type pos, size_type siz )
   rpcSize_ = siz;
   rpcStart_ = chrono::high_resolution_clock::now();
 
-  char data[1 + 2 * sizeof( size_type )];
+  char data[1 + 2 * sizeof( uint64_t )];
   data[0] = 0;
-  *reinterpret_cast<size_type *>( data + 1 ) = pos;
-  *reinterpret_cast<size_type *>( data + 1 + sizeof( size_type ) ) = siz;
-  sock_.write( data, 1 + 2 * sizeof( size_type ) );
-  sock_.flush( true );
+  *reinterpret_cast<uint64_t *>( data + 1 ) = pos;
+  *reinterpret_cast<uint64_t *>( data + 1 + sizeof( uint64_t ) ) = siz;
+  sock_.io().write_all( data, sizeof( data ) );
 }
 
 void Client::sendSize( unique_lock<mutex> & lck )
@@ -68,26 +70,26 @@ void Client::sendSize( unique_lock<mutex> & lck )
   rpcStart_ = chrono::high_resolution_clock::now();
 
   int8_t rpc = 1;
-  sock_.write( (char *)&rpc, 1 );
-  sock_.flush( true );
+  sock_.io().write_all( (char *)&rpc, 1 );
 }
 
 std::vector<Record> Client::recvRead( void )
 {
   // timings -- read rpc
   auto split = chrono::high_resolution_clock::now();
-  auto dur = chrono::duration_cast<chrono::milliseconds>( split - rpcStart_ ).count();
+  auto dur = chrono::duration_cast<chrono::milliseconds>
+    ( split - rpcStart_ ).count();
   cout << "* Read RPC took: " << dur << "ms" << endl;
 
   // deserialize from the network
-  string str = sock_.read_all( sizeof( size_type ) );
-  size_type nrecs = *reinterpret_cast<const size_type *>( str.c_str() );
+  auto r = sock_.read_buf_all( sizeof( uint64_t ) ).first;
+  uint64_t nrecs = *reinterpret_cast<const uint64_t *>( r );
 
   vector<Record> recs{};
   recs.reserve( nrecs );
-  for ( size_type i = 0; i < nrecs; i++ ) {
-    string r = sock_.read_all( Record::SIZE );
-    recs.emplace_back( r.c_str(), 0, true );
+  for ( uint64_t i = 0; i < nrecs; i++ ) {
+    r = sock_.read_buf_all( Record::SIZE ).first;
+    recs.emplace_back( r );
   }
 
   if ( size_ == 0 && nrecs != rpcSize_ ) {
@@ -102,7 +104,7 @@ std::vector<Record> Client::recvRead( void )
 
   // should an extent be evicted from cache?
   if ( lru_.size() >= MAX_CACHED_EXTENTS ) {
-    size_type evict = lru_.back();
+    uint64_t evict = lru_.back();
     lru_.pop_back();
     for ( auto & buf : cache_ ) {
       if ( buf.fpos == evict ) {
@@ -127,17 +129,18 @@ std::vector<Record> Client::recvRead( void )
 
 void Client::recvSize( void )
 {
-  string str = sock_.read_all( sizeof( size_type ) );
-  size_ = *reinterpret_cast<const size_type *>( str.c_str() );
+  auto str = sock_.read_buf_all( sizeof( uint64_t ) ).first;
+  size_ = *reinterpret_cast<const uint64_t *>( str );
 
   // timings -- size rpc
   auto end = chrono::high_resolution_clock::now();
-  auto dur = chrono::duration_cast<chrono::milliseconds>( end - rpcStart_ ).count();
+  auto dur = chrono::duration_cast<chrono::milliseconds>
+    ( end - rpcStart_ ).count();
   cout << "* Size RPC took: " << dur << "ms" << endl;
 }
 
-bool Client::fillFromCache( vector<Record> & recs, size_type & pos,
-                            size_type & size )
+bool Client::fillFromCache( vector<Record> & recs, uint64_t & pos,
+                            uint64_t & size )
 {
   if ( size == 0 ) {
     return true;
@@ -145,7 +148,7 @@ bool Client::fillFromCache( vector<Record> & recs, size_type & pos,
 
   for ( auto const & buf : cache_ ) {
     if ( buf.fpos <= pos and pos < buf.fpos + buf.records.size() ) {
-      size_type start = pos - buf.fpos;
+      uint64_t start = pos - buf.fpos;
       if ( start + size <= buf.records.size() ) {
         // cache extent fully contains read
         recs.insert( recs.end(), buf.records.begin() + start,
@@ -156,7 +159,7 @@ bool Client::fillFromCache( vector<Record> & recs, size_type & pos,
         // have rest of needed data.
         recs.insert( recs.end(), buf.records.begin() + start,
                      buf.records.end() );
-        size_type read = buf.records.size() - start;
+        uint64_t read = buf.records.size() - start;
         pos += read;
         size -= read;
       }
@@ -171,7 +174,7 @@ bool Client::fillFromCache( vector<Record> & recs, size_type & pos,
   return false;
 }
 
-vector<Record> Client::DoRead( size_type pos, size_type size )
+vector<Record> Client::DoRead( uint64_t pos, uint64_t size )
 {
   unique_lock<mutex> lck{*mtx_};
   vector<Record> recs{};
@@ -214,7 +217,7 @@ vector<Record> Client::DoRead( size_type pos, size_type size )
   return recs;
 }
 
-Client::size_type Client::DoSize( void )
+uint64_t Client::DoSize( void )
 {
   unique_lock<mutex> lck{*mtx_};
   if ( size_ == 0 ) {
@@ -233,7 +236,6 @@ Action Client::RPCRunner( void )
 
     switch ( rpcActive_ ) {
     case None_:
-      // throw runtime_error( "socket ready to read but no rpc" );
       return ResultType::Continue;
     case Read_:
       recvRead();

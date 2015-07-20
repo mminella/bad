@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <system_error>
 #include <stdexcept>
 #include <tuple>
 #include <vector>
@@ -22,12 +23,11 @@ using namespace std;
 using namespace meth1;
 
 // Check size_t for a vector is a size_type or larger
-static_assert( sizeof( vector<Record>::size_type ) >=
-                 sizeof( Implementation::size_type ),
+static_assert( sizeof( vector<Record>::size_type ) >= sizeof( uint64_t ),
                "Vector<Record> max size is too small!" );
 
 /* Construct Node */
-Node::Node( string file, string port, size_type max_mem )
+Node::Node( string file, string port, uint64_t max_mem )
   : data_{{file.c_str(), O_RDONLY}}
   , port_{port}
   , last_{Record::MIN}
@@ -62,7 +62,7 @@ void Node::Run( void )
           RPC_Size( client );
           break;
         default:
-          // TODO: throw error!
+          throw runtime_error( "Unknown RPC method: " + to_string(str[0]) );
           break;
         }
       }
@@ -75,26 +75,26 @@ void Node::Run( void )
 void Node::RPC_Read( BufferedIO_O<TCPSocket> & client )
 {
   // parse arguments
-  const char * str = client.read_buf_all( 2 * sizeof( size_type ) ).first;
-  size_type pos = *( reinterpret_cast<const size_type *>( str ) );
-  size_type amt = *( reinterpret_cast<const size_type *>( str ) + 1 );
+  const char * str = client.read_buf_all( 2 * sizeof( uint64_t ) ).first;
+  uint64_t pos = *( reinterpret_cast<const uint64_t *>( str ) );
+  uint64_t amt = *( reinterpret_cast<const uint64_t *>( str ) + 1 );
 
   // perform read
   vector<Record> recs = Read( pos, amt );
-  size_type siz = recs.size();
+  uint64_t siz = recs.size();
 
   // serialize results to wire
-  client.write_all( reinterpret_cast<const char *>( &siz ), sizeof( size_type ) );
+  client.write_all( reinterpret_cast<const char *>( &siz ), sizeof( uint64_t ) );
   for ( auto const & r : recs ) {
-    client.write_all( r.str( Record::NO_LOC ) );
+    r.write( client );
   }
   client.flush( true );
 }
 
 void Node::RPC_Size( BufferedIO_O<TCPSocket> & client )
 {
-  size_type siz = Size();
-  client.write_all( reinterpret_cast<const char *>( &siz ), sizeof( size_type ) );
+  uint64_t siz = Size();
+  client.write_all( reinterpret_cast<const char *>( &siz ), sizeof( uint64_t ) );
   client.flush( true );
 }
 
@@ -102,7 +102,7 @@ void Node::RPC_Size( BufferedIO_O<TCPSocket> & client )
 void Node::DoInitialize( void ) { return; }
 
 /* Read a contiguous subset of the file starting from specified position. */
-vector<Record> Node::DoRead( size_type pos, size_type size )
+vector<Record> Node::DoRead( uint64_t pos, uint64_t size )
 {
   Record after = seek( pos );
 
@@ -117,14 +117,14 @@ vector<Record> Node::DoRead( size_type pos, size_type size )
 }
 
 /* Return the the number of records on disk */
-Node::size_type Node::DoSize( void )
+uint64_t Node::DoSize( void )
 {
   return data_.io().size() / Record::SIZE;
 }
 
 /* seek returns the record that occurs just before `pos` so it can be passed to
  * `linear_scan` */
-Record Node::seek( size_type pos )
+Record Node::seek( uint64_t pos )
 {
   cout << "- Seek (" << pos << ")" << endl;
   auto start = chrono::high_resolution_clock::now();
@@ -136,7 +136,7 @@ Record Node::seek( size_type pos )
     after = last_;
   } else {
     // remember, retrieving the record just before `pos`
-    for ( size_type i = 0; i < pos; i += max_mem_ ) {
+    for ( uint64_t i = 0; i < pos; i += max_mem_ ) {
       auto recs = linear_scan( after, min( pos - i, max_mem_ ) );
       if ( recs.size() == 0 ) {
         break;
@@ -155,31 +155,27 @@ Record Node::seek( size_type pos )
 
 /* Perform a full linear scan to return the next smallest record that occurs
  * after the 'after' record. */
-vector<Record> Node::linear_scan( const Record & after, size_type size )
+vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 {
   static uint64_t pass = 0;
 
   cout << "- Linear scan " << pass++ << " (" << size << ")" << endl;
   auto start = chrono::high_resolution_clock::now();
 
-  // TODO: Better to use pointers to Record? Or perhaps to change Record to
-  // heap allocate?
   mystl::priority_queue<Record> recs{size + 1};
 
-  size_type i;
-
-  for ( i = 0;; i++ ) {
+  for ( uint64_t i = 0;; i++ ) {
     const char * rec_str = data_.read_buf_all( Record::SIZE ).first;
-    Record next = Record::ParseRecord( rec_str, i, false );
+    Record next = Record( rec_str, i );
     if ( data_.eof() ) {
       break;
     }
 
     if ( after < next ) {
       if ( recs.size() < size ) {
-        recs.emplace( rec_str, i, true );
+        recs.push( next );
       } else if ( next < recs.top() ) {
-        recs.emplace( rec_str, i, true );
+        recs.push( next );
         recs.pop();
       }
     }

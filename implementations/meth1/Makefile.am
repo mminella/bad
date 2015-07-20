@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = lib sort stratergies app
+SUBDIRS = lib sort stratergies app experiments
 
 .PHONY: format check-all test bin-dist recs-1gb
 
@@ -14,25 +14,26 @@ check-all:
 	@scan-build ./configure
 	@scan-build make
 
-test: app/sort_test app/meth1_node_test
+test: experiments/sort_libc experiments/sort_basicrts app/meth1_node_test
 	@mkdir -p .test-tmp
 	
-	@./app/sort_test test/in.s0000.e1000.recs .test-tmp/out.1000.recs > /dev/null
+	@./experiments/sort_libc test/in.s0000.e1000.recs .test-tmp/out.1000.recs > /dev/null
 	@diff test/out.1000.recs .test-tmp/out.1000.recs > /dev/null && \
-		echo "sort test : PASSED" || \
-		echo "sort test : FAILED"
+		echo "sort libc test     : PASSED" || \
+		echo "sort libc test     : FAILED"
+	@rm .test-tmp/out.1000.recs
+	
+	@./experiments/sort_basicrts test/in.s0000.e1000.recs .test-tmp/out.1000.recs > /dev/null
+	@diff test/out.1000.recs .test-tmp/out.1000.recs > /dev/null && \
+		echo "sort basicrts test : PASSED" || \
+		echo "sort basicrts test : FAILED"
 	@rm .test-tmp/out.1000.recs
 	
 	@./app/meth1_node_test test/in.s0000.e1000.recs .test-tmp/out.1000.recs > /dev/null
 	@diff test/out.1000.recs .test-tmp/out.1000.recs > /dev/null && \
-		echo "node test : PASSED" || \
-		echo "node test : FAILED"
-	@rm .test-tmp/out.1000.recs
+		echo "node test          : PASSED" || \
+		echo "node test          : FAILED"
 	
-	@./app/sort_test_cfiles test/in.s0000.e1000.recs .test-tmp/out.1000.recs > /dev/null
-	@diff test/out.1000.recs .test-tmp/out.1000.recs > /dev/null && \
-		echo "csort test: PASSED" || \
-		echo "csort test: FAILED"
 
 bin-dist: app/meth1_node app/meth1_shell app/meth1_client
 	rm -Rf dist_root

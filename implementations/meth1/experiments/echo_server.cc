@@ -1,10 +1,11 @@
-/* Simple test TCP server for playing with libbasicrts */
-#include <thread>
+/**
+ * Simple test TCP server for playing with libbasicrts.
+ */
 #include <iostream>
+#include <thread>
 
 #include "buffered_io.hh"
 #include "socket.hh"
-#include "util.hh"
 
 using namespace std;
 
@@ -46,3 +47,4 @@ int main( int argc, char *argv[] )
 
   return EXIT_SUCCESS;
 }
+

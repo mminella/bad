@@ -42,10 +42,11 @@ AC_TYPE_UINT64_T
 # Set output files.
 AC_CONFIG_FILES([
   Makefile
+  app/Makefile
+  experiments/Makefile
   lib/Makefile
   sort/Makefile
   stratergies/Makefile
   stratergies/meth1/Makefile
-  app/Makefile
 ])
 AC_OUTPUT

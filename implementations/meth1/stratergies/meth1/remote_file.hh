@@ -4,9 +4,11 @@
 #include <vector>
 
 #include "address.hh"
+#include "poller.hh"
+
+#include "record.hh"
 
 #include "implementation.hh"
-
 #include "client.hh"
 
 /**
@@ -18,40 +20,35 @@ namespace meth1
 {
 
 /**
- * RemoteFile is a helper wrapper around a Client that handles performing
- * read-ahead for better performance. It also presents closer to a traditional,
- * stateful file interface that can make some algorithms easier.
- */
+ * RemoteFile is a helper wrapper around a Client presents a stateful File
+ * interface and performs read-ahead. */
 class RemoteFile
 {
-public:
-  using size_type = Implementation::size_type;
-
 private:
-  Client client_;       // contained client
-  size_type fpos_;      // file position
-  size_type cached_;    // records cached (read-ahead)
-  size_type readahead_; // read-ahead amount
-  size_type low_cache_; // low-cache amount to start read-ahead
-  bool eof_;
+  Client client_;      // contained client
+  uint64_t fpos_;      // file position
+  uint64_t cached_;    // records cached (read-ahead)
+  uint64_t readahead_; // read-ahead amount
+  uint64_t low_cache_; // low-cache amount to start read-ahead
+  bool eof_;           // end-of-file hit?
 
   void read_ahead( void );
 
 public:
-  RemoteFile( Client c, size_type readahead, size_type low_cache = 0 );
+  RemoteFile( Client c, uint64_t readahead, uint64_t low_cache = 0 );
 
-  RemoteFile( Address node, size_type readahead, size_type low_cache = 0 )
+  RemoteFile( Address node, uint64_t readahead, uint64_t low_cache = 0 )
     : RemoteFile( Client{node}, readahead, low_cache )
   {
   }
 
   void open( void );
-  void seek( size_type offset );
-  void prefetch( size_type size = 0 );
+  void seek( uint64_t offset );
+  void prefetch( uint64_t size = 0 );
   void next( void );
   std::vector<Record> peek( void );
   std::vector<Record> read( void );
-  size_type stat( void );
+  uint64_t stat( void );
 
   Poller::Action RPCRunner( void );
 };

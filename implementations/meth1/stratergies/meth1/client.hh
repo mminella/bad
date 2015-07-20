@@ -10,7 +10,6 @@
 
 #include "address.hh"
 #include "buffered_io.hh"
-#include "exception.hh"
 #include "file.hh"
 #include "poller.hh"
 #include "socket.hh"
@@ -26,20 +25,20 @@ namespace meth1
 {
 
 /**
- * Client defines the coordinator that communicates with a single node.
+ * Client communicates with a single backend node. Performs some basic caching
+ * of records read from the network, mostly to allow asynchronous IO.
  */
 class Client : public Implementation
 {
 private:
   /* how many records to read from the network in one go */
-  static constexpr size_t NET_BLOCK_SIZE = 100;
   static constexpr size_t MAX_CACHED_EXTENTS = 3;
 
   /* A cache of records with starting position recorded */
   struct Buffer {
     std::vector<Record> records;
-    size_type fpos;
-    Buffer( std::vector<Record> r, size_type fp )
+    uint64_t fpos;
+    Buffer( std::vector<Record> r, uint64_t fp )
       : records{r}
       , fpos{fp}
     {
@@ -53,19 +52,16 @@ private:
 
   /* rpc state */
   enum RPC { Read_, Size_, None_ } rpcActive_;
-  size_type rpcPos_;
-  size_type rpcSize_;
+  uint64_t rpcPos_;
+  uint64_t rpcSize_;
   std::chrono::high_resolution_clock::time_point rpcStart_;
 
   /* cache of buffer extents, kept sorted by buffer offset */
   std::vector<Buffer> cache_;
+  std::list<uint64_t> lru_; // invariant: no two extends have same fpos
 
-  /* lru of buffer extents for eviction -- we use the fpos for an id, so
-   * invariants is no two extents have the same fpos */
-  std::list<size_type> lru_;
-
-  /* cache file size */
-  size_type size_;
+  /* file size (cache result) */
+  uint64_t size_;
 
   /* synchronization for read vs write */
   std::unique_ptr<std::mutex> mtx_;
@@ -73,15 +69,15 @@ private:
 
   /* methods */
   void DoInitialize( void );
-  std::vector<Record> DoRead( size_type pos, size_type size );
-  size_type DoSize( void );
+  std::vector<Record> DoRead( uint64_t pos, uint64_t size );
+  uint64_t DoSize( void );
 
   void waitOnRPC( std::unique_lock<std::mutex> & lck );
-  bool fillFromCache( std::vector<Record> & recs, size_type & pos,
-                      size_type & size );
+  bool fillFromCache( std::vector<Record> & recs, uint64_t & pos,
+                      uint64_t & size );
 
-  void sendRead( std::unique_lock<std::mutex> & lck, size_type pos,
-                 size_type size );
+  void sendRead( std::unique_lock<std::mutex> & lck, uint64_t pos,
+                 uint64_t size );
   std::vector<Record> recvRead( void );
   void sendSize( std::unique_lock<std::mutex> & lck );
   void recvSize( void );
@@ -89,13 +85,12 @@ private:
 public:
   Client( Address node );
 
-  /* Returns an action to be run in a event loop for handling RPC responses for
-   * this client */
+  /* Returns an action to be run in a event loop for handling RPC */
   Poller::Action RPCRunner( void );
 
   /* Setup a read to execute asynchronously, when done it'll be placed in the
    * Client's internal cache and available through 'Read' */
-  void prepareRead( size_type pos, size_type size )
+  void prepareRead( uint64_t pos, uint64_t size )
   {
     std::unique_lock<std::mutex> lck{*mtx_};
     sendRead( lck, pos, size );

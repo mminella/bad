@@ -1,6 +1,9 @@
 #include <vector>
 
 #include "address.hh"
+#include "poller.hh"
+
+#include "record.hh"
 
 #include "client.hh"
 #include "remote_file.hh"
@@ -8,7 +11,7 @@
 using namespace std;
 using namespace meth1;
 
-RemoteFile::RemoteFile( Client c, size_type readahead, size_type low_cache )
+RemoteFile::RemoteFile( Client c, uint64_t readahead, uint64_t low_cache )
   : client_{move( c )}
   , fpos_{0}
   , cached_{0}
@@ -25,9 +28,12 @@ RemoteFile::RemoteFile( Client c, size_type readahead, size_type low_cache )
   }
 }
 
-void RemoteFile::open( void ) { client_.Initialize(); }
+void RemoteFile::open( void )
+{
+  client_.Initialize();
+}
 
-void RemoteFile::seek( size_type offset )
+void RemoteFile::seek( uint64_t offset )
 {
   if ( offset < fpos_ ) {
     cached_ = 0;
@@ -41,7 +47,7 @@ void RemoteFile::seek( size_type offset )
   fpos_ = offset;
 }
 
-void RemoteFile::prefetch( size_type size )
+void RemoteFile::prefetch( uint64_t size )
 {
   if ( cached_ > 0 ) {
     return;
@@ -56,7 +62,6 @@ void RemoteFile::prefetch( size_type size )
 
 void RemoteFile::read_ahead( void )
 {
-  // advance prefetch if low
   if ( cached_ <= low_cache_ ) {
     client_.prepareRead( fpos_ + cached_, readahead_ );
     cached_ += readahead_;
@@ -69,7 +74,6 @@ void RemoteFile::next( void )
     cached_--;
     fpos_++;
   }
-
   read_ahead();
 }
 
@@ -79,7 +83,6 @@ vector<Record> RemoteFile::peek( void )
     return {};
   }
 
-  // read next record
   vector<Record> rec = client_.Read( fpos_, 1 );
   if ( rec.size() == 0 ) {
     eof_ = true;
@@ -104,6 +107,12 @@ vector<Record> RemoteFile::read( void )
   return rec;
 }
 
-Poller::Action RemoteFile::RPCRunner( void ) { return client_.RPCRunner(); }
+Poller::Action RemoteFile::RPCRunner( void )
+{
+  return client_.RPCRunner();
+}
 
-RemoteFile::size_type RemoteFile::stat( void ) { return client_.Size(); }
+uint64_t RemoteFile::stat( void )
+{
+  return client_.Size();
+}
