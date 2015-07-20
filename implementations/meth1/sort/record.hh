@@ -189,6 +189,22 @@ public:
     return cmp;
   }
 
+  // methods for boost::sort
+  const char * data( void ) const noexcept
+  {
+    return key_;
+  }
+
+  unsigned char operator[]( size_t offset ) const noexcept
+  {
+    return key_[offset];
+  }
+
+  size_t size( void ) const noexcept
+  {
+    return KEY_LEN;
+  }
+
   /* To string */
   std::string str( loc_t locinfo = NO_LOC ) const
   {

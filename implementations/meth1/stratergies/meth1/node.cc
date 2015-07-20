@@ -5,8 +5,11 @@
 #include <chrono>
 #include <system_error>
 #include <stdexcept>
+#include <thread>
 #include <tuple>
 #include <vector>
+
+#include <boost/sort/spreadsort/string_sort.hpp>
 
 #include "address.hh"
 #include "buffered_io.hh"
@@ -19,8 +22,11 @@
 #include "node.hh"
 #include "priority_queue.hh"
 
+#define USE_OVERLAP_IO 0
+
 using namespace std;
 using namespace meth1;
+using namespace boost::sort::spreadsort;
 
 // Check size_t for a vector is a size_type or larger
 static_assert( sizeof( vector<Record>::size_type ) >= sizeof( uint64_t ),
@@ -33,6 +39,8 @@ Node::Node( string file, string port, uint64_t max_mem )
   , last_{Record::MIN}
   , fpos_{0}
   , max_mem_{max_mem}
+  , mtx_{}
+  , cv_{}
 {
 }
 
@@ -153,8 +161,147 @@ Record Node::seek( uint64_t pos )
   return after;
 }
 
+void Node::read_file( void )
+{
+  wptr_ = buf_;
+  while ( true ) {
+    size_t n = data_.io().read_all( wptr_, BLOCK );
+
+    wptr_ += BLOCK;
+    if ( wptr_ == buf_ + BUF_SIZE ) {
+      wptr_ = buf_;
+    }
+
+    unique_lock<mutex> lck( mtx_ );
+    last_block_ = n;
+    blocks_++;
+    cv_.notify_one(); // notify reader
+
+    if ( data_.io().eof() ) {
+      break;
+    } else {
+      // wait on reader
+      cv_.wait( lck, [&]() { return blocks_ < NBLOCKS; } );
+    }
+  }
+}
+
+char * Node::chunk( size_t &siz )
+{
+  unique_lock<mutex> lck( mtx_ );
+  // wait on writer
+  cv_.wait( lck, [&]() { return blocks_ > 0; } );
+  siz = data_.io().eof() and blocks_ == 1 ? last_block_ : BLOCK;
+  return rptr_;
+}
+
+bool Node::next_chunk( void )
+{
+  rptr_ += BLOCK;
+  if ( rptr_ == buf_ + BUF_SIZE ) {
+    rptr_ = buf_;
+  }
+
+  unique_lock<mutex> lck( mtx_ );
+  blocks_--;
+  cv_.notify_one(); // notify writer
+
+  return data_.io().eof() && blocks_ == 0;
+}
+
+#if USE_OVERLAP_IO == 1
+
 /* Perform a full linear scan to return the next smallest record that occurs
  * after the 'after' record. */
+vector<Record> Node::linear_scan( const Record & after, uint64_t size )
+{
+  static uint64_t pass = 0;
+
+  // lineaer scan
+  cout << "- Linear scan " << pass++ << " (" << size << ")" << endl;
+  auto start = chrono::high_resolution_clock::now();
+
+  thread reader ( &Node::read_file, this );
+
+  mystl::priority_queue<Record> recs{size + 1};
+
+  uint64_t i = 0;
+  size_t n = 0;
+  char r[Record::SIZE];
+  char * block = chunk( n );
+  char * pr = block;
+
+  do {
+    for (; pr <= block + n - Record::SIZE; pr += Record::SIZE ) {
+      Record next = Record( pr, i++ );
+      if ( after < next ) {
+        if ( recs.size() < size ) {
+          recs.push( next );
+        } else if ( next < recs.top() ) {
+          recs.push( next );
+          recs.pop();
+        }
+      }
+    }
+
+    // copy trailing, ready for next block
+    size_t trail = n - (pr - block);
+    if ( trail > 0 ) {
+      memcpy( r, pr, trail );
+    }
+
+    // get next block
+    if ( next_chunk() ) {
+      break;
+    }
+    block = chunk( n );
+    pr = block;
+
+    // complete partial record
+    if ( trail > 0 ) {
+      memcpy( r + trail, pr, Record::SIZE - trail );
+      pr += Record::SIZE - trail;
+
+      Record next = Record( r, i++ );
+      if ( after < next ) {
+        if ( recs.size() < size ) {
+          recs.push( next );
+        } else if ( next < recs.top() ) {
+          recs.push( next );
+          recs.pop();
+        }
+      }
+    }
+  } while ( true );
+
+  reader.join();
+
+  // timings -- scan
+  auto split = chrono::high_resolution_clock::now();
+  auto dur   = chrono::duration_cast<chrono::milliseconds>( split - start ).count();
+  cout << "* Linear scan took: " << dur << "ms" << endl;
+
+  // rewind the file
+  data_.io().rewind();
+
+  // sort final heap
+  vector<Record> vrecs {move( recs.container() )};
+  string_sort( vrecs.begin(), vrecs.end() );
+
+  // timings -- sort
+  auto end = chrono::high_resolution_clock::now();
+  dur = chrono::duration_cast<chrono::milliseconds>( end - split ).count();
+  cout << "* In-memory sort took: " << dur << "ms" << endl;
+
+  // timings -- total
+  dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
+  cout << "* Read took: " << dur << "ms" << endl;
+
+  return vrecs;
+}
+
+#else /* !USE_OVERLAP_IO */
+
 vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 {
   static uint64_t pass = 0;
@@ -190,8 +337,8 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
   data_.io().rewind();
 
   // sort final heap
-  auto & vrecs = recs.container();
-  sort( vrecs.begin(), vrecs.end() );
+  vector<Record> vrecs {move( recs.container() )};
+  string_sort( vrecs.begin(), vrecs.end() );
 
   // timings -- sort
   auto end = chrono::high_resolution_clock::now();
@@ -204,3 +351,5 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 
   return vrecs;
 }
+
+#endif /* USE_OVERLAP_IO */
