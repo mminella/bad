@@ -1,0 +1,11 @@
+#!/bin/sh
+
+mkdir -p ${srcdir}/.test-tmp
+
+${srcdir}/experiments/sort_basicrts \
+  ${srcdir}/test/in.s0000.e1000.recs \
+  ${srcdir}/.test-tmp/out.1000.recs
+
+diff \
+  ${srcdir}/test/out.s0000.e1000.recs \
+  ${srcdir}/.test-tmp/out.1000.recs

@@ -33,8 +33,11 @@ m4/
 missing
 stamp-h1
 
-# executables
-app/node
+# test files
+test-driver
+test-suite.log
+test/*.log
+test/*.trs
 
 # libraries
 *.la
