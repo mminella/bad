@@ -15,7 +15,7 @@ LDADD = \
 	$(BOOST_LIBS) \
 	-lpthread
 
-AM_LDFLAGS = -static -static-libstdc++
+AM_LDFLAGS = -static -static-libstdc++ -all-static
 
 echo_server_SOURCES = echo_server.cc
 

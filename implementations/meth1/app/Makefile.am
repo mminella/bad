@@ -17,7 +17,7 @@ LDADD = \
 	$(BOOST_LIBS) \
 	-lpthread
 
-AM_LDFLAGS = -static -static-libstdc++
+AM_LDFLAGS = -static -static-libstdc++ -all-static
 
 meth1_node_test_SOURCES = meth1_node_test.cc
 meth1_client_test_SOURCES = meth1_client_test.cc
