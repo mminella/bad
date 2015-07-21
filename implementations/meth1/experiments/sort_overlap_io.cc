@@ -41,6 +41,8 @@ static constexpr size_t CHUNK = 100000;
 static char * all_vals;
 static char * cur_v;
 
+void inline IGUR() {}
+
 // our record struct
 struct Rec
 {
@@ -55,8 +57,12 @@ struct Rec
   {
     val_ = cur_v;
     cur_v += VAL_BYTES;
-    fread( key_, KEY_BYTES, 1, fdi );
-    fread( val_, VAL_BYTES, 1, fdi );
+    size_t n = 0;
+    n += fread( key_, KEY_BYTES, 1, fdi );
+    n += fread( val_, VAL_BYTES, 1, fdi );
+    if ( n != REC_BYTES ) {
+      throw runtime_error( "Couldn't read record" );
+    }
   }
 
   inline size_t write( FILE *fdo )

@@ -51,8 +51,12 @@ struct Rec
   {
     val_ = cur_v;
     cur_v += VAL_BYTES;
-    fread( key_, KEY_BYTES, 1, fdi );
-    fread( val_, VAL_BYTES, 1, fdi );
+    size_t n = 0;
+    n += fread( key_, KEY_BYTES, 1, fdi );
+    n += fread( val_, VAL_BYTES, 1, fdi );
+    if ( n != REC_BYTES ) {
+      throw runtime_error( "Couldn't read record" );
+    }
   }
 
   inline size_t write( FILE *fdo ) const
