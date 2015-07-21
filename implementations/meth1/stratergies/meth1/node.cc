@@ -9,7 +9,9 @@
 #include <tuple>
 #include <vector>
 
+#if HAVE_BOOST_SORT == 1
 #include <boost/sort/spreadsort/string_sort.hpp>
+#endif
 
 #include "address.hh"
 #include "buffered_io.hh"
@@ -26,7 +28,11 @@
 
 using namespace std;
 using namespace meth1;
+
+#if HAVE_BOOST_SORT == 1
 using namespace boost::sort::spreadsort;
+#endif
+
 
 // Check size_t for a vector is a size_type or larger
 static_assert( sizeof( vector<Record>::size_type ) >= sizeof( uint64_t ),
@@ -286,7 +292,11 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 
   // sort final heap
   vector<Record> vrecs {move( recs.container() )};
+#if HAVE_BOOST_SORT == 1
   string_sort( vrecs.begin(), vrecs.end() );
+#else
+  sort( vrecs.begin(), vrecs.end() );
+#endif
 
   // timings -- sort
   auto end = chrono::high_resolution_clock::now();
@@ -338,7 +348,11 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 
   // sort final heap
   vector<Record> vrecs {move( recs.container() )};
+#if HAVE_BOOST_SORT == 1
   string_sort( vrecs.begin(), vrecs.end() );
+#else
+  sort( vrecs.begin(), vrecs.end() );
+#endif
 
   // timings -- sort
   auto end = chrono::high_resolution_clock::now();

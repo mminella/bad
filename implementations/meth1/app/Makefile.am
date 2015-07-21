@@ -14,7 +14,7 @@ LDADD = \
 	../lib/libbasicrts.la \
 	../sort/libsort.la \
 	../stratergies/meth1/libmeth1.la \
-	-lboost_system \
+	$(BOOST_LIBS) \
 	-lpthread
 
 AM_LDFLAGS = -static -static-libstdc++

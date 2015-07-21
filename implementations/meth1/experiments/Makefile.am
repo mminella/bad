@@ -12,7 +12,7 @@ AM_CPPFLAGS = \
 LDADD = \
 	../lib/libbasicrts.la \
 	../sort/libsort.la \
-	-lboost_system \
+	$(BOOST_LIBS) \
 	-lpthread
 
 AM_LDFLAGS = -static -static-libstdc++

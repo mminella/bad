@@ -14,15 +14,19 @@
 
 #include <algorithm>
 #include <chrono>
-#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <system_error>
 #include <vector>
 
+#include "../config.h"
+
+#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
 #include <boost/sort/spreadsort/string_sort.hpp>
+using namespace boost::sort::spreadsort;
+#endif
 
 using namespace std;
-using namespace boost::sort::spreadsort;
 
 // sizes of records
 static constexpr size_t KEY_BYTES = 10;
@@ -108,7 +112,11 @@ int run( char * fin, char * fout )
   auto t2 = chrono::high_resolution_clock::now();
 
   // sort
+#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
   string_sort( all_recs.begin(), all_recs.end() );
+#else
+  sort( all_recs.begin(), all_recs.end() );
+#endif
   auto t3 = chrono::high_resolution_clock::now();
 
   // write

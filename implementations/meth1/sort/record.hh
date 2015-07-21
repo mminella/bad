@@ -4,7 +4,11 @@
 #include <cstring>
 #include <string>
 
+#include "../config.h"
+
+#if HAVE_BOOST_POOL_POOL_ALLOC_HPP == 1
 #define USE_POOL 1
+#endif
 
 #if USE_POOL == 1
 #include <boost/pool/pool_alloc.hpp>
