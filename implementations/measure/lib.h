@@ -8,14 +8,15 @@
 #include <linux/aio_abi.h>
 
 #include <algorithm>
+#include <sstream>
+#include <string>
 
-const size_t kFactor = 256;
-// Block size = 256 * 4KB = 1MB.
-const size_t kBlockSize = 0x1000 * kFactor;
-// The total number of blocks * kBlockSize = 1GB.
-const size_t kTestBlock = 10 * 0x40000 / kFactor;
-
-const char kFileName[] = "test.dat";
+/*
+ * Default parameter:
+ * file size = 10G = 10737418240 Byte.
+ * block size = 1M = 1048576
+ * fly requests = 64
+ */
 
 inline double GetTimeDuration(
     const struct timespec& start, const struct timespec& end) {
@@ -52,6 +53,14 @@ inline int io_getevents(aio_context_t ctx, long min_nr, long max_nr,
                         struct io_event *events, struct timespec *timeout) {
   return syscall(__NR_io_getevents, ctx, min_nr, max_nr, events, timeout);
 }
+
+inline size_t TranslateToInt(const char* input) {
+  std::istringstream conv(input);
+  size_t result;
+  conv >> result;
+  return result;
+}
+
 
 
 #endif  // LIB_H_
