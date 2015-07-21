@@ -2,7 +2,7 @@
 
 mkdir -p ${srcdir}/.test-tmp
 
-${srcdir}/experiments/sort_basicrts \
+${srcdir}/experiments/sort_boost \
   ${srcdir}/test/in.s0000.e1000.recs \
   ${srcdir}/.test-tmp/out.1000.recs
 

@@ -6,20 +6,20 @@
  * - Uses own Record struct.
  * - Use boost::spreadsort + std::vector.
  */
-#include <fcntl.h>
-#include <stdio.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 #include <algorithm>
 #include <chrono>
-#include <cstring>
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <system_error>
 #include <vector>
 
 #include "../config.h"
+
+#include "rec.hh"
 
 #ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
 #include <boost/sort/spreadsort/string_sort.hpp>
@@ -28,104 +28,38 @@ using namespace boost::sort::spreadsort;
 
 using namespace std;
 
-// sizes of records
-static constexpr size_t KEY_BYTES = 10;
-static constexpr size_t VAL_BYTES = 90;
-static constexpr size_t REC_BYTES = KEY_BYTES + VAL_BYTES;
-
-// large array for record values
-static char * all_vals;
-static char * cur_v;
-
-// our record struct
-struct Rec
-{
-  // Pulling the key inline with Rec improves sort performance by 2x. Appears
-  // to be due to saving an indirection during sort.
-  char key_[KEY_BYTES];
-  char * val_;
-
-  Rec() : val_{nullptr} {}
-
-  inline void read( FILE *fdi )
-  {
-    val_ = cur_v;
-    cur_v += VAL_BYTES;
-    size_t n = 0;
-    n += fread( key_, KEY_BYTES, 1, fdi );
-    n += fread( val_, VAL_BYTES, 1, fdi );
-    if ( n != REC_BYTES ) {
-      throw runtime_error( "Couldn't read record" );
-    }
-  }
-
-  inline size_t write( FILE *fdo ) const
-  {
-    size_t n = 0;
-    n += fwrite( key_, KEY_BYTES, 1, fdo );
-    n += fwrite( val_, VAL_BYTES, 1, fdo );
-    return n;
-  }
-
-  inline bool operator<( const Rec & b ) const
-  {
-    return compare( b ) < 0 ? true : false;
-  }
-
-  inline int compare( const Rec & b ) const
-  {
-    return memcmp( key_, b.key_, KEY_BYTES );
-  }
-
-  inline const char * data( void ) const
-  {
-    return key_;
-  }
-
-  inline unsigned char operator[]( size_t offset ) const
-  {
-    return key_[offset];
-  }
-
-  inline size_t size( void ) const
-  {
-    return KEY_BYTES;
-  }
-} __attribute__((packed));
-
 int run( char * fin, char * fout )
 {
   FILE *fdi = fopen( fin, "r" );
   FILE *fdo = fopen( fout, "w" );
 
-  // setup space for data
   struct stat st;
   fstat( fileno( fdi ), &st );
   size_t nrecs = st.st_size / REC_BYTES;
 
-  cur_v = all_vals = new char[ nrecs * VAL_BYTES ];
-  vector<Rec> all_recs = vector<Rec>( nrecs );
+  vector<Rec> recs( nrecs );
+  setup_value_storage( nrecs );
 
   auto t1 = chrono::high_resolution_clock::now();
 
   // read
   for ( uint64_t i = 0; i < nrecs; i++ ) {
-    all_recs[i].read( fdi );
+    recs[i].read( fdi );
   }
   fclose( fdi );
   auto t2 = chrono::high_resolution_clock::now();
 
   // sort
 #ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-  string_sort( all_recs.begin(), all_recs.end() );
+  string_sort( recs.begin(), recs.end() );
 #else
-  sort( all_recs.begin(), all_recs.end() );
+  sort( recs.begin(), recs.end() );
 #endif
   auto t3 = chrono::high_resolution_clock::now();
 
   // write
   for ( uint64_t i = 0; i < nrecs; i++ ) {
-    all_recs[i].write( fdo );
+    recs[i].write( fdo );
   }
   fflush( fdo );
   fsync( fileno( fdo ) );

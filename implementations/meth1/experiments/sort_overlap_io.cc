@@ -5,22 +5,22 @@
  * - Uses own Record struct.
  * - Use boost::spreadsort + std::vector.
  */
-#include <fcntl.h>
-#include <stdio.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 #include <algorithm>
 #include <chrono>
 #include <condition_variable>
-#include <cstring>
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <mutex>
 #include <thread>
 #include <vector>
 
 #include "../config.h"
+
+#include "rec.hh"
 
 #ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
 #include <boost/sort/spreadsort/string_sort.hpp>
@@ -29,78 +29,11 @@ using namespace boost::sort::spreadsort;
 
 using namespace std;
 
-// sizes of records
-static constexpr size_t KEY_BYTES = 10;
-static constexpr size_t VAL_BYTES = 90;
-static constexpr size_t REC_BYTES = KEY_BYTES + VAL_BYTES;
-
 // read:sort chunk size
 static constexpr size_t CHUNK = 100000;
 
-// large array for record values
-static char * all_vals;
-static char * cur_v;
-
-void inline IGUR() {}
-
-// our record struct
-struct Rec
-{
-  // Pulling the key inline with Rec improves sort performance by 2x. Appears
-  // to be due to saving an indirection during sort.
-  char key_[KEY_BYTES];
-  char * val_;
-
-  Rec() : val_{nullptr} {}
-
-  inline void read( FILE *fdi )
-  {
-    val_ = cur_v;
-    cur_v += VAL_BYTES;
-    size_t n = 0;
-    n += fread( key_, KEY_BYTES, 1, fdi );
-    n += fread( val_, VAL_BYTES, 1, fdi );
-    if ( n != REC_BYTES ) {
-      throw runtime_error( "Couldn't read record" );
-    }
-  }
-
-  inline size_t write( FILE *fdo )
-  {
-    size_t n = 0;
-    n += fwrite( key_, KEY_BYTES, 1, fdo );
-    n += fwrite( val_, VAL_BYTES, 1, fdo );
-    return n;
-  }
-
-  inline bool operator<( const Rec & b ) const
-  {
-    return compare( b ) < 0 ? true : false;
-  }
-
-  inline int compare( const Rec & b ) const
-  {
-    return memcmp( key_, b.key_, KEY_BYTES );
-  }
-
-  inline const char * data( void ) const
-  {
-    return key_;
-  }
-
-  inline unsigned char operator[]( size_t offset ) const
-  {
-    return key_[offset];
-  }
-
-  inline size_t size( void ) const
-  {
-    return KEY_BYTES;
-  }
-} __attribute__((packed));
-
 // All records (key + ptr to value)
-static vector<Rec> all_recs{};
+static vector<Rec> recs;
 
 // overlapping chunks
 static mutex mtx;
@@ -115,12 +48,12 @@ chrono::high_resolution_clock::time_point t2;
 void read_all_recs( FILE * fdi, size_t nrecs )
 {
   // setup space for data
-  cur_v = all_vals = new char[ nrecs * VAL_BYTES ];
-  all_recs = vector<Rec>( nrecs );
+  recs = vector<Rec>( nrecs );
+  setup_value_storage( nrecs );
 
   // read all records
   for ( uint64_t i = 0; i < nrecs; i++ ) {
-    all_recs[i].read( fdi );
+    recs[i].read( fdi );
     if ( i != 0 && i % CHUNK == 0 ) {
       unique_lock<mutex> lck (mtx);
       ready_recs = i;
@@ -169,12 +102,12 @@ int run( char * fin, char * fout )
     size_t next = get_next_chunk();
     ffs = chrono::high_resolution_clock::now();
 #ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-    string_sort( all_recs.begin() + sorted_recs, all_recs.begin() + next );
+    string_sort( recs.begin() + sorted_recs, recs.begin() + next );
 #else
-    sort( all_recs.begin() + sorted_recs, all_recs.begin() + next );
+    sort( recs.begin() + sorted_recs, recs.begin() + next );
 #endif
-    inplace_merge( all_recs.begin(), all_recs.begin() + sorted_recs,
-                   all_recs.begin() + next );
+    inplace_merge( recs.begin(), recs.begin() + sorted_recs,
+                   recs.begin() + next );
     sorted_recs = next;
     ffe = chrono::high_resolution_clock::now();
   }
@@ -182,7 +115,7 @@ int run( char * fin, char * fout )
 
   // write
   for ( uint64_t i = 0; i < nrecs; i++ ) {
-    all_recs[i].write( fdo );
+    recs[i].write( fdo );
   }
   fflush( fdo );
   fsync( fileno( fdo ) );

@@ -14,8 +14,6 @@ check-all:
 	@scan-build ./configure
 	@scan-build make
 
-TESTS = test/sort_libc.test test/sort_basicrts.test test/sort_node.test
-
 bin-dist: app/meth1_node app/meth1_shell app/meth1_client
 	rm -Rf dist_root
 	mkdir -p dist_root/usr/bin
@@ -34,3 +32,9 @@ recs-1gb:
 recs-10gb:
 	../../gensort/gensort 104857000 test/recs-1gb
 
+TESTS = \
+	test/sort_libc.test \
+	test/sort_basicrts.test \
+	test/sort_boost.test \
+	test/sort_overlap_io.test \
+	test/sort_node.test 
