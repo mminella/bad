@@ -25,6 +25,8 @@ AC_SUBST([AM_CXXFLAGS], ["$DEF_CXXFLAGS"])
 
 # Checks for programs.
 AC_PROG_CXX
+AC_LANG([C++])
+AX_CXX_COMPILE_STDCXX_11([noext])
 AM_PROG_AR
 LT_INIT([disable-shared])
 

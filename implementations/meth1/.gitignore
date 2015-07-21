@@ -29,7 +29,6 @@ install-sh
 lib/Makefile
 libtool
 ltmain.sh
-m4/
 missing
 stamp-h1
 
