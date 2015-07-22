@@ -18,10 +18,9 @@ AC_CONFIG_MACRO_DIR([m4])
 # Set configure output header.
 AC_CONFIG_HEADERS([config.h])
 
-# Set default CXXFLAGS
+# Set some default CXXFLAGS
 WARN_FLAGS="-pedantic -Wall -Wextra -Weffc++"
-DEF_CXXFLAGS="-std=c++11 -g -O2 $WARN_FLAGS"
-AC_SUBST([AM_CXXFLAGS], ["$DEF_CXXFLAGS"])
+AC_SUBST([AM_CXXFLAGS], ["$WARN_FLAGS"])
 
 # Checks for programs.
 AC_PROG_CXX
