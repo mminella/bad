@@ -1,7 +1,8 @@
 /**
- * Adaptation of `sort_boost` to overlap reading IO with sorting of the file.
+ * Adaptation of `sort_overlap_io` to use channels as the synchronization
+ * primitive.
  *
- * - Uses C file IO + seperate reader thread (sync with mutex + cv).
+ * - Uses C file IO + seperate reader thread (sync with channel).
  * - Uses own Record struct.
  * - Use boost::spreadsort + std::vector.
  */
@@ -17,6 +18,8 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+
+#include "channel.hh"
 
 #include "../config.h"
 
@@ -41,38 +44,24 @@ private:
   size_t nrecs_;
 
   thread reader_;
-  mutex mtx_;
-  condition_variable cv_;
-  size_t ready_;
+  Channel<size_t> chn_;
   time_point finished_;
-
-  bool next_chunk_ready( void )
-  {
-    return ready_ != 0;
-  }
 
   void read_file( void )
   {
     for ( uint64_t i = 0; i < nrecs_; i++ ) {
       recs_[i].read( f_ );
       if ( i != 0 && i % CHUNK == 0 ) {
-        lock_guard<mutex> lck (mtx_);
-        ready_ = i;
-        cv_.notify_one();
+        chn_.send( i );
       }
     }
-
-    lock_guard<mutex> lck (mtx_);
-    ready_ = nrecs_;
-    cv_.notify_one();
-
+    chn_.send( nrecs_ );
     finished_ = chrono::high_resolution_clock::now();
   }
 
 public:
   RecChunkIO( FILE * f, vector<Rec> & recs, size_t nrecs )
-    : f_{f}, recs_{recs}, nrecs_{nrecs}, reader_{}, mtx_{}, cv_{}, ready_{0}
-    , finished_{}
+    : f_{f}, recs_{recs}, nrecs_{nrecs}, reader_{}, chn_{10}, finished_{}
   {
     recs_ = vector<Rec>( nrecs_ );
     setup_value_storage( nrecs_ );
@@ -102,11 +91,7 @@ public:
 
   size_t next( void )
   {
-    unique_lock<mutex> lck (mtx_);
-    while ( !next_chunk_ready() ) { cv_.wait( lck ); }
-    size_t r = ready_;
-    ready_ = 0;
-    return r;
+    return chn_.recv();
   }
 };
 
@@ -192,4 +177,5 @@ int main( int argc, char * argv[] )
   }
   return EXIT_SUCCESS;
 }
+
 

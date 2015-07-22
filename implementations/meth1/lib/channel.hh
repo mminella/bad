@@ -41,13 +41,13 @@ namespace internal {
   public:
 
     Channel_( size_t buf = 1 )
-      : slots_{new T[buf]}
+      : mtx_{}
+      , cv_{}
+      , slots_{new T[buf]}
       , size_{buf}
       , used_{0}
       , wptr_{0}
       , rptr_{0}
-      , mtx_{}
-      , cv_{}
       , closed_{false}
     {}
 
@@ -81,6 +81,7 @@ namespace internal {
       cv_.notify_one();
 
       used_++;
+      std::cout << "[send] used: " << used_ << std::endl;
       slots_[wptr_] = std::forward<U>( u );
       wptr_ = (wptr_ + 1) % size_;
     }
@@ -106,7 +107,7 @@ namespace internal {
       return t;
     }
   };
-};
+}
 
 template<typename T>
 class Channel
