@@ -1,6 +1,7 @@
 #!/bin/sh
 
 mkdir -p ${srcdir}/.test-tmp
+rm ${srcdir}/.test-tmp/out.1000.recs
 
 ${srcdir}/experiments/sort_boost \
   ${srcdir}/test/in.s0000.e1000.recs \
@@ -9,5 +10,3 @@ ${srcdir}/experiments/sort_boost \
 diff \
   ${srcdir}/test/out.s0000.e1000.recs \
   ${srcdir}/.test-tmp/out.1000.recs
-
-rm ${srcdir}/.test-tmp/out.1000.recs
