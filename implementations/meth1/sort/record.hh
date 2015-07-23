@@ -16,6 +16,17 @@
 
 #include "io_device.hh"
 
+template <typename R1, typename R2>
+int compare( const R1 & a, const R2 & b );
+
+#define comp_op( op, t ) \
+  bool operator op( const t & b ) const \
+  { \
+    return compare( b ) op 0 ? true : false; \
+  }
+
+class RecordPtr;
+
 /**
  * Represent a record in the sort benchmark.
  *
@@ -26,6 +37,9 @@
 class Record
 {
 public:
+  template <typename R1, typename R2>
+  friend int compare( const R1 & a, const R2 & b );
+
   static constexpr size_t KEY_LEN = 10;
   static constexpr size_t VAL_LEN = 90;
   static constexpr size_t SIZE = KEY_LEN + VAL_LEN;
@@ -46,7 +60,6 @@ private:
   uint64_t loc_ = 0;
   char * val_ = nullptr;
   key_type key_;
-
 
   /* Use a pool allocator for speed */
 #if USE_POOL == 1
@@ -162,52 +175,21 @@ public:
   const char * val( void ) const noexcept { return val_; }
   uint64_t loc( void ) const noexcept { return loc_; }
 
-  /* Comparison */
-  bool operator<( const Record & b ) const
-  {
-    return compare( b ) < 0 ? true : false;
-  }
+  /* methods for boost::sort */
+  const char * data( void ) const noexcept { return key_; }
+  unsigned char operator[]( size_t i ) const noexcept { return key_[i]; }
+  size_t size( void ) const noexcept { return KEY_LEN; }
 
-  bool operator<=( const Record & b ) const
-  {
-    return compare( b ) <= 0 ? true : false;
-  }
+  /* comparison (with Record & RecordPtr) */
+  comp_op( <, Record )
+  comp_op( <, RecordPtr )
+  comp_op( <=, Record )
+  comp_op( <=, RecordPtr )
+  comp_op( >, Record )
+  comp_op( >, RecordPtr )
 
-  bool operator>( const Record & b ) const
-  {
-    return compare( b ) > 0 ? true : false;
-  }
-
-  int compare( const Record & b ) const
-  {
-    // we compare on key first, and then on loc_
-    int cmp = std::memcmp( key(), b.key(), KEY_LEN );
-    if ( cmp == 0 ) {
-      if ( loc_ < b.loc_ ) {
-        cmp = -1;
-      }
-      if ( loc_ > b.loc_ ) {
-        cmp = 1;
-      }
-    }
-    return cmp;
-  }
-
-  // methods for boost::sort
-  const char * data( void ) const noexcept
-  {
-    return key_;
-  }
-
-  unsigned char operator[]( size_t offset ) const noexcept
-  {
-    return key_[offset];
-  }
-
-  size_t size( void ) const noexcept
-  {
-    return KEY_LEN;
-  }
+  int compare( const Record & b ) const { return ::compare( *this, b ); }
+  int compare( const RecordPtr & b ) const { return ::compare( *this, b ); }
 
   /* To string */
   std::string str( loc_t locinfo = NO_LOC ) const
@@ -234,5 +216,57 @@ public:
   }
 
 } __attribute__((packed));
+
+/* Wrapper around a string (and location) to enable comparison. Doens't manage
+ * it's own storage. */
+class RecordPtr
+{
+private:
+  template <typename R1, typename R2>
+  friend int compare( const R1 & a, const R2 & b );
+
+  uint64_t loc_;
+  const char * r_;
+
+public:
+  RecordPtr( const char * r, uint64_t loc ) : loc_{loc}, r_{r} {}
+
+  RecordPtr( const RecordPtr & rptr ) = delete;
+  RecordPtr & operator=( const RecordPtr & rptr ) = delete;
+  RecordPtr( RecordPtr && rptr ) = delete;
+  RecordPtr & operator=( RecordPtr && rptr ) = delete;
+
+  const char * key( void ) const noexcept { return r_; }
+  const char * val( void ) const noexcept { return r_ + Record::KEY_LEN; }
+  uint64_t loc( void ) const noexcept { return loc_; }
+
+  /* comparison (with Record & RecordPtr) */
+  comp_op( <, Record )
+  comp_op( <, RecordPtr )
+  comp_op( <=, Record )
+  comp_op( <=, RecordPtr )
+  comp_op( >, Record )
+  comp_op( >, RecordPtr )
+
+  int compare( const Record & b ) const { return ::compare( *this, b ); }
+  int compare( const RecordPtr & b ) const { return ::compare( *this, b ); }
+};
+
+/* Comparison */
+template <typename R1, typename R2>
+int compare( const R1 & a, const R2 & b )
+{
+  // we compare on key first, and then on loc_
+  int cmp = std::memcmp( a.key(), b.key(), Record::KEY_LEN );
+  if ( cmp == 0 ) {
+    if ( a.loc_ < b.loc_ ) {
+      cmp = -1;
+    }
+    if ( a.loc_ > b.loc_ ) {
+      cmp = 1;
+    }
+  }
+  return cmp;
+}
 
 #endif /* RECORD_HH */
