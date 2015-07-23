@@ -28,9 +28,11 @@ using namespace boost::sort::spreadsort;
 
 /* Construct Node */
 Node::Node( string file, string port, uint64_t max_mem )
-  : data_{file.c_str(), O_RDONLY}
 #if OVERLAP_IO == 0
+  : data_{file.c_str(), O_RDONLY}
   , bio_{data_}
+#else
+  : data_{file.c_str(), O_RDONLY} // O_DIRECT
 #endif
   , port_{port}
   , last_{Record::MIN}

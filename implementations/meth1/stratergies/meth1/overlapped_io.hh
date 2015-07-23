@@ -26,6 +26,9 @@
 /*
  * Simply reads a file in blocks in another thread, notifying a caller through
  * a channel as each block is ready.
+ *
+ * This assumes we can generally perform successful reads at BLOCK size, so
+ * will only really work well for files.
  */
 class OverlappedIO
 {
@@ -41,7 +44,7 @@ public:
 
 private:
   IODevice & io_;
-  char * buf_ = new char[BUF_SIZE];
+  char * buf_ = (char *) aligned_alloc( 4096, BUF_SIZE );
   Channel<block_ptr> chn_;
   std::thread reader_;
 
@@ -49,7 +52,7 @@ private:
   {
     char * wptr_ = buf_;
     while ( true ) {
-      size_t n = io_.read_all( wptr_, BLOCK );
+      size_t n = io_.read( wptr_, BLOCK );
 
       if ( n > 0 ) {
         chn_.send( {wptr_, n} );
@@ -59,7 +62,7 @@ private:
         }
       }
 
-      if ( io_.eof() ) {
+      if ( io_.eof() || n < BLOCK ) {
         chn_.send( { nullptr, 0} ); // indicate EOF
         break;
       }
