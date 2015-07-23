@@ -196,12 +196,12 @@ Node::linear_scan( const Record & after, uint64_t size )
     if ( data_.eof() ) { break; }
 #endif
 
-    Record next = Record( r, i );
+    RecordPtr next{r, i};
     if ( after < next ) {
       if ( recs.size() < size ) {
-        recs.push( next );
+        recs.emplace( r, i );
       } else if ( next < recs.top() ) {
-        recs.push( next );
+        recs.emplace( r, i );
         recs.pop();
       }
     }
