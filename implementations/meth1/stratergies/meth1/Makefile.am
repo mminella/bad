@@ -9,6 +9,7 @@ libmeth1_la_SOURCES = \
 
 libmeth1_la_CPPFLAGS = \
 	-I$(srcdir)/.. \
+	-I$(srcdir)/../.. \
 	-I$(srcdir)/../../sort \
 	-I$(srcdir)/../../lib
 

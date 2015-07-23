@@ -17,7 +17,7 @@
 #include <system_error>
 #include <vector>
 
-#include "../config.h"
+#include "config.h"
 
 #include "rec.hh"
 

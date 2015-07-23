@@ -21,7 +21,7 @@
 
 #include "channel.hh"
 
-#include "../config.h"
+#include "config.h"
 
 #include "rec.hh"
 

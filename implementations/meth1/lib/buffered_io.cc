@@ -112,7 +112,6 @@ size_t BufferedIO::wwrite( const char * buf, size_t nbytes )
   }
 
   return limit;
-  // return io_.write( buf, nbytes );
 }
 
 /* flush */

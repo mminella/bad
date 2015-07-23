@@ -9,7 +9,10 @@
 #include "socket.hh"
 
 #include "implementation.hh"
+#include "priority_queue.hh"
 #include "record.hh"
+
+#define OVERLAP_IO 1
 
 /**
  * Stratergy 1.
@@ -25,24 +28,14 @@ namespace meth1
 class Node : public Implementation
 {
 private:
-  BufferedIO_O<File> data_;
+  File data_;
+#if OVERLAP_IO == 0
+  BufferedIO bio_;
+#endif
   std::string port_;
   Record last_;
   uint64_t fpos_;
   uint64_t max_mem_;
-
-  static constexpr size_t BLOCK = 4096;
-  static constexpr size_t NBLOCKS = 10;
-  static constexpr size_t BUF_SIZE = NBLOCKS * BLOCK;
-
-  char buf_[BUF_SIZE];
-  char * wptr_ = buf_;
-  char * rptr_ = buf_;
-  size_t blocks_ = 0;
-  size_t last_block_ = 0;
-
-  std::mutex mtx_;
-  std::condition_variable cv_;
 
 public:
   Node( std::string file, std::string port, uint64_t max_memory );
@@ -63,16 +56,14 @@ private:
   std::vector<Record> DoRead( uint64_t pos, uint64_t size );
   uint64_t DoSize( void );
 
+  std::vector<Record> rec_sort( mystl::priority_queue<Record> recs );
   Record seek( uint64_t pos );
-  std::vector<Record> linear_scan( const Record & after, uint64_t size = 1 );
+
+  mystl::priority_queue<Record>
+  linear_scan( const Record & after, uint64_t size = 1 );
 
   void RPC_Read( BufferedIO_O<TCPSocket> & client );
   void RPC_Size( BufferedIO_O<TCPSocket> & client );
-
-  void read_file( void );
-  char * chunk( size_t & );
-  bool next_chunk( void );
-
 };
 }
 
