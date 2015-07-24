@@ -3,6 +3,7 @@
 #include <chrono>
 #include <system_error>
 #include <vector>
+#include <utility>
 
 #include "address.hh"
 #include "buffered_io.hh"
@@ -28,12 +29,7 @@ using namespace boost::sort::spreadsort;
 
 /* Construct Node */
 Node::Node( string file, string port, uint64_t max_mem )
-#if OVERLAP_IO == 0
-  : data_{file.c_str(), O_RDONLY}
-  , bio_{data_}
-#else
   : data_{file.c_str(), O_RDONLY} // O_DIRECT
-#endif
   , port_{port}
   , last_{Record::MIN}
   , fpos_{0}
@@ -103,15 +99,7 @@ void Node::DoInitialize( void ) { return; }
 
 vector<Record> Node::DoRead( uint64_t pos, uint64_t size )
 {
-  auto t0 = chrono::high_resolution_clock::now();
-
-  Record after = seek( pos );
-  auto recs = rec_sort( linear_scan( after, size ) );
-
-  auto t1 = chrono::high_resolution_clock::now();
-  auto tt = chrono::duration_cast<chrono::milliseconds>( t1 - t0 ).count();
-  cout << "* Read took: " << tt << "ms" << endl;
-
+  auto recs = linear_scan( seek( pos ), size );
   if ( recs.size() > 0 ) {
     last_ = recs.back();
     fpos_ = pos + recs.size();
@@ -124,96 +112,133 @@ uint64_t Node::DoSize( void )
   return data_.size() / Record::SIZE;
 }
 
-vector<Record> Node::rec_sort( PQ recs )
+inline void Node::rec_sort( vector<Record> & recs ) const
 {
   auto t0 = chrono::high_resolution_clock::now();
 
-  vector<Record> vrecs {move( recs.container() )};
 #ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-  string_sort( vrecs.begin(), vrecs.end() );
+  string_sort( recs.begin(), recs.end() );
 #else
-  sort( vrecs.begin(), vrecs.end() );
+  sort( recs.begin(), recs.end() );
 #endif
 
-  // timings -- sort
   auto t1 = chrono::high_resolution_clock::now();
   auto tt = chrono::duration_cast<chrono::milliseconds>( t1 - t0 ).count();
-  cout << "* In-memory sort took: " << tt << "ms" << endl;
-
-  return vrecs;
+  cout << "[Sort]: " << tt << "ms" << endl;
 }
+
+// Record Node::seek( uint64_t pos )
+// {
+//   auto t0 = chrono::high_resolution_clock::now();
+//
+//   // can we continue from last time?
+//   if ( fpos_ != pos ) {
+//     // remember, retrieving the record just before `pos`
+//     for ( uint64_t i = 0; i < pos; i += max_mem_ ) {
+//       auto recs = linear_scan( Record{Record::MIN}, min( pos - i, max_mem_ ) );
+//       if ( recs.size() == 0 ) {
+//         break;
+//       }
+//       last_ = recs.back();
+//     }
+//   }
+//
+//   auto t1 = chrono::high_resolution_clock::now();
+//   auto tt = chrono::duration_cast<chrono::milliseconds>( t1 - t0 ).count();
+//   cout << "[Seek (" << pos << ")]: " << tt << "ms" << endl;
+//   return last_;
+// }
 
 Record Node::seek( uint64_t pos )
 {
   cout << "- Seek (" << pos << ")" << endl;
   auto t0 = chrono::high_resolution_clock::now();
-
+ 
   Record after{Record::MIN};
 
   if ( fpos_ == pos ) {
     // continuing from last time
     after = last_;
   } else {
-    // remember, retrieving the record just before `pos`
-    for ( uint64_t i = 0; i < pos; i += max_mem_ ) {
+     // remember, retrieving the record just before `pos`
+     for ( uint64_t i = 0; i < pos; i += max_mem_ ) {
       auto recs = linear_scan( after, min( pos - i, max_mem_ ) );
-      if ( recs.size() == 0 ) {
-        break;
-      }
-      after = recs.top();
-    }
-  }
-
+       if ( recs.size() == 0 ) {
+         break;
+       }
+      after = recs.back();
+     }
+   }
+ 
   auto t1 = chrono::high_resolution_clock::now();
   auto tt = chrono::duration_cast<chrono::milliseconds>( t1 - t0 ).count();
-  cout << "* Seek took: " << tt << "ms" << endl;
+  cout << "[Seek (" << pos << ")]: " << tt << "ms" << endl;
+  return last_;
+}
 
-  return after;
+/* A merge that doesn't have a stupid API like STL */
+template <class T>
+void sane_merge ( vector<T> & in1, vector<T> & in2, vector<T> & out )
+{
+  T *s1 = in1.data(), *s2 = in2.data(), *rs = out.data();
+  T *e1 = s1 + in1.size(), *e2 = s2 + in2.size(), *re = rs + out.capacity();
+
+  while ( s1 != e1 and s2 != e2 and rs != re ) {
+    *rs++ = move( (*s2<*s1)? *s2++ : *s1++ );
+  }
+
+  if ( rs != re ) {
+    if ( s1 != e1 ) {
+      move( s1, s1 + min( re - rs, e1 - s1 ), rs );
+    } else if ( s2 != e2 ) {
+      move( s2, s2 + min( re - rs, e2 - s2 ), rs );
+    }
+  }
 }
 
 /* Perform a full linear scan to return the next smallest record that occurs
  * after the 'after' record. */
-Node::PQ Node::linear_scan( const Record & after, uint64_t size )
+vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 {
-  auto t0 = chrono::high_resolution_clock::now();
-
   static uint64_t pass = 0;
-  cout << "- Linear scan " << pass++ << " (" << size << ")" << endl;
+  cout << "Size: " << size << endl;
 
-#if OVERLAP_IO == 1
+  auto t0 = chrono::high_resolution_clock::now();
   OverlappedRecordIO<Record::SIZE> recio( data_ );
   recio.start();
-#endif
 
-  PQ recs;
-  recs.reserve( size + 1 );
+  vector<Record> vnext{size}, vpast, vin;
+  vpast.reserve(size);
+  vin.reserve(size);
 
-  for ( uint64_t i = 0;; i++ ) {
-#if OVERLAP_IO == 1
-    const char * r = recio.next_record();
-    if ( r == nullptr ) { break; }
-#else
-    const char * r = bio_.read_buf_all( Record::SIZE ).first;
-    if ( data_.eof() ) { break; }
-#endif
-
-    RecordPtr next{r, i};
-    if ( after < next ) {
-      if ( recs.size() < size ) {
-        recs.emplace( r, i );
-      } else if ( next < recs.top() ) {
-        recs.emplace( r, i );
-        recs.pop();
+  uint64_t i = 0;
+  // for ( bool run = true; run; ) {
+    do {
+      const char * r = recio.next_record();
+      if ( r == nullptr ) {
+        // run = false;
+        break;
       }
-    }
-  }
+      // RecordPtr next{r, i++};
+      // if ( next > after ) {
+        vin.emplace_back( r, i++ );
+      // }
+    } while ( true );
+
+    sort( vin.begin(), vin.end() );
+    // sane_merge( vin, vpast, vnext );
+    //
+    // swap( vpast, vnext );
+    // vnext.resize( size );
+    // vin.clear();
+  // }
 
   data_.rewind();
 
   auto t1 = chrono::high_resolution_clock::now();
   auto tt = chrono::duration_cast<chrono::milliseconds>( t1 - t0 ).count();
-  cout << "* Linear scan took: " << tt << "ms" << endl;
+  cout << "[Linear scan (" << pass++ << ")]: " << tt << "ms" << endl;
 
-  return recs;
+  return vin;
 }
 

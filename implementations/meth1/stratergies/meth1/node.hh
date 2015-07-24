@@ -4,10 +4,6 @@
 #include <mutex>
 #include <condition_variable>
 
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-#include "boost_d_ary_heap.hh"
-#endif
-
 #include "buffered_io.hh"
 #include "file.hh"
 #include "socket.hh"
@@ -15,8 +11,6 @@
 #include "implementation.hh"
 #include "priority_queue.hh"
 #include "record.hh"
-
-#define OVERLAP_IO 1
 
 /**
  * Stratergy 1.
@@ -33,20 +27,10 @@ class Node : public Implementation
 {
 private:
   File data_;
-#if OVERLAP_IO == 0
-  BufferedIO bio_;
-#endif
   std::string port_;
   Record last_;
   uint64_t fpos_;
   uint64_t max_mem_;
-
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-  using PQ = boost::heap::d_ary_heap<Record, boost::heap::arity<6>>;
-  // using PQ = mystl::priority_queue<Record>;
-#else
-  using PQ = mystl::priority_queue<Record>;
-#endif
 
 public:
   Node( std::string file, std::string port, uint64_t max_memory );
@@ -67,10 +51,10 @@ private:
   std::vector<Record> DoRead( uint64_t pos, uint64_t size );
   uint64_t DoSize( void );
 
-  std::vector<Record> rec_sort( PQ recs );
+  inline void rec_sort( std::vector<Record> & recs ) const;
   Record seek( uint64_t pos );
 
-  PQ linear_scan( const Record & after, uint64_t size = 1 );
+  std::vector<Record> linear_scan( const Record & after, uint64_t size = 1 );
 
   void RPC_Read( BufferedIO_O<TCPSocket> & client );
   void RPC_Size( BufferedIO_O<TCPSocket> & client );

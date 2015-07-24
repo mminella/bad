@@ -33,7 +33,7 @@
 class OverlappedIO
 {
 public:
-  static constexpr size_t BLOCK = 4096 * 10; // 40KB
+  static constexpr size_t BLOCK = 4096 * 250;
   static constexpr size_t NBLOCKS = 10;
   static constexpr size_t BUF_SIZE = NBLOCKS * BLOCK;
 
