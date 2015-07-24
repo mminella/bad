@@ -1,4 +1,6 @@
 echo_server
+priority_queue
+rec_memcpy
 sort_basicrts
 sort_boost
 sort_libc

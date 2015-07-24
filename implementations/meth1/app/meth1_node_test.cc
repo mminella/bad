@@ -5,8 +5,6 @@
 #include <iostream>
 #include <system_error>
 
-#include "exception.hh"
-
 #include "record.hh"
 
 #include "node.hh"
@@ -14,49 +12,60 @@
 using namespace std;
 using namespace meth1;
 
-int run( char * fin, char * fout )
+using clk = chrono::high_resolution_clock;
+
+static constexpr size_t MAX_MEM = 2097152; // 200MB
+
+int run( char * fin, char * fout, double block )
 {
   BufferedIO_O<File> out( {fout, O_WRONLY | O_CREAT | O_TRUNC,
                                  S_IRUSR | S_IWUSR} );
-  auto t1 = chrono::high_resolution_clock::now();
+  auto t0 = clk::now();
 
   // start node
-  Node node{fin, "0", 3};
+  Node node{fin, "0", MAX_MEM};
   node.Initialize();
-  auto t2 = chrono::high_resolution_clock::now();
+  auto t1 = clk::now();
 
   // size
-  size_t siz = node.Size();
-  auto t3 = chrono::high_resolution_clock::now();
+  auto siz = node.Size();
+  auto t2 = clk::now();
 
-  // read records + sort
-  auto recs = node.Read( 0, siz );
-  auto t4 = chrono::high_resolution_clock::now();
+  // read + write
+  clk::duration ttr, ttw;
+  auto block_size = block * siz;
+  for ( size_t i = 0; i < siz; i += block_size ) {
+    auto tr = clk::now();
+    auto recs = node.Read( i, block_size );
 
-  // write out records
-  for ( auto & r : recs ) {
-    r.write( out );
+    auto tw = clk::now();
+    for ( auto & r : recs ) {
+      r.write( out );
+    }
+    out.flush( true );
+    out.io().fsync();
+
+    ttw += clk::now() - tw;
+    ttr += tw - tr;
   }
-  out.flush( true );
-  out.io().fsync();
-  auto t5 = chrono::high_resolution_clock::now();
+
+  auto t3 = clk::now();
 
   // stats
-  auto t21 = chrono::duration_cast<chrono::milliseconds>( t2 - t1 ).count();
-  auto t32 = chrono::duration_cast<chrono::milliseconds>( t3 - t2 ).count();
-  auto t43 = chrono::duration_cast<chrono::milliseconds>( t4 - t3 ).count();
-  auto t54 = chrono::duration_cast<chrono::milliseconds>( t5 - t4 ).count();
-  auto t51 = chrono::duration_cast<chrono::milliseconds>( t5 - t1 ).count();
+  auto tinit = chrono::duration_cast<chrono::milliseconds>( t1 - t0 ).count();
+  auto tsize = chrono::duration_cast<chrono::milliseconds>( t2 - t1 ).count();
+  auto tread = chrono::duration_cast<chrono::milliseconds>( ttr ).count();
+  auto twrit = chrono::duration_cast<chrono::milliseconds>( ttw ).count();
+  auto ttota = chrono::duration_cast<chrono::milliseconds>( t3 - t0 ).count();
 
   cout << "-----------------------" << endl;
-  cout << "Size       " << siz << endl;
-  cout << "Records    " << recs.size() << endl;
+  cout << "Records " << siz << endl;
   cout << "-----------------------" << endl;
-  cout << "Start took " << t21 << "ms" << endl;
-  cout << "Size  took " << t32 << "ms" << endl;
-  cout << "Read  took " << t43 << "ms (buffered + sort)" << endl;
-  cout << "Write took " << t54 << "ms" << endl;
-  cout << "Total took " << t51 << "ms" << endl;
+  cout << "Start took " << tinit << "ms" << endl;
+  cout << "Size  took " << tsize << "ms" << endl;
+  cout << "Read  took " << tread << "ms (read + sort)" << endl;
+  cout << "Write took " << twrit << "ms" << endl;
+  cout << "Total took " << ttota << "ms" << endl;
   cout << "Writ calls (buf) " << out.write_count() << endl;
   cout << "Writ calls (dir) " << out.io().write_count() << endl;
 
@@ -65,9 +74,9 @@ int run( char * fin, char * fout )
 
 void check_usage( const int argc, const char * const argv[] )
 {
-  if ( argc != 3 ) {
+  if ( argc != 3 and argc != 4 ) {
     throw runtime_error( "Usage: " + string( argv[0] ) +
-                         " [file] [out file]" );
+                         " [file] [out file] ([block %])" );
   }
 }
 
@@ -75,9 +84,10 @@ int main( int argc, char * argv[] )
 {
   try {
     check_usage( argc, argv );
-    run( argv[1], argv[2] );
+    double block = argc == 4 ? stod( argv[3] ) : 1;
+    run( argv[1], argv[2], block );
   } catch ( const exception & e ) {
-    print_exception( e );
+    std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;

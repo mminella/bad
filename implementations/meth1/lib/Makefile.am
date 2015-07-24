@@ -13,4 +13,5 @@ libbasicrts_la_SOURCES = \
 	privs.hh privs.cc \
 	socket.hh socket.cc \
 	timestamp.hh timestamp.cc \
-	util.hh util.cc
+	util.hh util.cc \
+	bench.hh

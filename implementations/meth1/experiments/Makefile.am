@@ -1,5 +1,7 @@
 bin_PROGRAMS = \
 	echo_server \
+	priority_queue \
+	rec_memcpy \
 	sort_basicrts \
 	sort_boost \
 	sort_libc \
@@ -24,6 +26,9 @@ AM_LDFLAGS = -static -static-libstdc++ -all-static \
 	-Wl,--whole-archive -Wl,-lpthread -Wl,--no-whole-archive
 
 echo_server_SOURCES = echo_server.cc
+
+priority_queue_SOURCES = priority_queue.cc
+rec_memcpy_SOURCES = rec_memcpy.cc
 
 sort_basicrts_SOURCES = sort_basicrts.cc
 sort_boost_SOURCES = sort_boost.cc

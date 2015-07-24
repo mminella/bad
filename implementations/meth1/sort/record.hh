@@ -6,7 +6,7 @@
 
 #include "../config.h"
 
-#if HAVE_BOOST_POOL_POOL_ALLOC_HPP == 1
+#ifdef HAVE_BOOST_POOL_POOL_ALLOC_HPP
 #define USE_POOL 1
 #endif
 

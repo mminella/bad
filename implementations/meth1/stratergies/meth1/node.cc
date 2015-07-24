@@ -124,7 +124,7 @@ uint64_t Node::DoSize( void )
   return data_.size() / Record::SIZE;
 }
 
-vector<Record> Node::rec_sort( mystl::priority_queue<Record> recs )
+vector<Record> Node::rec_sort( PQ recs )
 {
   auto t0 = chrono::high_resolution_clock::now();
 
@@ -173,8 +173,7 @@ Record Node::seek( uint64_t pos )
 
 /* Perform a full linear scan to return the next smallest record that occurs
  * after the 'after' record. */
-mystl::priority_queue<Record>
-Node::linear_scan( const Record & after, uint64_t size )
+Node::PQ Node::linear_scan( const Record & after, uint64_t size )
 {
   auto t0 = chrono::high_resolution_clock::now();
 
@@ -186,7 +185,9 @@ Node::linear_scan( const Record & after, uint64_t size )
   recio.start();
 #endif
 
-  mystl::priority_queue<Record> recs{size + 1};
+  PQ recs;
+  recs.reserve( size + 1 );
+
   for ( uint64_t i = 0;; i++ ) {
 #if OVERLAP_IO == 1
     const char * r = recio.next_record();
