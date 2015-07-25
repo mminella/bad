@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <cassert>
-#include <chrono>
 #include <system_error>
 #include <vector>
 #include <utility>
@@ -10,12 +9,13 @@
 #include "exception.hh"
 #include "file.hh"
 #include "socket.hh"
+#include "time.hh"
+#include "util.hh"
 
 #include "record.hh"
 
 #include "node.hh"
 #include "overlapped_io.hh"
-#include "priority_queue.hh"
 
 #include "config.h"
 
@@ -35,6 +35,7 @@ Node::Node( string file, string port, uint64_t max_mem )
   , fpos_{0}
   , max_mem_{max_mem}
 {
+  time_start();
 }
 
 /* run the node - list and respond to RPCs */
@@ -112,24 +113,20 @@ uint64_t Node::DoSize( void )
   return data_.size() / Record::SIZE;
 }
 
-inline void Node::rec_sort( vector<Record> & recs ) const
+inline uint64_t Node::rec_sort( vector<Record> & recs ) const
 {
-  auto t0 = chrono::high_resolution_clock::now();
-
+  auto t0 = clk::now();
 #ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
   string_sort( recs.begin(), recs.end() );
 #else
   sort( recs.begin(), recs.end() );
 #endif
-
-  auto t1 = chrono::high_resolution_clock::now();
-  auto tt = chrono::duration_cast<chrono::milliseconds>( t1 - t0 ).count();
-  cout << "[Sort]: " << tt << "ms" << endl;
+  return time_diff( t0 );
 }
 
 Record Node::seek( uint64_t pos )
 {
-  auto t0 = chrono::high_resolution_clock::now();
+  auto t0 = clk::now();
 
   // can we continue from last time?
   if ( fpos_ != pos ) {
@@ -143,37 +140,9 @@ Record Node::seek( uint64_t pos )
     }
   }
 
-  auto t1 = chrono::high_resolution_clock::now();
-  auto tt = chrono::duration_cast<chrono::milliseconds>( t1 - t0 ).count();
+  auto tt = time_diff( t0 );
   cout << "[Seek (" << pos << ")]: " << tt << "ms" << endl;
   return last_;
-}
-
-/* A merge that move's elements rather than copy and doesn't have a stupid API
- * like STL */
-template <class T>
-void move_merge ( vector<T> & in1, vector<T> & in2, vector<T> & out )
-{
-  auto t0 = chrono::high_resolution_clock::now();
-
-  T *s1 = in1.data(), *s2 = in2.data(), *rs = out.data();
-  T *e1 = s1 + in1.size(), *e2 = s2 + in2.size(), *re = rs + out.capacity();
-
-  while ( s1 != e1 and s2 != e2 and rs != re ) {
-    *rs++ = move( (*s2<*s1)? *s2++ : *s1++ );
-  }
-
-  if ( rs != re ) {
-    if ( s1 != e1 ) {
-      move( s1, s1 + min( re - rs, e1 - s1 ), rs );
-    } else if ( s2 != e2 ) {
-      move( s2, s2 + min( re - rs, e2 - s2 ), rs );
-    }
-  }
-
-  auto t1 = chrono::high_resolution_clock::now();
-  auto tt = chrono::duration_cast<chrono::milliseconds>( t1 - t0 ).count();
-  cout << "[Merge]: " << tt << "ms" << endl;
 }
 
 /* Perform a full linear scan to return the next smallest record that occurs
@@ -182,11 +151,13 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 {
   static uint64_t pass = 0;
 
-  auto t0 = chrono::high_resolution_clock::now();
+  auto t0 = clk::now();
+  tdiff_t tmerge = 0, tsort = 0, tplace = 0;
+
   OverlappedRecordIO<Record::SIZE> recio( data_ );
   recio.start();
 
-  // sort + merge block size...
+  // TWEAK: sort + merge block size...
   size_t block_size = size / 2;
 
   vector<Record> vnext, vpast, vin;
@@ -195,6 +166,7 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 
   uint64_t i = 0;
   for ( bool run = true; run; ) {
+    auto tp0 = clk::now();
     for ( ; vin.size() < block_size; i++ ) {
       const char * r = recio.next_record();
       if ( r == nullptr ) {
@@ -206,15 +178,16 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
         vin.emplace_back( r, i );
       }
     }
+    tplace += time_diff( tp0 );
 
     // optimize for some cases
     if ( vin.size() > 0 ) {
-      rec_sort( vin );
+      tsort += rec_sort( vin );
       if ( vpast.size() == 0 ) {
         swap( vpast, vin );
       } else {
         vnext.resize( min( size, vin.size() + vpast.size() ) );
-        move_merge( vin, vpast, vnext );
+        tmerge += move_merge( vin, vpast, vnext );
         swap( vnext, vpast );
         vin.clear();
       }
@@ -223,9 +196,11 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 
   data_.rewind();
 
-  auto t1 = chrono::high_resolution_clock::now();
-  auto tt = chrono::duration_cast<chrono::milliseconds>( t1 - t0 ).count();
+  auto tt = time_diff( t0 );
   cout << "[Linear scan (" << pass++ << ")]: " << tt << "ms" << endl;
+  cout << "[Place total]: " << tplace << endl;
+  cout << "[Sort total]: " << tsort << endl;
+  cout << "[Merge total]: " << tmerge << endl;
 
   return vpast;
 }

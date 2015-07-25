@@ -22,6 +22,7 @@
 
 #include "channel.hh"
 #include "io_device.hh"
+#include "time.hh"
 
 /*
  * Simply reads a file in blocks in another thread, notifying a caller through
@@ -33,9 +34,10 @@
 class OverlappedIO
 {
 public:
-  static constexpr size_t BLOCK = 4096 * 250;
+  static constexpr size_t BLOCK = 4096 * 256;
   static constexpr size_t NBLOCKS = 100;
   static constexpr size_t BUF_SIZE = NBLOCKS * BLOCK;
+  static constexpr size_t ALIGNMENT = 4096;
 
   // Need at least three blocks, one for queue, one for reader and one for
   // processing.
@@ -45,12 +47,13 @@ public:
 
 private:
   IODevice & io_;
-  char * buf_ = (char *) aligned_alloc( 4096, BUF_SIZE );
+  char * buf_ = (char *) aligned_alloc( ALIGNMENT, BUF_SIZE );
   Channel<block_ptr> chn_;
   std::thread reader_;
 
   void read_file( void )
   {
+    std::cout << "= read start: " << time_snap() << std::endl;
     char * wptr_ = buf_;
     while ( true ) {
       size_t n = io_.read( wptr_, BLOCK );
@@ -68,6 +71,7 @@ private:
         break;
       }
     }
+    std::cout << "= read done: " << time_snap() << std::endl;
   }
 
 public:

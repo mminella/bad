@@ -2,6 +2,7 @@ noinst_LTLIBRARIES = libbasicrts.la
 
 libbasicrts_la_SOURCES = \
 	address.hh address.cc \
+	bench.hh \
 	buffered_io.hh buffered_io.cc \
 	domain_socket.hh domain_socket.cc \
 	exception.hh \
@@ -12,6 +13,6 @@ libbasicrts_la_SOURCES = \
 	poller.hh poller.cc \
 	privs.hh privs.cc \
 	socket.hh socket.cc \
+	time.hh time.cc \
 	timestamp.hh timestamp.cc \
-	util.hh util.cc \
-	bench.hh
+	util.hh util.cc

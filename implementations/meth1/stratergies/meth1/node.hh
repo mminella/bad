@@ -7,9 +7,9 @@
 #include "buffered_io.hh"
 #include "file.hh"
 #include "socket.hh"
+#include "time.hh"
 
 #include "implementation.hh"
-#include "priority_queue.hh"
 #include "record.hh"
 
 /**
@@ -51,7 +51,7 @@ private:
   std::vector<Record> DoRead( uint64_t pos, uint64_t size );
   uint64_t DoSize( void );
 
-  inline void rec_sort( std::vector<Record> & recs ) const;
+  inline tdiff_t rec_sort( std::vector<Record> & recs ) const;
   Record seek( uint64_t pos );
 
   std::vector<Record> linear_scan( const Record & after, uint64_t size = 1 );
