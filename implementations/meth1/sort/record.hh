@@ -128,7 +128,9 @@ public:
     , val_{alloc_val()}
   {
     memcpy( key_, other.key_, KEY_LEN );
-    memcpy( val_, other.val_, VAL_LEN );
+    if ( other.val_ != nullptr ) {
+      memcpy( val_, other.val_, VAL_LEN );
+    }
   }
 
   /* Copy assignment */
@@ -136,11 +138,13 @@ public:
   {
     if ( this != &other ) {
       loc_ = other.loc_;
-      if ( val_ == nullptr ) {
-        val_ = alloc_val();
-      }
       memcpy( key_, other.key_, KEY_LEN );
-      memcpy( val_, other.val_, VAL_LEN );
+      if ( other.val_ != nullptr ) {
+        if ( val_ == nullptr ) {
+          val_ = alloc_val();
+        }
+        memcpy( val_, other.val_, VAL_LEN );
+      }
     }
     return *this;
   }

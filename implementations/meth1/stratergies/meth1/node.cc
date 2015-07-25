@@ -127,59 +127,35 @@ inline void Node::rec_sort( vector<Record> & recs ) const
   cout << "[Sort]: " << tt << "ms" << endl;
 }
 
-// Record Node::seek( uint64_t pos )
-// {
-//   auto t0 = chrono::high_resolution_clock::now();
-//
-//   // can we continue from last time?
-//   if ( fpos_ != pos ) {
-//     // remember, retrieving the record just before `pos`
-//     for ( uint64_t i = 0; i < pos; i += max_mem_ ) {
-//       auto recs = linear_scan( Record{Record::MIN}, min( pos - i, max_mem_ ) );
-//       if ( recs.size() == 0 ) {
-//         break;
-//       }
-//       last_ = recs.back();
-//     }
-//   }
-//
-//   auto t1 = chrono::high_resolution_clock::now();
-//   auto tt = chrono::duration_cast<chrono::milliseconds>( t1 - t0 ).count();
-//   cout << "[Seek (" << pos << ")]: " << tt << "ms" << endl;
-//   return last_;
-// }
-
 Record Node::seek( uint64_t pos )
 {
-  cout << "- Seek (" << pos << ")" << endl;
   auto t0 = chrono::high_resolution_clock::now();
- 
-  Record after{Record::MIN};
 
-  if ( fpos_ == pos ) {
-    // continuing from last time
-    after = last_;
-  } else {
-     // remember, retrieving the record just before `pos`
-     for ( uint64_t i = 0; i < pos; i += max_mem_ ) {
-      auto recs = linear_scan( after, min( pos - i, max_mem_ ) );
-       if ( recs.size() == 0 ) {
-         break;
-       }
-      after = recs.back();
-     }
-   }
- 
+  // can we continue from last time?
+  if ( fpos_ != pos ) {
+    // remember, retrieving the record just before `pos`
+    for ( uint64_t i = 0; i < pos; i += max_mem_ ) {
+      auto recs = linear_scan( Record{Record::MIN}, min( pos - i, max_mem_ ) );
+      if ( recs.size() == 0 ) {
+        break;
+      }
+      last_ = recs.back();
+    }
+  }
+
   auto t1 = chrono::high_resolution_clock::now();
   auto tt = chrono::duration_cast<chrono::milliseconds>( t1 - t0 ).count();
   cout << "[Seek (" << pos << ")]: " << tt << "ms" << endl;
   return last_;
 }
 
-/* A merge that doesn't have a stupid API like STL */
+/* A merge that move's elements rather than copy and doesn't have a stupid API
+ * like STL */
 template <class T>
-void sane_merge ( vector<T> & in1, vector<T> & in2, vector<T> & out )
+void move_merge ( vector<T> & in1, vector<T> & in2, vector<T> & out )
 {
+  auto t0 = chrono::high_resolution_clock::now();
+
   T *s1 = in1.data(), *s2 = in2.data(), *rs = out.data();
   T *e1 = s1 + in1.size(), *e2 = s2 + in2.size(), *re = rs + out.capacity();
 
@@ -194,6 +170,10 @@ void sane_merge ( vector<T> & in1, vector<T> & in2, vector<T> & out )
       move( s2, s2 + min( re - rs, e2 - s2 ), rs );
     }
   }
+
+  auto t1 = chrono::high_resolution_clock::now();
+  auto tt = chrono::duration_cast<chrono::milliseconds>( t1 - t0 ).count();
+  cout << "[Merge]: " << tt << "ms" << endl;
 }
 
 /* Perform a full linear scan to return the next smallest record that occurs
@@ -201,37 +181,45 @@ void sane_merge ( vector<T> & in1, vector<T> & in2, vector<T> & out )
 vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 {
   static uint64_t pass = 0;
-  cout << "Size: " << size << endl;
 
   auto t0 = chrono::high_resolution_clock::now();
   OverlappedRecordIO<Record::SIZE> recio( data_ );
   recio.start();
 
-  vector<Record> vnext{size}, vpast, vin;
-  vpast.reserve(size);
-  vin.reserve(size);
+  // sort + merge block size...
+  size_t block_size = size / 2;
+
+  vector<Record> vnext, vpast, vin;
+  vnext.reserve( size );
+  vin.reserve( block_size );
 
   uint64_t i = 0;
-  // for ( bool run = true; run; ) {
-    do {
+  for ( bool run = true; run; ) {
+    for ( ; vin.size() < block_size; i++ ) {
       const char * r = recio.next_record();
       if ( r == nullptr ) {
-        // run = false;
+        run = false;
         break;
       }
-      // RecordPtr next{r, i++};
-      // if ( next > after ) {
-        vin.emplace_back( r, i++ );
-      // }
-    } while ( true );
+      RecordPtr next{r, i};
+      if ( next > after ) {
+        vin.emplace_back( r, i );
+      }
+    }
 
-    sort( vin.begin(), vin.end() );
-    // sane_merge( vin, vpast, vnext );
-    //
-    // swap( vpast, vnext );
-    // vnext.resize( size );
-    // vin.clear();
-  // }
+    // optimize for some cases
+    if ( vin.size() > 0 ) {
+      rec_sort( vin );
+      if ( vpast.size() == 0 ) {
+        swap( vpast, vin );
+      } else {
+        vnext.resize( min( size, vin.size() + vpast.size() ) );
+        move_merge( vin, vpast, vnext );
+        swap( vnext, vpast );
+        vin.clear();
+      }
+    }
+  }
 
   data_.rewind();
 
@@ -239,6 +227,6 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
   auto tt = chrono::duration_cast<chrono::milliseconds>( t1 - t0 ).count();
   cout << "[Linear scan (" << pass++ << ")]: " << tt << "ms" << endl;
 
-  return vin;
+  return vpast;
 }
 

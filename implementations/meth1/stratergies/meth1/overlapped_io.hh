@@ -34,11 +34,12 @@ class OverlappedIO
 {
 public:
   static constexpr size_t BLOCK = 4096 * 250;
-  static constexpr size_t NBLOCKS = 10;
+  static constexpr size_t NBLOCKS = 100;
   static constexpr size_t BUF_SIZE = NBLOCKS * BLOCK;
 
-  // Need at least two blocks, one for reader and one for processing.
-  static_assert( NBLOCKS > 1, "OverlappedIO requires at least 2 blocks");
+  // Need at least three blocks, one for queue, one for reader and one for
+  // processing.
+  static_assert( NBLOCKS >= 3, "OverlappedIO requires at least 3 blocks");
 
   using block_ptr = std::pair<const char *, size_t>;
 
@@ -70,7 +71,7 @@ private:
   }
 
 public:
-  OverlappedIO( IODevice & io ) : io_{io}, chn_{NBLOCKS-1}, reader_{} {};
+  OverlappedIO( IODevice & io ) : io_{io}, chn_{NBLOCKS-2}, reader_{} {};
 
   OverlappedIO( const OverlappedIO & r ) = delete;
   OverlappedIO( OverlappedIO && r ) = delete;
