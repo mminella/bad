@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "time.hh"
+#include "timestamp.hh"
 
 /* Convert a string to hexadecimal form */
 std::string str_to_hex( const std::string * in );
@@ -23,7 +23,7 @@ template <class T>
 tdiff_t move_merge ( std::vector<T> & in1, std::vector<T> & in2,
                      std::vector<T> & out )
 {
-  auto t0 = clk::now();
+  auto t0 = time_now();
 
   T *s1 = in1.data(), *s2 = in2.data(), *rs = out.data();
   T *e1 = s1 + in1.size(), *e2 = s2 + in2.size(), *re = rs + out.capacity();
@@ -40,7 +40,7 @@ tdiff_t move_merge ( std::vector<T> & in1, std::vector<T> & in2,
     }
   }
 
-  return time_diff( t0 );
+  return time_diff<ms>( t0 );
 }
 
 #endif /* UTIL_HH */

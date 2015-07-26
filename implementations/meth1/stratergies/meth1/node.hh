@@ -7,7 +7,7 @@
 #include "buffered_io.hh"
 #include "file.hh"
 #include "socket.hh"
-#include "time.hh"
+#include "timestamp.hh"
 
 #include "implementation.hh"
 #include "record.hh"

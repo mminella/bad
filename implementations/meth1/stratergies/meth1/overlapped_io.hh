@@ -22,7 +22,7 @@
 
 #include "channel.hh"
 #include "io_device.hh"
-#include "time.hh"
+#include "timestamp.hh"
 
 /*
  * Simply reads a file in blocks in another thread, notifying a caller through
@@ -53,7 +53,7 @@ private:
 
   void read_file( void )
   {
-    std::cout << "= read start: " << time_snap() << std::endl;
+    std::cout << "= read start: " << timestamp<ms>() << std::endl;
     char * wptr_ = buf_;
     while ( true ) {
       size_t n = io_.read( wptr_, BLOCK );
@@ -71,7 +71,7 @@ private:
         break;
       }
     }
-    std::cout << "= read done: " << time_snap() << std::endl;
+    std::cout << "= read done: " << timestamp<ms>() << std::endl;
   }
 
 public:

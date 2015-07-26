@@ -130,7 +130,7 @@ UDPSocket::received_datagram UDPSocket::recv( void )
     throw runtime_error( "recvfrom (unhandled flag)" );
   }
 
-  uint64_t timestamp = -1;
+  uint64_t ts = -1;
 
 /* find the timestamp header (if there is one) */
 #if defined( SO_TIMESTAMPNS ) || defined( SO_TIMESTAMP )
@@ -141,14 +141,14 @@ UDPSocket::received_datagram UDPSocket::recv( void )
          ts_hdr->cmsg_type == SCM_TIMESTAMPNS ) {
       const timespec * const kernel_time =
         reinterpret_cast<timespec *>( CMSG_DATA( ts_hdr ) );
-      timestamp = timestamp_ms( *kernel_time );
+      ts = timestamp<ms>( *kernel_time );
     }
 #elif defined( SO_TIMESTAMP )
     if ( ts_hdr->cmsg_level == SOL_SOCKET and
          ts_hdr->cmsg_type == SCM_TIMESTAMP ) {
       const timeval * const kernel_time =
         reinterpret_cast<timeval *>( CMSG_DATA( ts_hdr ) );
-      timestamp = timestamp_ms( timestamp_conv( *kernel_time ) );
+      ts = timestamp<ms>( *kernel_time );
     }
 #endif
     ts_hdr = CMSG_NXTHDR( &header, ts_hdr );
@@ -156,7 +156,7 @@ UDPSocket::received_datagram UDPSocket::recv( void )
 #endif
 
   received_datagram ret = {
-    Address( datagram_source_address, header.msg_namelen ), timestamp,
+    Address( datagram_source_address, header.msg_namelen ), ts,
     string( msg_payload, recv_len )};
 
   return ret;

@@ -9,7 +9,7 @@
 #include "exception.hh"
 #include "file.hh"
 #include "socket.hh"
-#include "time.hh"
+#include "timestamp.hh"
 #include "util.hh"
 
 #include "record.hh"
@@ -35,7 +35,6 @@ Node::Node( string file, string port, uint64_t max_mem )
   , fpos_{0}
   , max_mem_{max_mem}
 {
-  time_start();
 }
 
 /* run the node - list and respond to RPCs */
@@ -115,18 +114,18 @@ uint64_t Node::DoSize( void )
 
 inline uint64_t Node::rec_sort( vector<Record> & recs ) const
 {
-  auto t0 = clk::now();
+  auto t0 = time_now();
 #ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
   string_sort( recs.begin(), recs.end() );
 #else
   sort( recs.begin(), recs.end() );
 #endif
-  return time_diff( t0 );
+  return time_diff<ms>( t0 );
 }
 
 Record Node::seek( uint64_t pos )
 {
-  auto t0 = clk::now();
+  auto t0 = time_now();
 
   // can we continue from last time?
   if ( fpos_ != pos ) {
@@ -140,7 +139,7 @@ Record Node::seek( uint64_t pos )
     }
   }
 
-  auto tt = time_diff( t0 );
+  auto tt = time_diff<ms>( t0 );
   cout << "[Seek (" << pos << ")]: " << tt << "ms" << endl;
   return last_;
 }
@@ -151,7 +150,7 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 {
   static uint64_t pass = 0;
 
-  auto t0 = clk::now();
+  auto t0 = time_now();
   tdiff_t tmerge = 0, tsort = 0, tplace = 0;
 
   OverlappedRecordIO<Record::SIZE> recio( data_ );
@@ -166,7 +165,7 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 
   uint64_t i = 0;
   for ( bool run = true; run; ) {
-    auto tp0 = clk::now();
+    auto tp0 = time_now();
     for ( ; vin.size() < block_size; i++ ) {
       const char * r = recio.next_record();
       if ( r == nullptr ) {
@@ -178,7 +177,7 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
         vin.emplace_back( r, i );
       }
     }
-    tplace += time_diff( tp0 );
+    tplace += time_diff<ms>( tp0 );
 
     // optimize for some cases
     if ( vin.size() > 0 ) {
@@ -196,7 +195,7 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 
   data_.rewind();
 
-  auto tt = time_diff( t0 );
+  auto tt = time_diff<ms>( t0 );
   cout << "[Linear scan (" << pass++ << ")]: " << tt << "ms" << endl;
   cout << "[Place total]: " << tplace << endl;
   cout << "[Sort total]: " << tsort << endl;

@@ -13,6 +13,5 @@ libbasicrts_la_SOURCES = \
 	poller.hh poller.cc \
 	privs.hh privs.cc \
 	socket.hh socket.cc \
-	time.hh time.cc \
 	timestamp.hh timestamp.cc \
 	util.hh util.cc
