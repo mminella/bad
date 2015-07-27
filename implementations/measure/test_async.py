@@ -7,9 +7,9 @@ from time import sleep
 def DropCache():
     subprocess.call(['bash', 'drop_cache.sh'])
 
-def Bench(nfiles, prog, files, args):
+def Bench(prog, files, args):
     status_list = list()
-    for i in range(0, nfiles):
+    for i in range(0, len(files)):
         status_list.append(subprocess.Popen([prog] + [files[i]] + args,
             stdout=log_files[i]))
     for status in status_list:
@@ -25,6 +25,7 @@ def ParseCmdLine():
             ''')
     parser.add_argument('files',  metavar='file', type=str, nargs='+',
                         help='File names which specifiy each disk location.')
+    parser.add_argument('--name', type=str, help='Run name')
     parser.add_argument('--block', type=int, default=1024**2, help='Block size.')
     parser.add_argument('--qdepth', type=int, default=31,
                         help='Request queue for asynchronous implementation.')
@@ -39,14 +40,26 @@ if __name__ == '__main__':
     if args.odirect:
         odirect = ['True']
 
-    log_files = [open('log_{}.txt'.format(index), 'w')
+    log_files = [open('log_{}_{}.txt'.args.name, format(index), 'w')
                  for index in range(0, num_files)]
 
+    # write out experiment header
+    for log_file in log_files:
+        log_file.write("Start: %s\n" % datetime.now())
+        log_file.write("Name: %s\n" % args.name)
+        log_file.write("Block: %d\n" % args.block)
+        log_file.write("Queue: %d\n" % args.qdepth)
+        log_file.write("O_DIRECT: %s\n" % args.odirect)
+        for i in range(0, len(args.files)):
+            log_file.write("File_%d: %s\n", i, args.files[i])
+        log_file.write("-------------------------\n")
+
+    # run experiments
     DropCache()
-    Bench(num_files, './async_read', args.files,
+    Bench('measure_async_read', args.files,
         [str(args.block), str(args.qdepth)] + odirect)
     DropCache()
-    Bench(num_files, './async_random_read', args.files,
+    Bench('measure_async_random_read', args.files,
         [str(args.block), str(args.qdepth)] + odirect)
 
     for log_file in log_files:
