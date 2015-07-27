@@ -1,57 +1,55 @@
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "lib.h"
+#include "lib.hh"
 
 int main(int argc, char* argv[]) {
-  if (argc != 3) {
-    printf("Usage: ./read [file name] [block size]\n");
-    return -1;
+  if (argc != 3 && argc != 4) {
+    printf("Usage: ./read [file] [block size] ([O_DIRECT?])\n");
+    return EXIT_FAILURE;
   }
+  int flags = argc == 4 ? O_DIRECT | O_RDONLY : O_RDONLY;
+
   const char* file_name = argv[1];
-  int fd = open(file_name, O_CREAT | O_RDONLY, 00777);
+  int fd = open(file_name, flags);
+  if (fd < 0) {
+    perror("Failed when opening file");
+    return EXIT_FAILURE;
+  }
+
   struct stat stat_buffer;
   if (fstat(fd, &stat_buffer) != 0) {
-    perror("Failed when fstat.");
-    return -1;
+    perror("Failed when fstat");
+    return EXIT_FAILURE;
   }
   size_t file_size = stat_buffer.st_size;
-  size_t block_size = TranslateToInt(argv[2]);
-  if (file_size % block_size != 0) {
-    printf("File size must be a multiple of block size.\n");
-    return -1;
-  }
-  size_t num_block = file_size / block_size;
-
-  if (fd < 0) {
-    perror("Failed when opening file.");
-    return -1;
-  }
-
-  unsigned char* read_data = new unsigned char[block_size];
+  size_t block_size = atol(argv[2]);
 
   struct timespec time_start, time_end;
   clock_gettime(CLOCK_MONOTONIC, &time_start);
 
-  for (size_t index = 0; index < num_block; ++index) {
-    ssize_t result = pread(fd, read_data, block_size, index * block_size);
-    if (result == -1 || (size_t) result != block_size) {
-      perror("Failed when reading.");
+  void * data = aligned_alloc(ALIGN, block_size);
+  for (size_t i = 0; i * block_size < file_size; ++i) {
+    ssize_t r = pread(fd, data, block_size, i * block_size);
+    if (r == -1) {
+      perror("Failed when reading");
+    } else if ( r == 0 ) {
+      break; // EOF
     }
   }
 
   clock_gettime(CLOCK_MONOTONIC, &time_end);
 
-  double duration = GetTimeDuration(time_start, time_end);
-  printf("%.3f second\n%f MB/s\n",
-         duration, file_size / duration / 0x100000);
+  double duration = time_diff(time_start, time_end);
+  printf("%.3f seconds\n%f MB/s\n", duration, file_size / duration / MB);
 
   if (close(fd) != 0) {
-    perror("Failed when closing.");
-    return -1;
+    perror("Failed when closing");
+    return EXIT_FAILURE;
   }
-  return 0;
+  return EXIT_SUCCESS;
 }

@@ -4,59 +4,56 @@
 #include <unistd.h>
 #include <stdio.h>
 
-#include "lib.h"
+#include "lib.hh"
 
 int main(int argc, char* argv[]) {
-  if (argc != 4) {
-    printf("Usage: ./random_write [file name] [file size] [block size]\n");
-    return -1;
+  if (argc != 4 && argc != 5) {
+    printf("Usage: ./random_write [file] [count] [block size] ([O_DIRECT?])\n");
+    return EXIT_FAILURE;
   }
+  int flags = argc == 5 ? O_DIRECT : 0;
+
   const char* file_name = argv[1];
-  size_t file_size = TranslateToInt(argv[2]);
-  size_t block_size = TranslateToInt(argv[3]);
-  if (file_size % block_size != 0) {
-    printf("File size must be a multiple of block size.\n");
-    return -1;
-  }
-  size_t num_block = file_size / block_size;
-  int fd = open(file_name, O_CREAT | O_WRONLY, 00777);
+  size_t num_block = atol(argv[2]);
+  size_t block_size = atol(argv[3]);
+  size_t file_size = num_block * block_size;
+
+  int fd = open(file_name, O_CREAT | O_WRONLY | flags, 00644);
   if (fd < 0) {
     perror("Failed when opening file.");
-    return -1;
+    return EXIT_FAILURE;
   }
 
-  unsigned char* write_data = new unsigned char[block_size];
-  for (size_t index = 0; index < block_size; ++index) {
-    write_data[index] = index % 256;
+  char * data = (char *) aligned_alloc(ALIGN, block_size);
+  for (size_t i = 0; i < block_size; ++i) {
+    data[i] = i % 256;
   }
 
-  size_t* shuffled_block_id = new size_t[num_block];
-  FillRandomPermutation(shuffled_block_id, num_block);
+  size_t* random_block = new size_t[num_block];
+  FillRandomPermutation(random_block, num_block);
 
   struct timespec time_start, time_end;
   clock_gettime(CLOCK_MONOTONIC, &time_start);
 
-  for (size_t index = 0; index < num_block; ++index) {
-    ssize_t result = pwrite(
-        fd, write_data, block_size, shuffled_block_id[index] * block_size);
-    if (result == -1 || (size_t) result != block_size) {
+  for (size_t i = 0; i < num_block; ++i) {
+    ssize_t r = pwrite(fd, data, block_size, random_block[i] * block_size);
+    if (r == -1 || (size_t) r != block_size) {
       perror("Failed when writing.");
     }
   }
   if (fdatasync(fd) != 0) {
     perror("Failed when syncing.");
-    return -1;
+    return EXIT_FAILURE;
   }
 
   clock_gettime(CLOCK_MONOTONIC, &time_end);
 
-  double duration = GetTimeDuration(time_start, time_end);
-  printf("%.3f second\n%f MB/s\n",
-         duration, file_size / duration / 0x100000);
+  double duration = time_diff(time_start, time_end);
+  printf("%.3f seconds\n%f MB/s\n", duration, file_size / duration / MB);
 
   if (close(fd) != 0) {
     perror("Failed when closing.");
-    return -1;
+    return EXIT_FAILURE;
   }
-  return 0;
+  return EXIT_SUCCESS;
 }

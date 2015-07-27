@@ -1,8 +1,9 @@
-#ifndef LIB_H_
-#define LIB_H_
+#ifndef LIB_HH
+#define LIB_HH
 
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <sys/syscall.h>
 #include <linux/aio_abi.h>
@@ -11,15 +12,11 @@
 #include <sstream>
 #include <string>
 
-/*
- * Default parameter:
- * file size = 10G = 10737418240 Byte.
- * block size = 1M = 1048576
- * fly requests = 64
- */
+const size_t MB = 1024 * 1024;
+const size_t ALIGN = 4096;
 
-inline double GetTimeDuration(
-    const struct timespec& start, const struct timespec& end) {
+inline double time_diff( const struct timespec& start,
+                         const struct timespec& end ) {
   double duration = end.tv_nsec;
   duration -= start.tv_nsec;
   duration /= 1e9;
@@ -54,13 +51,4 @@ inline int io_getevents(aio_context_t ctx, long min_nr, long max_nr,
   return syscall(__NR_io_getevents, ctx, min_nr, max_nr, events, timeout);
 }
 
-inline size_t TranslateToInt(const char* input) {
-  std::istringstream conv(input);
-  size_t result;
-  conv >> result;
-  return result;
-}
-
-
-
-#endif  // LIB_H_
+#endif /* LIB_HH */
