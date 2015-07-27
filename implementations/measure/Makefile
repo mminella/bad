@@ -24,5 +24,6 @@ dist: $(BINARIES)
 	cp $(BINARIES) dist_root/usr/bin
 	cp test_async.py dist_root/usr/bin
 	cp test_sync.py dist_root/usr/bin
-	cp drop_cache.sh dist_root/usr/bin
+	cp drop_cache.sh dist_root/usr/bin/drop_cache
+	cp setup_fs.sh dist_root/usr/bin/setup_fs
 	tar cvzf measure.tar.gz -C dist_root .

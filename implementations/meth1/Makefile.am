@@ -24,6 +24,7 @@ bin-dist: app/meth1_node app/meth1_shell app/meth1_client
 	cp app/sort_test_cfiles dist_root/usr/bin/sort_test_cfiles
 	cp app/meth1_node_test dist_root/usr/bin/meth1_node_test
 	cp scripts/clear_buffers.sh dist_root/usr/bin/clear_buffers
+	cp scripts/setup_fs.sh dist_root/usr/bin/setup_fs
 	tar cvzf bad.tar.gz -C dist_root .
 
 recs-1gb:
