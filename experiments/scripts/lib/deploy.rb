@@ -48,7 +48,7 @@ class Deploy
   end
 
   def deploy!
-    if !File.exists?(@tarfile)
+    if !File.exists? @tarfile
       puts "Specified file doesn't exists: #{@tarfile}\n"
       exit 1
     end

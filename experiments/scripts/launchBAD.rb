@@ -1,8 +1,6 @@
 #!/usr/bin/env ruby
 
-#
-# This is a specialization of `newMachine.rb` to B.A.D.
-#
+# Launch a new cluster of machines for B.A.D.
 
 require './lib/ec2'
 require './lib/setup'
@@ -67,7 +65,7 @@ optparse = OptionParser.new do |opts|
   end
 
   options[:tar_file] = TAR_FILE
-  opts.on("-d", "--dist-file", "Distribution file to deploy") do |df|
+  opts.on("-d", "--dist-file STRING", "Distribution file to deploy") do |df|
     options[:tar_file] = df
   end
 
@@ -76,7 +74,6 @@ end
 if ARGV.length == 0
   optparse.parse %w[--help]
 end
-
 optparse.parse!
 
 if options[:key_name].nil?
@@ -88,22 +85,30 @@ end
 $stdout.sync = true
 
 # move any old cluster info files
-now = Time.now.strftime("%Y%m%d_%H%M")
-`mv .cluster.conf .cluster.conf.#{now}`
+if File.exists? '.cluster.conf'
+  now = Time.now.strftime("%Y%m%d_%H%M")
+  `mv -f .cluster.conf .cluster.conf.#{now}`
+end
 
 # start new cluster config
 `echo "# #{Time.now}" > .cluster.conf`
 `echo "export MN=#{options[:count]}" >> .cluster.conf`
 
-i = 0
 # launch instance
+i = 0
+instances = []
 Launcher.new(options).launch! do |instance|
   i += 1
+  instances += [instance]
   puts "New instance (#{i}) at: #{instance.dns_name}"
   
   # store machine
   `echo "export M#{i}=#{instance.dns_name}" >> .cluster.conf`
+  `echo "export M#{i}_ID=#{instance.id}" >> .cluster.conf`
+end
 
+# configure instances
+instances.each do |instance|
   # wait for instance to be ready and SSH up
   puts "Waiting for instances to become ready..."
   timeout = 120
@@ -122,14 +127,14 @@ Launcher.new(options).launch! do |instance|
 
   # setup instance
   puts "Setting up instance (#{i})..."
-  conf = Setup.new(node: instance.dns_name, user: SSH_USER, skey: SSH_PKEY)
+  conf = Setup.new(host: instance.dns_name, user: SSH_USER, skey: SSH_PKEY)
   conf.setup!
   puts "Instance (#{i}) setup for B.A.D!"
 
   # deploy bad
   puts "Deploying a B.A.D distribution..."
   deployer = Deploy.new(hostname: instance.dns_name, user: SSH_USER,
-                        skey: SSH_PKEY, distfile: options['tar_file'])
+                        skey: SSH_PKEY, distfile: options[:tar_file])
   deployer.deploy!
   puts "B.A.D deployed and ready!"
 end
