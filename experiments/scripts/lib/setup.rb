@@ -14,7 +14,7 @@ SGEN_FILE = SGEN_LOC.split("/").last
 
 class Setup
 
-  # options = { :interactive, :node, :user, :skey }
+  # options = { :interactive, :host, :user, :skey }
   def initialize(options)
     @opts = options
   end
@@ -27,16 +27,16 @@ class Setup
     @opts[opt] = value
   end
 
-  def set_node(node)
-    @opts[:node] = node
+  def set_host(host)
+    @opts[:host] = host
   end
 
   def interactive!
-    if !@opts[:node] || @opts[:node].length == 0
-      print "Node? "
-      @opts[:node] = $stdin.gets.strip
-      if @opts[:node].length == 0
-        puts "You must specify a node!"
+    if !@opts[:host] || @opts[:host].length == 0
+      print "Host? "
+      @opts[:host] = $stdin.gets.strip
+      if @opts[:host].length == 0
+        puts "You must specify a host!"
         exit 1
       end
     end
@@ -55,7 +55,7 @@ class Setup
       interactive!
     end
 
-    Net::SSH.start(@opts[:node], @opts[:user], @opts[:skey]) do |ssh|
+    Net::SSH.start(@opts[:host], @opts[:user], @opts[:skey]) do |ssh|
       # load ssh keys
       for u in USERS
         ssh.exec! "curl -X GET https://api.github.com/users/#{u}/keys \
@@ -69,17 +69,9 @@ class Setup
       # disable apt-get autoupdate
       ssh.root! 'sed -i -e"s/1/0/g" /etc/apt/apt.conf.d/10periodic'
 
-      # setup instance store
-      ssh.root! "umount /mnt"
-      ssh.root! "mkfs.ext4 -E nodiscard /dev/xvdb"
-      ssh.root! "sudo mount -o discard /dev/xvdb /mnt"
-      ssh.root! "chown ubuntu:ubuntu /mnt"
-      ssh.root! "chmod 777 /mnt"
-
       # setup sortgen
       ssh.exec! "wget #{SGEN_LOC} && tar xzf #{SGEN_FILE}"
       ssh.root! "mv 64/* /usr/bin/"
-      # /mnt/64/gensort -t4 104857600 /mnt/records-unsorted
     end
   end
   

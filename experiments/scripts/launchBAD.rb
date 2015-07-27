@@ -65,6 +65,12 @@ optparse = OptionParser.new do |opts|
   opts.on("-p", "--placement PLACEMENT_GROUP", "Placement group to launch in") do |pg|
     options[:placement_group] = pg
   end
+
+  options[:tar_file] = TAR_FILE
+  opts.on("-d", "--dist-file", "Distribution file to deploy") do |df|
+    options[:tar_file] = df
+  end
+
 end
 
 if ARGV.length == 0
@@ -81,11 +87,22 @@ end
 # make '.' output for wait appear steady
 $stdout.sync = true
 
+# move any old cluster info files
+now = Time.now.strftime("%Y%m%d_%H%M")
+`mv .cluster.conf .cluster.conf.#{now}`
+
+# start new cluster config
+`echo "# #{Time.now}" > .cluster.conf`
+`echo "export MN=#{options[:count]}" >> .cluster.conf`
+
 i = 0
 # launch instance
 Launcher.new(options).launch! do |instance|
   i += 1
   puts "New instance (#{i}) at: #{instance.dns_name}"
+  
+  # store machine
+  `echo "export M#{i}=#{instance.dns_name}" >> .cluster.conf`
 
   # wait for instance to be ready and SSH up
   puts "Waiting for instances to become ready..."
@@ -110,9 +127,9 @@ Launcher.new(options).launch! do |instance|
   puts "Instance (#{i}) setup for B.A.D!"
 
   # deploy bad
-  puts "Deploying B.A.D distribution..."
+  puts "Deploying a B.A.D distribution..."
   deployer = Deploy.new(hostname: instance.dns_name, user: SSH_USER,
-                        skey: SSH_PKEY, distfile: TAR_FILE)
+                        skey: SSH_PKEY, distfile: options['tar_file'])
   deployer.deploy!
   puts "B.A.D deployed and ready!"
 end

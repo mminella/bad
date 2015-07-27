@@ -10,12 +10,12 @@ require './lib/setup'
 
 if ARGV.length >= 1 &&
     (ARGV[0] == "help" || ARGV[0] == "--help" || ARGV[0] == "-h")
-  puts "Usage: " + __FILE__ + " <node>"
-  puts "      <node>     -- The node to connect to. "
+  puts "Usage: " + __FILE__ + " <host>"
+  puts "      <host>     -- The host to connect to. "
   exit 0
 end
 
-opts = { interactive: true, node: ARGV[0] }
+opts = { interactive: true, host: ARGV[0] }
 Setup.new(opts).setup!
 
 puts "Setup done!"
