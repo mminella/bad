@@ -27,31 +27,32 @@ def ParseCmdLine():
                         help='File names which specifiy each disk location.')
     parser.add_argument('--count', type=int, default=1024, help='Block count.')
     parser.add_argument('--block', type=int, default=1024**2, help='Block size.')
-    parser.add_argument('--qdepth', type=int, default=31,
-                        help='Request queue for asynchronous implementation.')
+    parser.add_argument('--odirect', type=bool, default=False,
+                        help='Use O_DIRECT I/O.')
     return parser.parse_args()
 
 if __name__ == '__main__':
     args = ParseCmdLine()
     num_files = len(args.files)
+    odirect = []
+    if args.odirect:
+        odirect = ['True']
 
     log_files = [open('log_{}.txt'.format(index), 'w')
                  for index in range(0, num_files)]
 
-    Bench(num_files, './write', args.files, [str(args.count), str(args.block)])
-    Bench(num_files, './random_write', args.files, [str(args.count),
-        str(args.block)])
-    DropCache()
+    Bench(num_files, './write', args.files,
+        [str(args.count), str(args.block)] + odirect)
+    Bench(num_files, './random_write', args.files,
+        [str(args.count), str(args.block)] + odirect)
 
-    Bench(num_files, './read', args.files, [str(args.block)])
     DropCache()
-    Bench(num_files, './random_read', args.files, [str(args.block)])
+    Bench(num_files, './read', args.files,
+        [str(args.block)] + odirect)
     DropCache()
-    Bench(num_files, './async_read', args.files, [str(args.block),
-      str(args.qdepth)])
-    DropCache()
-    Bench(num_files, './async_random_read', args.files, [str(args.block),
-      str(args.qdepth)])
+    Bench(num_files, './random_read', args.files,
+        [str(args.block)] + odirect)
 
     for log_file in log_files:
         log_file.close()
+
