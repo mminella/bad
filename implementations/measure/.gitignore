@@ -5,3 +5,5 @@ random_write
 read
 write
 *.o
+measure.tar.gz
+dist_root

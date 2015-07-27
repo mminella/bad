@@ -10,7 +10,19 @@ BINARIES= \
 
 all: $(BINARIES)
 
-.PHONY: clean
+.PHONY: clean dist
+
 clean:
 	rm -f *.o
+	rm -rf dist_root
+	rm -f measure.tar.gz
 	rm -f $(BINARIES)
+
+dist: $(BINARIES)
+	rm -Rf dist_root
+	mkdir -p dist_root/usr/bin
+	cp $(BINARIES) dist_root/usr/bin
+	cp test_async.py dist_root/usr/bin
+	cp test_sync.py dist_root/usr/bin
+	cp drop_cache.sh dist_root/usr/bin
+	tar cvzf measure.tar.gz -C dist_root .
