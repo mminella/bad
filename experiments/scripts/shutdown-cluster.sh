@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source .cluster.conf
+source ./.cluster.conf
 
 instances=""
 for i in `seq 1 $MN`; do
@@ -9,4 +9,8 @@ for i in `seq 1 $MN`; do
 done
 
 aws ec2 --profile bad-project terminate-instances --instance-ids ${instances}
+
+now=$(date +"%Y%m%d_%H%M")
+mkdir ./.old_clusters
+mv ./.cluster.conf ./.old_clusters/${now}.cluster.conf
 
