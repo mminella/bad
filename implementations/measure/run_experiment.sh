@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # 1KB = 1024
 # 1MB = 1024*1KB
@@ -16,7 +16,7 @@ for f in ${FILES}; do
   dd if=/dev/zero of=${FILES} bs=1048576 count=1000 conv=fdatasync,notrunc
 done
 
-function test_sync() {
+test_sync() {
   BLOCK=$1
   COUNT=$(( ${READ_SIZE} / ${BLOCK} ))
   DIRECT=$2
@@ -39,7 +39,7 @@ for f in ${FILES}; do
   dd if=/dev/zero of=${FILES} bs=1048576 count=100 conv=fdatasync,notrunc
 done
 
-function test_async() {
+test_async() {
   BLOCK=$1
   QDEPTH=$2
   DIRECT=$3

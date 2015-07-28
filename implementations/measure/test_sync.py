@@ -6,7 +6,7 @@ import sys
 from time import sleep
 
 def DropCache():
-    subprocess.call(['bash', 'drop_cache.sh'])
+    subprocess.call(['bash', 'drop_cache'])
 
 def Bench(prog, files, args):
     status_list = list()

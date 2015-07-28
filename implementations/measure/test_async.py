@@ -25,11 +25,11 @@ def ParseCmdLine():
             async_random_read. The files to be written should be given.
             ''')
     parser.add_argument('files',  metavar='file', type=str, nargs='+',
-                        help='File names which specifiy each disk location.')
+        help='File names which specifiy each disk location.')
     parser.add_argument('--name', type=str, help='Run name')
     parser.add_argument('--block', type=int, default=1024**2, help='Block size.')
     parser.add_argument('--qdepth', type=int, default=31,
-                        help='Request queue for asynchronous implementation.')
+        help='Request queue for asynchronous implementation.')
     parser.add_argument('--odirect', default=False, action='store_true',
         help='Use O_DIRECT I/O.')
     return parser.parse_args()
