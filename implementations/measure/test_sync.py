@@ -8,11 +8,11 @@ from time import sleep
 def DropCache():
     subprocess.call(['bash', 'drop_cache'])
 
-def Bench(prog, files, args):
+def Bench(logs, prog, files, args):
     status_list = list()
     for i in range(0, len(files)):
         status_list.append(subprocess.Popen([prog] + [files[i]] + args,
-            stdout=log_files[i]))
+            stdout=logs[i]))
     for status in status_list:
         status.wait()
     sleep(2)
@@ -54,18 +54,19 @@ if __name__ == '__main__':
         for i in range(0, len(args.files)):
             log_file.write("File_%d: %s\n" % (i, args.files[i]))
         log_file.write("-------------------------\n")
+        log_file.flush()
 
     # run experiments
-    Bench('measure_write', args.files,
+    Bench(log_files, 'measure_write', args.files,
         [str(args.count), str(args.block)] + odirect)
-    Bench('measure_random_write', args.files,
+    Bench(log_files, 'measure_random_write', args.files,
         [str(args.count), str(args.block)] + odirect)
 
     DropCache()
-    Bench('measure_read', args.files,
+    Bench(log_files, 'measure_read', args.files,
         [str(args.block)] + odirect)
     DropCache()
-    Bench('measure_random_read', args.files,
+    Bench(log_files, 'measure_random_read', args.files,
         [str(args.block)] + odirect)
 
     for log_file in log_files:

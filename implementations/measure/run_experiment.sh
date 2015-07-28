@@ -21,8 +21,12 @@ test_sync() {
   COUNT=$(( ${READ_SIZE} / ${BLOCK} ))
   DIRECT=$2
   NAME=S_${BLOCK}
+  OD="F"
+  if [ -n "${DIRECT}" ]; then
+    OD="T"
+  fi
   for i in ${ITERS}; do
-    test_sync.py --name ${NAME}.${i} --block ${BLOCK} ${DIRECT} ${FILES}
+    test_sync.py --name ${NAME}.${OD}.${i} --block ${BLOCK} ${DIRECT} ${FILES}
   done
 }
 
@@ -44,8 +48,12 @@ test_async() {
   QDEPTH=$2
   DIRECT=$3
   NAME=A_${BLOCK}_${QDEPTH}
+  OD="F"
+  if [ -n "${DIRECT}" ]; then
+    OD="T"
+  fi
   for i in ${ITERS}; do
-    test_async.py --name "${NAME}.${i}" --block ${BLOCK} --qdepth ${QDEPTH} ${DIRECT} ${FILES}
+    test_async.py --name "${NAME}.${OD}.${i}" --block ${BLOCK} --qdepth ${QDEPTH} ${DIRECT} ${FILES}
   done
 }
 
