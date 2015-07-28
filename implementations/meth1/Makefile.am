@@ -34,6 +34,7 @@ recs-10gb:
 	../../gensort/gensort 104857000 test/recs-1gb
 
 TESTS = \
+	test/channels.test \
 	test/sort_libc.test \
 	test/sort_basicrts.test \
 	test/sort_boost.test \

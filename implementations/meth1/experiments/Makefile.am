@@ -1,4 +1,5 @@
 bin_PROGRAMS = \
+	channels \
 	echo_server \
 	priority_queue \
 	rec_memcpy \
@@ -25,6 +26,7 @@ LDADD = \
 AM_LDFLAGS = -static -static-libstdc++ -all-static \
 	-Wl,--whole-archive -Wl,-lpthread -Wl,--no-whole-archive
 
+channels_SOURCES = channels.cc
 echo_server_SOURCES = echo_server.cc
 
 priority_queue_SOURCES = priority_queue.cc
