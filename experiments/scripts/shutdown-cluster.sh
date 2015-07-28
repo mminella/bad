@@ -8,5 +8,5 @@ for i in `seq 1 $MN`; do
   instances="${instances} ${!MV}"
 done
 
-aws ec2 terminate-instances --instance-ids ${instances}
+aws ec2 --profile bad-project terminate-instances --instance-ids ${instances}
 
