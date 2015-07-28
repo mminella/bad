@@ -133,6 +133,9 @@ namespace internal {
             }
             recv_wait_--;
           } else {
+            if ( send_wait_ > 0 ) {
+              send_cv_.notify_one();
+            }
             used_ = 0;
             return slots_[0];
           }
