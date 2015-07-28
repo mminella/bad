@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 import argparse
+from datetime import datetime
 import subprocess
 import sys
 from time import sleep
 
 def DropCache():
-    subprocess.call(['bash', 'drop_cache.sh'])
+    subprocess.call(['bash', 'drop_cache'])
 
 def Bench(prog, files, args):
     status_list = list()
@@ -29,8 +30,8 @@ def ParseCmdLine():
     parser.add_argument('--block', type=int, default=1024**2, help='Block size.')
     parser.add_argument('--qdepth', type=int, default=31,
                         help='Request queue for asynchronous implementation.')
-    parser.add_argument('--odirect', type=bool, default=False,
-                        help='Use O_DIRECT I/O.')
+    parser.add_argument('--odirect', default=False, action='store_true',
+        help='Use O_DIRECT I/O.')
     return parser.parse_args()
 
 if __name__ == '__main__':
@@ -40,7 +41,7 @@ if __name__ == '__main__':
     if args.odirect:
         odirect = ['True']
 
-    log_files = [open('log_{}_{}.txt'.args.name, format(index), 'w')
+    log_files = [open('log_{}_{}.txt'.format(args.name, index), 'w')
                  for index in range(0, num_files)]
 
     # write out experiment header
@@ -50,8 +51,9 @@ if __name__ == '__main__':
         log_file.write("Block: %d\n" % args.block)
         log_file.write("Queue: %d\n" % args.qdepth)
         log_file.write("O_DIRECT: %s\n" % args.odirect)
+        log_file.write("Files: %d\n" % len(args.files))
         for i in range(0, len(args.files)):
-            log_file.write("File_%d: %s\n", i, args.files[i])
+            log_file.write("File_%d: %s\n" % (i, args.files[i]))
         log_file.write("-------------------------\n")
 
     # run experiments
