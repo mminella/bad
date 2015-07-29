@@ -57,7 +57,7 @@ static inline tdiff_t time_diff( clk::time_point t1, clk::time_point t0 )
 template <typename Duration>
 static inline tdiff_t time_diff( clk::time_point t0 )
 {
-  return time_diff<Duration>( t0, clk::now() );
+  return time_diff<Duration>( clk::now(), t0 );
 }
 
 #endif /* TIMESTAMP_HH */
