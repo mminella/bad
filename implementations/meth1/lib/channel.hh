@@ -112,7 +112,7 @@ namespace internal {
       }
     }
 
-    inline T recv( void )
+    inline T && recv( void )
     {
       std::unique_lock<std::mutex> lck( mtx_ );
       if ( closed_ ) {
@@ -137,7 +137,7 @@ namespace internal {
               send_cv_.notify_one();
             }
             used_ = 0;
-            return slots_[0];
+            return std::move( slots_[0] );
           }
         }
       } else {
@@ -151,9 +151,9 @@ namespace internal {
         send_cv_.notify_one();
         
         used_--;
-        T t = slots_[rptr_];
+        size_t i = rptr_;
         rptr_ = (rptr_ + 1) % size_;
-        return t;
+        return std::move( slots_[i] );
       }
     }
   };
@@ -173,7 +173,7 @@ public:
     inline void close() { chn->close(); }
     inline void send( T && t ) { chn->send( std::move( t ) ); }
     inline void send( const T & t ) { chn->send( t ); }
-    inline T recv( void ) { return chn->recv(); }
+    inline T && recv( void ) { return chn->recv(); }
 };
 
 #endif /* CHANNEL_HH */

@@ -9,6 +9,36 @@
 
 using namespace std;
 
+class C
+{
+int c_;
+public:
+  C() : c_{0} {};
+  C(int c) : c_{c} {}
+
+  C(const C & c) : c_{c.c_} {
+    cout << "C:copy " << c_ << endl;
+  }
+
+  C & operator=( const C & c ) {
+    c_ = c.c_;
+    cout << "C:=copy " << c_ << endl;
+    return *this;
+  }
+
+  C( C && c ) : c_{c.c_} {
+    cout << "C:move " << c_ << endl;
+  }
+
+  C & operator=( C && c ) {
+    c_ = c.c_;
+    cout << "C:=move " << c_ << endl;
+    return *this;
+  }
+
+  ~C() {}
+};
+
 // mutex mtx;
 
 void thread_a( int id, Channel<int> c )
@@ -60,6 +90,16 @@ int main( void )
     b4.join();
     // cout << "Done sync..." << endl;
   }
+
+  Channel<C> chn(2);
+  C c1( 1 );
+  C c2( 2 );
+  chn.send(c1);
+  C c3 = chn.recv();
+  cout << "-------" << endl;
+  chn.send( move( c2 ) );
+  C c4 = chn.recv();
+
   return EXIT_SUCCESS;
 }
 
