@@ -29,6 +29,7 @@ dist: $(BINARIES)
 	cp async_random_read dist_root/usr/bin/measure_async_random_read
 	cp test_async.py dist_root/usr/bin
 	cp test_sync.py dist_root/usr/bin
+	cp test_dd.py dist_root/usr/bin
 	cp drop_cache.sh dist_root/usr/bin/drop_cache
 	cp setup_fs.sh dist_root/usr/bin/setup_fs
 	cp run_experiment.sh dist_root/usr/bin/run_experiment

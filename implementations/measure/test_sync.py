@@ -15,7 +15,7 @@ def Bench(logs, prog, files, args):
             stdout=logs[i]))
     for status in status_list:
         status.wait()
-    sleep(2)
+    sleep(1)
 
 def ParseCmdLine():
     parser = argparse.ArgumentParser(
@@ -26,7 +26,6 @@ def ParseCmdLine():
             ''')
     parser.add_argument('files',  metavar='file', type=str, nargs='+',
         help='File names which specifiy each disk location.')
-    parser.add_argument('--name', type=str, help='Run name')
     parser.add_argument('--count', type=int, default=1024, help='Block count.')
     parser.add_argument('--block', type=int, default=1024**2, help='Block size.')
     parser.add_argument('--odirect', default=False, action='store_true',
@@ -40,21 +39,8 @@ if __name__ == '__main__':
     if args.odirect:
         odirect = ['True']
 
-    log_files = [open('log_{}_{}.txt'.format(args.name, index), 'w')
+    log_files = [open('log_{}.txt'.format(index), 'a')
                  for index in range(0, num_files)]
-
-    # write out experiment header
-    for log_file in log_files:
-        log_file.write("Start: %s\n" % datetime.now())
-        log_file.write("Name: %s\n" % args.name)
-        log_file.write("Count: %d\n" % args.count)
-        log_file.write("Block: %d\n" % args.block)
-        log_file.write("O_DIRECT: %s\n" % args.odirect)
-        log_file.write("Files: %d\n" % len(args.files))
-        for i in range(0, len(args.files)):
-            log_file.write("File_%d: %s\n" % (i, args.files[i]))
-        log_file.write("-------------------------\n")
-        log_file.flush()
 
     # run experiments
     Bench(log_files, 'measure_write', args.files,

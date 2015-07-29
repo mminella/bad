@@ -47,8 +47,10 @@ int main(int argc, char* argv[]) {
 
   clock_gettime(CLOCK_MONOTONIC, &time_end);
 
-  double duration = time_diff(time_start, time_end);
-  printf("%.3f seconds\n%f MB/s\n", duration, file_size / duration / MB);
+  double dur = time_diff(time_start, time_end);
+  double mbs = file_size / dur / MB;
+  // read?, sync?, random?, block, depth, MB/s
+  printf("%c, %c, %c, %ld, %d, %f\n", 'r', 's', 'r', block_size, 1, mbs);
 
   if (close(fd) != 0) {
     perror("Failed when closing.");
