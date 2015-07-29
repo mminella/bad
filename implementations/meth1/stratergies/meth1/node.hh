@@ -10,6 +10,7 @@
 #include "timestamp.hh"
 
 #include "implementation.hh"
+#include "overlapped_io.hh"
 #include "record.hh"
 
 /**
@@ -27,6 +28,7 @@ class Node : public Implementation
 {
 private:
   File data_;
+  OverlappedRecordIO<Record::SIZE> recio_;
   std::string port_;
   Record last_;
   uint64_t fpos_;

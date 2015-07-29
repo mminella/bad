@@ -30,6 +30,7 @@ using namespace boost::sort::spreadsort;
 /* Construct Node */
 Node::Node( string file, string port, uint64_t max_mem )
   : data_{file.c_str(), O_RDONLY} // O_DIRECT
+  , recio_{data_}
   , port_{port}
   , last_{Record::MIN}
   , fpos_{0}
@@ -149,12 +150,14 @@ Record Node::seek( uint64_t pos )
 vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 {
   static uint64_t pass = 0;
+  uint64_t p = pass++;
+  cout << "<read> " << p << endl;
 
   auto t0 = time_now();
   tdiff_t tmerge = 0, tsort = 0, tplace = 0;
 
-  OverlappedRecordIO<Record::SIZE> recio( data_ );
-  recio.start();
+  recio_.rewind();
+  cout << "<turn> " << p << endl;
 
   // TWEAK: sort + merge block size...
   size_t block_size = size / 2;
@@ -167,7 +170,7 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
   for ( bool run = true; run; ) {
     auto tp0 = time_now();
     for ( ; vin.size() < block_size; i++ ) {
-      const char * r = recio.next_record();
+      const char * r = recio_.next_record();
       if ( r == nullptr ) {
         run = false;
         break;
@@ -193,13 +196,11 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
     }
   }
 
-  data_.rewind();
-
   auto tt = time_diff<ms>( t0 );
-  cout << "[Linear scan (" << pass++ << ")]: " << tt << "ms" << endl;
-  cout << "[Place total]: " << tplace << endl;
-  cout << "[Sort total]: " << tsort << endl;
-  cout << "[Merge total]: " << tmerge << endl;
+  cout << "[Linear scan (" << p << ")]: " << tt << "ms" << endl;
+  cout << "[Place total]: " << tplace << "ms" << endl;
+  cout << "[Sort total]: " << tsort << "ms" << endl;
+  cout << "[Merge total]: " << tmerge << "ms" << endl;
 
   return vpast;
 }
