@@ -21,8 +21,7 @@ File query_file( string out_dir, unsigned int query, string type )
   return {out, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR};
 }
 
-void shell( Cluster & c, uint64_t records, uint64_t block_size,
-            string out_dir )
+void shell( Cluster & c, string out_dir )
 {
   static unsigned int query = 0;
 
@@ -32,61 +31,37 @@ void shell( Cluster & c, uint64_t records, uint64_t block_size,
   istringstream iss{line};
 
   iss >> str;
-  if ( str == "start" ) {
-    // 'start\n'         -- prepare the system
+  if ( str == "first" ) {
+    auto start = chrono::high_resolution_clock::now();
+    Record r = c.ReadFirst();
+    cout << r << endl;
+    auto end = chrono::high_resolution_clock::now();
+    auto dur = chrono::duration_cast<chrono::seconds>( end - start ).count();
+    cout << dur << endl;
+
+  } else if ( str == "read" ) {
     auto start = chrono::high_resolution_clock::now();
 
-    c.Initialize();
+    c.ReadAll();
 
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::seconds>( end - start ).count();
     cout << dur << endl;
 
-  } else if ( str == "all*" ) {
-    // 'all\n'           -- get all records (but don't write!)
+  } else if ( str == "write" ) {
     auto start = chrono::high_resolution_clock::now();
-
-    for ( uint64_t i = 0; i < records; i += block_size ) {
-      vector<Record> recs = c.Read( i, block_size );
-    }
-
-    auto end = chrono::high_resolution_clock::now();
-    auto dur = chrono::duration_cast<chrono::seconds>( end - start ).count();
-    cout << dur << endl;
-
-  } else if ( str == "all" ) {
-    // 'all\n'           -- get all records
-    auto start = chrono::high_resolution_clock::now();
-
     File out = query_file( out_dir, query, "all" );
 
-    for ( uint64_t i = 0; i < records; i += block_size ) {
-      vector<Record> recs = c.Read( i, block_size );
-
-      auto t1 = chrono::high_resolution_clock::now();
-      for ( const auto & r : recs ) {
-        out.write( r.str( Record::NO_LOC ) );
-      }
-      auto t2  = chrono::high_resolution_clock::now();
-      auto dur = chrono::duration_cast<chrono::milliseconds>( t2 - t1 ).count();
-      cout << "* File write took: " << dur << "ms" << endl;
-    }
+    c.WriteAll( move( out ) );
 
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::seconds>( end - start ).count();
     cout << dur << endl;
 
-  } else if ( str == "record" ) {
-    // 'record [int]\n'  -- get record n
-    cout << "not implemented!" << endl;
-
-  } else if ( str == "first" ) {
-    // 'first\n'         -- get first record
+  } else if ( str == "size" ) {
     auto start = chrono::high_resolution_clock::now();
 
-    File out = query_file( out_dir, query, "first" );
-    Record r = c.Read( 0, 1 )[0];
-    out.write( r.str( Record::NO_LOC ) );
+    cout << c.Size() << endl;
 
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::seconds>( end - start ).count();
@@ -102,11 +77,9 @@ void shell( Cluster & c, uint64_t records, uint64_t block_size,
 void run( int argc, char * argv[] )
 {
   // get arguments
-  uint64_t records = stoul( argv[1] );
-  uint64_t read_ahead = stoul( argv[2] );
-  uint64_t block_size = stoul( argv[3] );
-  string out_dir{argv[4]};
-  char ** addresses = argv + 5;
+  uint64_t read_ahead = stoul( argv[1] );
+  string out_dir{argv[2]};
+  char ** addresses = argv + 3;
 
   // setup out directory
   mkdir( out_dir.c_str(), 0755 );
@@ -117,7 +90,7 @@ void run( int argc, char * argv[] )
 
   // run shell
   while ( true ) {
-    shell( client, records, block_size, out_dir );
+    shell( client, out_dir );
     if ( cin.eof() ) {
       break;
     }
@@ -126,10 +99,10 @@ void run( int argc, char * argv[] )
 
 void check_usage( const int argc, const char * const argv[] )
 {
-  if ( argc <= 5 ) {
+  if ( argc < 4 ) {
     throw runtime_error(
       "Usage: " + string( argv[0] ) +
-      " [size] [read ahead] [block size] [out folder] [nodes...]" );
+      " [read ahead] [out folder] [nodes...]" );
   }
 }
 

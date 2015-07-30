@@ -2,6 +2,8 @@
 #define RECORD_HH
 
 #include <cstring>
+#include <iomanip>
+#include <iostream>
 #include <string>
 
 #include "../config.h"
@@ -220,6 +222,8 @@ public:
   }
 
 } __attribute__((packed));
+
+std::ostream & operator<<( std::ostream & o, const Record & r );
 
 /* Wrapper around a string (and location) to enable comparison. Doens't manage
  * it's own storage. */

@@ -68,7 +68,7 @@ void Node::Run( void )
         }
       }
     } catch ( const exception & e ) {
-      print_exception( e );
+      // EOF
     }
   }
 }
@@ -129,7 +129,9 @@ Record Node::seek( uint64_t pos )
   auto t0 = time_now();
 
   // can we continue from last time?
-  if ( fpos_ != pos ) {
+  if ( pos == 0 ) {
+    last_ = Record::MIN;
+  } else if ( fpos_ != pos ) {
     // remember, retrieving the record just before `pos`
     for ( uint64_t i = 0; i < pos; i += max_mem_ ) {
       auto recs = linear_scan( Record{Record::MIN}, min( pos - i, max_mem_ ) );
@@ -151,57 +153,72 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 {
   static uint64_t pass = 0;
   uint64_t p = pass++;
-  cout << "<read> " << p << endl;
 
   auto t0 = time_now();
   tdiff_t tmerge = 0, tsort = 0, tplace = 0;
 
   recio_.rewind();
-  cout << "<turn> " << p << endl;
 
   // TWEAK: sort + merge block size...
-  size_t block_size = size / 2;
+  uint64_t block_size = max( size / 2, (uint64_t) 1 );
 
-  vector<Record> vnext, vpast, vin;
-  vnext.reserve( size );
-  vin.reserve( block_size );
 
-  uint64_t i = 0;
-  for ( bool run = true; run; ) {
-    auto tp0 = time_now();
-    for ( ; vin.size() < block_size; i++ ) {
+  if ( size == 1 ) {
+    // optimized case: size = 1
+    auto min = Record( Record::MAX );
+    for ( uint64_t i = 0;; i++ ) {
       const char * r = recio_.next_record();
       if ( r == nullptr ) {
-        run = false;
         break;
       }
       RecordPtr next{r, i};
-      if ( next > after ) {
-        vin.emplace_back( r, i );
+      if ( next < min and next > after ) {
+        min = Record( r, i );
       }
     }
-    tplace += time_diff<ms>( tp0 );
+    return {min};
+  } else {
+    // general case: size = n
+    vector<Record> vnext, vpast, vin;
+    vnext.reserve( size );
+    vin.reserve( block_size );
 
-    // optimize for some cases
-    if ( vin.size() > 0 ) {
-      tsort += rec_sort( vin );
-      if ( vpast.size() == 0 ) {
-        swap( vpast, vin );
-      } else {
-        vnext.resize( min( size, vin.size() + vpast.size() ) );
-        tmerge += move_merge( vin, vpast, vnext );
-        swap( vnext, vpast );
-        vin.clear();
+    uint64_t i = 0;
+    for ( bool run = true; run; ) {
+      auto tp0 = time_now();
+      for ( ; vin.size() < block_size; i++ ) {
+        const char * r = recio_.next_record();
+        if ( r == nullptr ) {
+          run = false;
+          break;
+        }
+        RecordPtr next{r, i};
+        if ( next > after ) {
+          vin.emplace_back( r, i );
+        }
+      }
+      tplace += time_diff<ms>( tp0 );
+
+      // optimize for some cases
+      if ( vin.size() > 0 ) {
+        tsort += rec_sort( vin );
+        if ( vpast.size() == 0 ) {
+          swap( vpast, vin );
+        } else {
+          vnext.resize( min( size, vin.size() + vpast.size() ) );
+          tmerge += move_merge( vin, vpast, vnext );
+          swap( vnext, vpast );
+          vin.clear();
+        }
       }
     }
+
+    auto tt = time_diff<ms>( t0 );
+    cout << "[Linear scan (" << p << ")]: " << tt << "ms" << endl;
+    cout << "[Place total]: " << tplace << "ms" << endl;
+    cout << "[Sort total]: " << tsort << "ms" << endl;
+    cout << "[Merge total]: " << tmerge << "ms" << endl;
+
+    return vpast;
   }
-
-  auto tt = time_diff<ms>( t0 );
-  cout << "[Linear scan (" << p << ")]: " << tt << "ms" << endl;
-  cout << "[Place total]: " << tplace << "ms" << endl;
-  cout << "[Sort total]: " << tsort << "ms" << endl;
-  cout << "[Merge total]: " << tmerge << "ms" << endl;
-
-  return vpast;
 }
-

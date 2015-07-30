@@ -12,6 +12,7 @@
 #include "exception.hh"
 #include "poller.hh"
 #include "socket.hh"
+#include "timestamp.hh"
 
 #include "implementation.hh"
 
@@ -29,7 +30,6 @@ Client::Client( Address node )
   , rpcSize_{0}
   , rpcStart_{}
   , cache_{}
-  , lru_{}
   , size_{0}
   , mtx_{new mutex{}}
   , cv_{new condition_variable{}}
@@ -50,11 +50,15 @@ void Client::waitOnRPC( unique_lock<mutex> & lck )
 
 void Client::sendRead( unique_lock<mutex> & lck, uint64_t pos, uint64_t siz )
 {
+  if ( rpcActive_ == Read_ and rpcPos_ == pos ) {
+    return;
+  }
+
   waitOnRPC( lck );
   rpcActive_ = Read_;
   rpcPos_ = pos;
   rpcSize_ = siz;
-  rpcStart_ = chrono::high_resolution_clock::now();
+  rpcStart_ = time_now();
 
   char data[1 + 2 * sizeof( uint64_t )];
   data[0] = 0;
@@ -67,142 +71,68 @@ void Client::sendSize( unique_lock<mutex> & lck )
 {
   waitOnRPC( lck );
   rpcActive_ = Size_;
-  rpcStart_ = chrono::high_resolution_clock::now();
+  rpcStart_ = time_now();
 
   int8_t rpc = 1;
   sock_.io().write_all( (char *)&rpc, 1 );
 }
 
-std::vector<Record> Client::recvRead( void )
+void Client::recvRead( void )
 {
-  // timings -- read rpc
-  auto split = chrono::high_resolution_clock::now();
-  auto dur = chrono::duration_cast<chrono::milliseconds>
-    ( split - rpcStart_ ).count();
-  cout << "* Read RPC took: " << dur << "ms" << endl;
+  auto split = time_now();
+  cout << "[Read RPC]: " << time_diff<ms>( split, rpcStart_ ) << "ms" << endl;
 
-  // deserialize from the network
   auto r = sock_.read_buf_all( sizeof( uint64_t ) ).first;
   uint64_t nrecs = *reinterpret_cast<const uint64_t *>( r );
 
-  vector<Record> recs{};
-  recs.reserve( nrecs );
-  for ( uint64_t i = 0; i < nrecs; i++ ) {
-    r = sock_.read_buf_all( Record::SIZE ).first;
-    recs.emplace_back( r );
-  }
-
-  if ( size_ == 0 && nrecs != rpcSize_ ) {
-    // the node returns less than we requested only when at the end of the file
-    size_ = rpcPos_ + nrecs;
-  }
-
-  // timings -- deserialize
-  auto end = chrono::high_resolution_clock::now();
-  dur = chrono::duration_cast<chrono::milliseconds>( end - split ).count();
-  cout << "* Deserialize read RPC took: " << dur << "ms" << endl;
-
-  // should an extent be evicted from cache?
-  if ( lru_.size() >= MAX_CACHED_EXTENTS ) {
-    uint64_t evict = lru_.back();
-    lru_.pop_back();
-    for ( auto & buf : cache_ ) {
-      if ( buf.fpos == evict ) {
-        // add to buffer cache, replacing evicted
-        buf = {recs, rpcPos_};
-        break;
-      }
+  if ( nrecs > 0 ) {
+    vector<Record> recs{};
+    recs.reserve( nrecs );
+    for ( uint64_t i = 0; i < nrecs; i++ ) {
+      r = sock_.read_buf_all( Record::SIZE ).first;
+      recs.emplace_back( r );
     }
-  } else {
-    // add to buffer cache
-    cache_.emplace_back( recs, rpcPos_ );
+
+    cache_.emplace_front( move( recs ), rpcPos_ );
+    if ( cache_.size() > MAX_CACHED_EXTENTS ) {
+      cache_.pop_back();
+    }
   }
-
-  // maintain sort invariant
-  sort( cache_.begin(), cache_.end() );
-
-  // add to LRU
-  lru_.push_front( rpcPos_ );
-
-  return recs;
+  cout << "[Deserialize]: " << time_diff<ms>( split ) << "ms" << endl;
 }
 
 void Client::recvSize( void )
 {
   auto str = sock_.read_buf_all( sizeof( uint64_t ) ).first;
   size_ = *reinterpret_cast<const uint64_t *>( str );
-
-  // timings -- size rpc
-  auto end = chrono::high_resolution_clock::now();
-  auto dur = chrono::duration_cast<chrono::milliseconds>
-    ( end - rpcStart_ ).count();
-  cout << "* Size RPC took: " << dur << "ms" << endl;
-}
-
-bool Client::fillFromCache( vector<Record> & recs, uint64_t & pos,
-                            uint64_t & size )
-{
-  if ( size == 0 ) {
-    return true;
-  }
-
-  for ( auto const & buf : cache_ ) {
-    if ( buf.fpos <= pos and pos < buf.fpos + buf.records.size() ) {
-      uint64_t start = pos - buf.fpos;
-      if ( start + size <= buf.records.size() ) {
-        // cache extent fully contains read
-        recs.insert( recs.end(), buf.records.begin() + start,
-                     buf.records.begin() + start + size );
-        return true;
-      } else {
-        // cache extent partially contains read, other cache extents may
-        // have rest of needed data.
-        recs.insert( recs.end(), buf.records.begin() + start,
-                     buf.records.end() );
-        uint64_t read = buf.records.size() - start;
-        pos += read;
-        size -= read;
-      }
-    } else if ( buf.fpos > pos ) {
-      // stop as soon as first gap when doing a linear scan from left we
-      // could try to fill still from the cache, but we're mostly trying
-      // to optimize for read-ahead, so we just do the read now.
-      break;
-    }
-  }
-
-  return false;
+  cout << "[Size RPC]: " << time_diff<ms>( rpcStart_ ) << "ms" << endl;
 }
 
 vector<Record> Client::DoRead( uint64_t pos, uint64_t size )
 {
   unique_lock<mutex> lck{*mtx_};
-  vector<Record> recs{};
 
   // Don't read past end of file
-  if ( size_ != 0 && pos + size > size_ ) {
+  if ( pos >= size_ ) {
+    return {};
+  } else if ( size_ != 0 && pos + size > size_ ) {
     size = size_ - pos;
   }
 
-  recs.reserve( size );
-
   // fill from cache if possible
-  if ( fillFromCache( recs, pos, size ) ) {
-    return recs;
+  for ( auto it = cache_.begin(); it != cache_.end(); ++it ) {
+    if ( it->fpos == pos && it->records.size() == size ) {
+      auto r = move( it->records );
+      cache_.erase( it );
+      return r;
+    }
   }
 
-  // perform read for remaining data missing from cache (but make sure we
-  // don't already have an RPC outstanding for same data)
+  // send read RPC if haven't already
   if ( rpcActive_ != Read_ or rpcPos_ != pos ) {
     sendRead( lck, pos, size );
   }
-
   waitOnRPC( lck );
-
-  // validate RPC was correct
-  if ( lru_.front() != pos ) {
-    throw runtime_error( "new cached extent isn't what was expected" );
-  }
 
   // Don't read past end of file (again, since may have reached eof with last
   // read)
@@ -210,11 +140,16 @@ vector<Record> Client::DoRead( uint64_t pos, uint64_t size )
     size = size_ - pos;
   }
 
-  // we let it fail this time, which it should only do if we are trying to read
-  // past the end of the file.
-  fillFromCache( recs, pos, size );
+  // search cache again
+  for ( auto it = cache_.begin(); it != cache_.end(); ++it ) {
+    if ( it->fpos == pos && it->records.size() == size ) {
+      auto r = move( it->records );
+      cache_.erase( it );
+      return r;
+    }
+  }
 
-  return recs;
+  throw runtime_error( "couldn't find RPC result" );
 }
 
 uint64_t Client::DoSize( void )
@@ -256,5 +191,4 @@ void Client::clearCache( void )
 {
   std::unique_lock<std::mutex> lck{*mtx_};
   cache_.clear();
-  lru_.clear();
 }

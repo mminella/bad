@@ -13,19 +13,26 @@ using namespace meth1;
 
 RemoteFile::RemoteFile( Client c, uint64_t readahead, uint64_t low_cache )
   : client_{move( c )}
+  , data_{}
+  , dpos_{0}
   , fpos_{0}
   , cached_{0}
   , readahead_{readahead}
+  // TWEAK: read-ahead amount
   , low_cache_{readahead / 2}
   , eof_{false}
 {
-  if ( low_cache >= readahead ) {
-    throw runtime_error( "low-cache mark must be less than read-ahead" );
-  }
-
   if ( low_cache != 0 ) {
     low_cache_ = low_cache;
   }
+  if ( low_cache >= readahead ) {
+    throw runtime_error( "low-cache mark must be less than read-ahead" );
+  }
+}
+
+Poller::Action RemoteFile::RPCRunner( void )
+{
+  return client_.RPCRunner();
 }
 
 void RemoteFile::open( void )
@@ -35,29 +42,20 @@ void RemoteFile::open( void )
 
 void RemoteFile::seek( uint64_t offset )
 {
-  if ( offset < fpos_ ) {
+  if ( offset != fpos_ ) {
+    fpos_ = offset;
+    data_ = {};
+    dpos_ = 0; 
     cached_ = 0;
     eof_ = false;
-  } else if ( offset < fpos_ + cached_ ) {
-    cached_ -= offset - fpos_;
-  } else if ( !eof_ ) {
-    cached_ = 0;
+    client_.clearCache();
   }
-
-  fpos_ = offset;
 }
 
-void RemoteFile::prefetch( uint64_t size )
+void RemoteFile::prefetch()
 {
-  if ( cached_ > 0 ) {
-    return;
-  }
-
-  if ( size == 0 || size > readahead_ ) {
-    size = readahead_;
-  }
-  client_.prepareRead( fpos_, size );
-  cached_ = size;
+  client_.prepareRead( fpos_, readahead_ );
+  cached_ = readahead_;
 }
 
 void RemoteFile::read_ahead( void )
@@ -73,46 +71,38 @@ void RemoteFile::next( void )
   if ( !eof_ ) {
     cached_--;
     fpos_++;
+    read_ahead();
   }
-  read_ahead();
 }
 
-vector<Record> RemoteFile::peek( void )
+Record * RemoteFile::peek( void )
 {
   if ( eof_ ) {
-    return {};
+    return nullptr;
   }
 
-  vector<Record> rec = client_.Read( fpos_, 1 );
-  if ( rec.size() == 0 ) {
-    eof_ = true;
+  if ( data_.size() == 0 or fpos_ - dpos_ >= data_.size() ) {
+    data_ = client_.Read( fpos_, readahead_ );
+    dpos_ = fpos_;
   }
 
-  return rec;
+  return &data_[fpos_ - dpos_];
 }
 
-vector<Record> RemoteFile::read( void )
+Record * RemoteFile::read( void )
 {
   if ( eof_ ) {
-    return {};
+    return nullptr;
   }
-
   read_ahead();
-
-  vector<Record> rec = peek();
-  if ( rec.size() > 0 ) {
+  auto r = peek();
+  if ( r != nullptr ) {
     next();
   }
-
-  return rec;
+  return r;
 }
 
-Poller::Action RemoteFile::RPCRunner( void )
-{
-  return client_.RPCRunner();
-}
-
-uint64_t RemoteFile::stat( void )
+uint64_t RemoteFile::size( void )
 {
   return client_.Size();
 }

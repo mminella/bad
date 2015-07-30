@@ -21,16 +21,19 @@ namespace meth1
 
 /**
  * RemoteFile is a helper wrapper around a Client presents a stateful File
- * interface and performs read-ahead. */
+ * interface and performs read-ahead.
+ */
 class RemoteFile
 {
 private:
-  Client client_;      // contained client
-  uint64_t fpos_;      // file position
-  uint64_t cached_;    // records cached (read-ahead)
-  uint64_t readahead_; // read-ahead amount
-  uint64_t low_cache_; // low-cache amount to start read-ahead
-  bool eof_;           // end-of-file hit?
+  Client client_;            // contained client
+  std::vector<Record> data_; // current spot in file
+  uint64_t dpos_;            // data position
+  uint64_t fpos_;            // file position
+  uint64_t cached_;          // data_.Size() + outstanding read RPCs
+  uint64_t readahead_;       // read-ahead amount
+  uint64_t low_cache_;       // low-cache amount to start read-ahead
+  bool eof_;                 // end-of-file hit?
 
   void read_ahead( void );
 
@@ -42,15 +45,16 @@ public:
   {
   }
 
+  Poller::Action RPCRunner( void );
+  Client & client( void ) { return client_; }
+
   void open( void );
   void seek( uint64_t offset );
-  void prefetch( uint64_t size = 0 );
+  void prefetch();
   void next( void );
-  std::vector<Record> peek( void );
-  std::vector<Record> read( void );
-  uint64_t stat( void );
-
-  Poller::Action RPCRunner( void );
+  Record * peek( void );
+  Record * read( void );
+  uint64_t size( void );
 };
 }
 

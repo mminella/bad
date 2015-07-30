@@ -1,6 +1,8 @@
 #include <thread>
 #include <vector>
 
+#include "buffered_io.hh"
+#include "file.hh"
 #include "poller.hh"
 
 #include "implementation.hh"
@@ -12,17 +14,14 @@
 using namespace std;
 using namespace meth1;
 
-Cluster::Cluster( vector<Address> nodes, uint64_t read_ahead )
+Cluster::Cluster( vector<Address> nodes, uint64_t readahead )
   : files_{}
   , poller_{}
 {
-  for ( auto & a : nodes ) {
-    files_.push_back( RemoteFile{a, read_ahead} );
+  for ( auto & n : nodes ) {
+    files_.push_back( RemoteFile{n, readahead} );
   }
-}
 
-void Cluster::DoInitialize( void )
-{
   for ( auto & f : files_ ) {
     f.open();
     poller_.add_action( f.RPCRunner() );
@@ -38,6 +37,7 @@ void Cluster::DoInitialize( void )
 }
 
 struct RecordNode {
+  // TODO: make a pointer type?
   Record r;
   RemoteFile * f;
 
@@ -57,63 +57,138 @@ struct RecordNode {
   bool operator>( const RecordNode & b ) const { return r > b.r; }
 };
 
-vector<Record> Cluster::DoRead( uint64_t pos, uint64_t size )
+uint64_t Cluster::Size( void )
 {
-  // PERF: Copying all records!
-  // PERF: Better to copy each sorted record immediately to an output buffer
-  // rather than have an intermediate vector.
-  // PERF: Probably slightly better to call `DoRead` once and process whole
-  // file, than use it in blocks.
+  uint64_t siz = 0;
+  // send size RPC to each
+  for ( auto & f : files_ ) {
+    f.client().prepareSize();
+  }
+  for ( auto & f : files_ ) {
+    siz += f.size();
+  }
+  return siz;
+}
 
-  // Sorting all 
-  vector<Record> recs;
-  recs.reserve( size );
-  mystl::priority_queue_min<RecordNode> heap{files_.size()};
+Record Cluster::ReadFirst( void )
+{
+  mystl::priority_queue_min<RecordNode> pq{files_.size()};
+  // seek & prefetch all remote files
+  for ( auto & f : files_ ) {
+    f.seek( 0 );
+    f.client().prepareRead( 0, 1 );
+  }
+  for ( auto & f : files_ ) {
+    auto v = f.client().Read( 0, 1 );
+    pq.emplace( move( v[0] ), &f );
+  }
+  return pq.top().r;
+}
+
+void Cluster::ReadAll( void )
+{
+  mystl::priority_queue_min<RecordNode> pq{files_.size()};
+
+  uint64_t size = Size();
 
   // seek & prefetch all remote files
   for ( auto & f : files_ ) {
-    f.seek( pos );
-    f.prefetch( size );
+    f.seek( 0 );
+    f.prefetch();
   }
 
   // load first record from each remote
   for ( auto & f : files_ ) {
-    auto rs = f.peek();
-    if ( rs.size() > 0 ) {
-      heap.push( RecordNode{rs[0], &f} );
+    auto r = f.read();
+    if ( r != nullptr ) {
+      pq.emplace( move( *r ), &f );
     }
   }
 
   // merge all remote files
-  for ( uint64_t i = 0; i < size and !heap.empty(); i++ ) {
+  for ( uint64_t i = 0; i < size and !pq.empty(); i++ ) {
     // grab next record
-    RecordNode next{heap.top()};
-    recs.push_back( next.r );
-    heap.pop();
+    RemoteFile * f = pq.top().f;
+    pq.pop();
 
     // advance that file
-    if ( recs.size() < size ) {
-      next.f->next();
-      auto rs = next.f->peek();
-      if ( rs.size() > 0 ) {
-        next.r = rs[0];
-        heap.push( next );
-      }
+    auto r = f->read();
+    if ( r != nullptr ) {
+      pq.emplace( move( *r ), f );
+    }
+  }
+}
+
+static void writer( File out, Channel<std::vector<Record>> chn )
+{
+  BufferedIO bio( out );
+  vector<Record> recs;
+  while ( true ) {
+    try {
+      recs = move( chn.recv() );
+    } catch ( const std::exception & e ) {
+      return;
+    }
+    for ( auto const & r : recs ) {
+      r.write( bio );
+    }
+    bio.flush( true );
+    out.fsync();
+  }
+}
+
+void Cluster::WriteAll( File out )
+{
+  mystl::priority_queue_min<RecordNode> pq{files_.size()};
+
+  uint64_t size = Size();
+
+  // seek & prefetch all remote files
+  for ( auto & f : files_ ) {
+    f.seek( 0 );
+    f.prefetch();
+  }
+
+  // load first record from each remote
+  for ( auto & f : files_ ) {
+    auto r = f.read();
+    if ( r != nullptr ) {
+      pq.emplace( move( *r ), &f );
     }
   }
 
-  return recs;
-}
+  Channel<vector<Record>> chn( 0 );
+  thread twriter( writer, move( out ), chn );
 
-uint64_t Cluster::DoSize( void )
-{
-  // TODO: need multi-cast?
+  // TWEAK: chunk size
+  const size_t CHUNK_SIZE = 104858; // 10MB
+  vector<Record> recs;
+  recs.reserve( CHUNK_SIZE );
 
-  // retrieve and merge results
-  uint64_t siz{0};
-  for ( auto & f : files_ ) {
-    siz += f.stat();
+  // merge all remote files
+  for ( uint64_t i = 0; i < size and !pq.empty(); i++ ) {
+    // grab next record
+    recs.emplace_back( move( pq.top().r ) );
+    RemoteFile * f = pq.top().f;
+    pq.pop();
+
+    // advance that file
+    auto r = f->read();
+    if ( r != nullptr ) {
+      pq.emplace( move( *r ), f );
+    }
+
+    // send to writer
+    if ( recs.size() == CHUNK_SIZE ) {
+      chn.send( move( recs ) );
+      recs = vector<Record>();
+      recs.reserve( CHUNK_SIZE );
+    }
   }
+  chn.send( move( recs ) );
+  chn.send( {} );
 
-  return siz;
+  // wait for write to finish
+  chn.close();
+  twriter.join();
 }

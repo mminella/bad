@@ -13,6 +13,7 @@
 #include "file.hh"
 #include "poller.hh"
 #include "socket.hh"
+#include "timestamp.hh"
 
 #include "implementation.hh"
 
@@ -32,7 +33,7 @@ class Client : public Implementation
 {
 private:
   /* how many records to read from the network in one go */
-  static constexpr size_t MAX_CACHED_EXTENTS = 3;
+  static constexpr size_t MAX_CACHED_EXTENTS = 2;
 
   /* A cache of records with starting position recorded */
   struct Buffer {
@@ -54,11 +55,10 @@ private:
   enum RPC { Read_, Size_, None_ } rpcActive_;
   uint64_t rpcPos_;
   uint64_t rpcSize_;
-  std::chrono::high_resolution_clock::time_point rpcStart_;
+  clk::time_point rpcStart_;
 
-  /* cache of buffer extents, kept sorted by buffer offset */
-  std::vector<Buffer> cache_;
-  std::list<uint64_t> lru_; // invariant: no two extends have same fpos
+  /* cache of buffer extents */
+  std::list<Buffer> cache_;
 
   /* file size (cache result) */
   uint64_t size_;
@@ -78,7 +78,7 @@ private:
 
   void sendRead( std::unique_lock<std::mutex> & lck, uint64_t pos,
                  uint64_t size );
-  std::vector<Record> recvRead( void );
+  void recvRead( void );
   void sendSize( std::unique_lock<std::mutex> & lck );
   void recvSize( void );
 

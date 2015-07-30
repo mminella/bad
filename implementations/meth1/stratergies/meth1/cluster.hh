@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "address.hh"
+#include "channel.hh"
 #include "file.hh"
 #include "poller.hh"
 
@@ -22,19 +23,20 @@ namespace meth1
  * Cluster defines the coordinator that communicates with a set of nodes to
  * retrieve their data and merge them to form a sorted file.
  */
-class Cluster : public Implementation
+class Cluster
 {
 private:
   std::vector<RemoteFile> files_;
   Poller poller_;
 
 public:
-  Cluster( std::vector<Address> nodes, uint64_t read_ahead );
+  // TWEAK: readahead
+  Cluster( std::vector<Address> nodes, uint64_t readahead );
 
-private:
-  void DoInitialize( void );
-  std::vector<Record> DoRead( uint64_t pos, uint64_t size );
-  uint64_t DoSize( void );
+  uint64_t Size( void );
+  Record ReadFirst( void );
+  void ReadAll( void );
+  void WriteAll( File out );
 };
 }
 

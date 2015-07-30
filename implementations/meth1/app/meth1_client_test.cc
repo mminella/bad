@@ -1,6 +1,7 @@
 #include <fcntl.h>
 
 #include <algorithm>
+#include <iostream>
 #include <vector>
 
 #include "exception.hh"
@@ -18,9 +19,9 @@ int run( int argc, char * argv[] );
 
 void check_usage( const int argc, const char * const argv[] )
 {
-  if ( argc <= 4 ) {
+  if ( argc < 4 ) {
     throw runtime_error( "Usage: " + string( argv[0] ) +
-                         " [size] [read ahead] [out file] [nodes...]" );
+                         " [read ahead] [out file] [nodes...]" );
   }
 }
 
@@ -39,21 +40,24 @@ int run( int argc, char * argv[] )
 {
   check_usage( argc, argv );
 
-  uint64_t records = stoul( argv[1] );
-  size_t read_ahead = stoul( argv[2] );
-  string file_out{argv[3]};
-  char ** addresses = argv + 4;
+  size_t readahead = stoul( argv[1] );
+  string ofile{argv[2]};
+  char ** addresses = argv + 3;
 
-  File out( file_out, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR );
+  File out( ofile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR );
 
   auto addrs = vector<Address>( addresses, argv + argc );
-  Cluster client{addrs, read_ahead};
-  client.Initialize();
+  Cluster c{addrs, readahead};
+  
+  auto size = c.Size();
+  cout << "Size: " << size << endl;
 
-  auto recs = client.Read( 0, records );
-  for ( const auto & r : recs ) {
-    out.write( r.str( Record::NO_LOC ) );
-  }
+  Record r = c.ReadFirst();
+  cout << "Record: " << r << endl;
+
+  c.ReadAll();
+
+  c.WriteAll( move( out ) );
 
   return EXIT_SUCCESS;
 }
