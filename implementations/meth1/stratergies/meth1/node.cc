@@ -162,7 +162,6 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
   // TWEAK: sort + merge block size...
   uint64_t block_size = max( size / 2, (uint64_t) 1 );
 
-
   if ( size == 1 ) {
     // optimized case: size = 1
     auto min = Record( Record::MAX );

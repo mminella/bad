@@ -37,6 +37,7 @@ protected:
 
 public:
   static const size_t BUFFER_SIZE = 4096;
+  // static const size_t BUFFER_SIZE = 1024*1024;
 
   /* constructor */
   BufferedIO( IODevice & io );
