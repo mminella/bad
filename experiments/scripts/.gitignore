@@ -3,3 +3,4 @@ measure.tar.gz
 .cluster.conf*
 .old_clusters/
 logs/
+logs-*/
