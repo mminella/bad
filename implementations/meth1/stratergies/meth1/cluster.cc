@@ -73,14 +73,15 @@ uint64_t Cluster::Size( void )
 Record Cluster::ReadFirst( void )
 {
   mystl::priority_queue_min<RecordNode> pq{files_.size()};
-  // seek & prefetch all remote files
   for ( auto & f : files_ ) {
     f.seek( 0 );
     f.client().prepareRead( 0, 1 );
   }
   for ( auto & f : files_ ) {
     auto v = f.client().Read( 0, 1 );
-    pq.emplace( move( v[0] ), &f );
+    if ( v.size() > 0 ) {
+      pq.emplace( move( v[0] ), &f );
+    }
   }
   return pq.top().r;
 }
