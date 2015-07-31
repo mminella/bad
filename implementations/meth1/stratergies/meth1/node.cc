@@ -143,7 +143,6 @@ Record Node::seek( uint64_t pos )
   }
 
   auto tt = time_diff<ms>( t0 );
-  cout << "[Seek (" << pos << ")]: " << tt << "ms" << endl;
   return last_;
 }
 
@@ -213,10 +212,10 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
     }
 
     auto tt = time_diff<ms>( t0 );
-    cout << "[Linear scan (" << p << ")]: " << tt << "ms" << endl;
-    cout << "[- Insert]: " << tplace << "ms" << endl;
-    cout << "[- Sort  ]: " << tsort << "ms" << endl;
-    cout << "[- Merge ]: " << tmerge << "ms" << endl;
+    cout << "insert, "      << p << ", " << tplace << endl;
+    cout << "sort, "        << p << ", " << tsort  << endl;
+    cout << "merge, "       << p << ", " << tmerge << endl;
+    cout << "linear scan, " << p << ", " << tt     << endl;
 
     return vpast;
   }

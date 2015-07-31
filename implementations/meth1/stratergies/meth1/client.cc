@@ -79,8 +79,9 @@ void Client::sendSize( unique_lock<mutex> & lck )
 
 void Client::recvRead( void )
 {
+  static int pass = 0;
   auto split = time_now();
-  cout << "[Read RPC]: " << time_diff<ms>( split, rpcStart_ ) << "ms" << endl;
+  cout << "read, " << pass << ", " << time_diff<ms>( split, rpcStart_ ) << endl;
 
   auto r = sock_.read_buf_all( sizeof( uint64_t ) ).first;
   uint64_t nrecs = *reinterpret_cast<const uint64_t *>( r );
@@ -98,14 +99,15 @@ void Client::recvRead( void )
       cache_.pop_back();
     }
   }
-  cout << "[Deserialize]: " << time_diff<ms>( split ) << "ms" << endl;
+  cout << "network, " << pass++ << ", " << time_diff<ms>( split ) << endl;
 }
 
 void Client::recvSize( void )
 {
+  static int pass = 0;
   auto str = sock_.read_buf_all( sizeof( uint64_t ) ).first;
   size_ = *reinterpret_cast<const uint64_t *>( str );
-  cout << "[Size RPC]: " << time_diff<ms>( rpcStart_ ) << "ms" << endl;
+  cout << "size, " << pass++ << ", " << time_diff<ms>( rpcStart_ ) << endl;
 }
 
 vector<Record> Client::DoRead( uint64_t pos, uint64_t size )

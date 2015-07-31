@@ -19,9 +19,7 @@ bin-dist:
 	mkdir -p dist_root/usr/bin
 	cp app/meth1_node dist_root/usr/bin/meth1_node
 	cp app/meth1_shell dist_root/usr/bin/meth1_shell
-	cp app/meth1_client_test dist_root/usr/bin/meth1_client_test
-	cp app/meth1_node_test dist_root/usr/bin/meth1_node_test
-	cp app/meth1_node_test2 dist_root/usr/bin/meth1_node_test2
+	cp app/meth1_client dist_root/usr/bin/meth1_client
 	cp scripts/clear_buffers.sh dist_root/usr/bin/clear_buffers
 	cp scripts/setup_fs.sh dist_root/usr/bin/setup_fs
 	tar cvzf bad.tar.gz -C dist_root .

@@ -61,13 +61,14 @@ private:
       } catch ( const std::exception & e ) {
           return;
       }
-      auto t0 = timestamp<ms>();
-      std::cout << "= read start: " << t0 << std::endl;
       io_.rewind();
 
+      tdiff_t tt = 0;
       char * wptr_ = buf_;
       while ( true ) {
+        auto t0 = time_now();
         size_t n = io_.read( wptr_, BLOCK );
+        tt += time_diff<ms>( t0 );
 
         if ( n > 0 ) {
           block_chn_.send( {wptr_, n} );
@@ -82,9 +83,7 @@ private:
           break;
         }
       }
-      auto t1 = timestamp<ms>();
-      std::cout << "= read done: " << t1 << std::endl;
-      std::cout << "= read took: " << t1 - t0 << std::endl;
+      std::cout << "read, 0, " << tt << std::endl;
     }
   }
 

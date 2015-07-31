@@ -1,4 +1,5 @@
 bin_PROGRAMS = \
+	meth1_client \
 	meth1_client_test \
 	meth1_node \
 	meth1_node_test \
@@ -28,6 +29,6 @@ meth1_node_test_SOURCES = meth1_node_test.cc
 meth1_node_test2_SOURCES = meth1_node_test2.cc
 meth1_client_test_SOURCES = meth1_client_test.cc
 
-
+meth1_client_SOURCES = meth1_client.cc
 meth1_node_SOURCES = meth1_node.cc
 meth1_shell_SOURCES = meth1_shell.cc
