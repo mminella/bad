@@ -298,7 +298,41 @@ class Launcher
       :instance_type => @options[:instance_type],
       :key_name => @options[:key_name],
       :disable_api_termination => @options[:terminate] == 1,
-      :count => @options[:count]
+      :count => @options[:count],
+      :block_device_mappings => [
+      {
+        :device_name => '/dev/xvdb',
+        :virtual_name => 'ephemeral0'
+      },
+      {
+        :device_name => '/dev/xvdc',
+        :virtual_name => 'ephemeral1'
+      },
+      {
+        :device_name => '/dev/xvdd',
+        :virtual_name => 'ephemeral2'
+      },
+      {
+        :device_name => '/dev/xvde',
+        :virtual_name => 'ephemeral3'
+      },
+      {
+        :device_name => '/dev/xvdf',
+        :virtual_name => 'ephemeral4'
+      },
+      {
+        :device_name => '/dev/xvdg',
+        :virtual_name => 'ephemeral5'
+      },
+      {
+        :device_name => '/dev/xvdh',
+        :virtual_name => 'ephemeral6'
+      },
+      {
+        :device_name => '/dev/xvdi',
+        :virtual_name => 'ephemeral7'
+      },
+      ]
     }
 
     if !@options[:placement_group].nil?
