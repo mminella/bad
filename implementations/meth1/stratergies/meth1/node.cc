@@ -214,9 +214,9 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 
     auto tt = time_diff<ms>( t0 );
     cout << "[Linear scan (" << p << ")]: " << tt << "ms" << endl;
-    cout << "[Place total]: " << tplace << "ms" << endl;
-    cout << "[Sort total]: " << tsort << "ms" << endl;
-    cout << "[Merge total]: " << tmerge << "ms" << endl;
+    cout << "[- Insert]: " << tplace << "ms" << endl;
+    cout << "[- Sort  ]: " << tsort << "ms" << endl;
+    cout << "[- Merge ]: " << tmerge << "ms" << endl;
 
     return vpast;
   }

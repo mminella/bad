@@ -54,15 +54,14 @@ void RemoteFile::seek( uint64_t offset )
 
 void RemoteFile::prefetch()
 {
-  client_.prepareRead( fpos_, readahead_ );
-  cached_ = readahead_;
+  client_.prepareRead( fpos_ + cached_, readahead_ );
+  cached_ += readahead_;
 }
 
 void RemoteFile::read_ahead( void )
 {
   if ( cached_ <= low_cache_ ) {
-    client_.prepareRead( fpos_ + cached_, readahead_ );
-    cached_ += readahead_;
+    prefetch();
   }
 }
 
@@ -84,6 +83,10 @@ Record * RemoteFile::peek( void )
   if ( data_.size() == 0 or fpos_ - dpos_ >= data_.size() ) {
     data_ = client_.Read( fpos_, readahead_ );
     dpos_ = fpos_;
+    if ( data_.size() == 0 ) {
+      eof_ = true;
+      return nullptr;
+    }
   }
 
   return &data_[fpos_ - dpos_];
@@ -100,6 +103,33 @@ Record * RemoteFile::read( void )
     next();
   }
   return r;
+}
+
+vector<Record> RemoteFile::read_chunk( void )
+{
+  if ( eof_ ) {
+    return {};
+  }
+
+  if ( data_.size() == 0 ) {
+    data_ = client_.Read( fpos_, readahead_ );
+    dpos_ = fpos_;
+    if ( data_.size() == 0 ) {
+      eof_ = true;
+      return {};
+    }
+  }
+
+  if ( dpos_ == fpos_ ) {
+    fpos_ += data_.size();
+    if ( cached_ >= data_.size() ) {
+      cached_ -= data_.size();
+    }
+    read_ahead();
+    return move( data_ );
+  } else {
+    throw runtime_error( "can't read chunk when not on bounary" );
+  }
 }
 
 uint64_t RemoteFile::size( void )

@@ -61,7 +61,8 @@ private:
       } catch ( const std::exception & e ) {
           return;
       }
-      std::cout << "= read start: " << timestamp<ms>() << std::endl;
+      auto t0 = timestamp<ms>();
+      std::cout << "= read start: " << t0 << std::endl;
       io_.rewind();
 
       char * wptr_ = buf_;
@@ -81,7 +82,9 @@ private:
           break;
         }
       }
-      std::cout << "= read done: " << timestamp<ms>() << std::endl;
+      auto t1 = timestamp<ms>();
+      std::cout << "= read done: " << t1 << std::endl;
+      std::cout << "= read took: " << t1 - t0 << std::endl;
     }
   }
 

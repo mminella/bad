@@ -48,12 +48,15 @@ public:
   Poller::Action RPCRunner( void );
   Client & client( void ) { return client_; }
 
+  bool eof( void) const noexcept { return eof_; }
+
   void open( void );
   void seek( uint64_t offset );
   void prefetch();
   void next( void );
   Record * peek( void );
   Record * read( void );
+  std::vector<Record> read_chunk( void );
   uint64_t size( void );
 };
 }

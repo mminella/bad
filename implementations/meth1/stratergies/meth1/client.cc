@@ -138,8 +138,12 @@ vector<Record> Client::DoRead( uint64_t pos, uint64_t size )
 
   // Don't read past end of file (again, since may have reached eof with last
   // read)
-  if ( size_ != 0 && pos + size > size_ ) {
-    size = size_ - pos;
+  if ( size_ != 0 ) {
+    if ( pos >= size_ ) {
+      return {};
+    } else if ( pos + size > size_ ) {
+      size = size_ - pos;
+    }
   }
 
   // search cache again

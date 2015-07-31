@@ -88,34 +88,44 @@ Record Cluster::ReadFirst( void )
 
 void Cluster::ReadAll( void )
 {
-  mystl::priority_queue_min<RecordNode> pq{files_.size()};
+  if ( files_.size() == 1 ) {
+    uint64_t size = Size();
 
-  uint64_t size = Size();
-
-  // seek & prefetch all remote files
-  for ( auto & f : files_ ) {
+    auto & f = files_[0];
     f.seek( 0 );
-    f.prefetch();
-  }
-
-  // load first record from each remote
-  for ( auto & f : files_ ) {
-    auto r = f.read();
-    if ( r != nullptr ) {
-      pq.emplace( move( *r ), &f );
+    for ( uint64_t i = 0; i < size; i++ ) {
+      f.read();
     }
-  }
+  } else {
+    mystl::priority_queue_min<RecordNode> pq{files_.size()};
 
-  // merge all remote files
-  for ( uint64_t i = 0; i < size and !pq.empty(); i++ ) {
-    // grab next record
-    RemoteFile * f = pq.top().f;
-    pq.pop();
+    uint64_t size = Size();
 
-    // advance that file
-    auto r = f->read();
-    if ( r != nullptr ) {
-      pq.emplace( move( *r ), f );
+    // seek & prefetch all remote files
+    for ( auto & f : files_ ) {
+      f.seek( 0 );
+      f.prefetch();
+    }
+
+    // load first record from each remote
+    for ( auto & f : files_ ) {
+      auto r = f.read();
+      if ( r != nullptr ) {
+        pq.emplace( move( *r ), &f );
+      }
+    }
+
+    // merge all remote files
+    for ( uint64_t i = 0; i < size and !pq.empty(); i++ ) {
+      // grab next record
+      RemoteFile * f = pq.top().f;
+      pq.pop();
+
+      // advance that file
+      auto r = f->read();
+      if ( r != nullptr ) {
+        pq.emplace( move( *r ), f );
+      }
     }
   }
 }
@@ -124,72 +134,101 @@ static void writer( File out, Channel<std::vector<Record>> chn )
 {
   BufferedIO bio( out );
   vector<Record> recs;
+  tdiff_t twrite = 0;
   while ( true ) {
     try {
       recs = move( chn.recv() );
     } catch ( const std::exception & e ) {
-      return;
+      break;
     }
+    auto t0 = time_now();
     for ( auto const & r : recs ) {
       r.write( bio );
     }
     bio.flush( true );
     out.fsync();
+    twrite += time_diff<ms>( t0 );
   }
+  cout << "[Write]: " << twrite << "ms" << endl;
 }
 
 void Cluster::WriteAll( File out )
 {
-  mystl::priority_queue_min<RecordNode> pq{files_.size()};
-
-  uint64_t size = Size();
-
-  // seek & prefetch all remote files
-  for ( auto & f : files_ ) {
+  if ( files_.size() == 1 ) {
+    // optimize for 1 node
+    Size();
+    auto & f = files_[0];
     f.seek( 0 );
-    f.prefetch();
-  }
 
-  // load first record from each remote
-  for ( auto & f : files_ ) {
-    auto r = f.read();
-    if ( r != nullptr ) {
-      pq.emplace( move( *r ), &f );
-    }
-  }
+    Channel<vector<Record>> chn( 0 );
+    thread twriter( writer, move( out ), chn );
 
-  Channel<vector<Record>> chn( 0 );
-  thread twriter( writer, move( out ), chn );
-
-  // TWEAK: chunk size
-  const size_t CHUNK_SIZE = 104858; // 10MB
-  vector<Record> recs;
-  recs.reserve( CHUNK_SIZE );
-
-  // merge all remote files
-  for ( uint64_t i = 0; i < size and !pq.empty(); i++ ) {
-    // grab next record
-    recs.emplace_back( move( pq.top().r ) );
-    RemoteFile * f = pq.top().f;
-    pq.pop();
-
-    // advance that file
-    auto r = f->read();
-    if ( r != nullptr ) {
-      pq.emplace( move( *r ), f );
-    }
-
-    // send to writer
-    if ( recs.size() == CHUNK_SIZE ) {
+    while ( !f.eof() ) {
+      auto recs = f.read_chunk();
+      if ( recs.size() == 0 ) {
+        break;
+      }
       chn.send( move( recs ) );
-      recs = vector<Record>();
-      recs.reserve( CHUNK_SIZE );
     }
-  }
-  chn.send( move( recs ) );
-  chn.send( {} );
+    chn.send( {} );
 
-  // wait for write to finish
-  chn.close();
-  twriter.join();
+    // wait for write to finish
+    chn.close();
+    twriter.join();
+
+  } else {
+    // general n node case
+    mystl::priority_queue_min<RecordNode> pq{files_.size()};
+
+    uint64_t size = Size();
+
+    // seek & prefetch all remote files
+    for ( auto & f : files_ ) {
+      f.seek( 0 );
+      f.prefetch();
+    }
+
+    // load first record from each remote
+    for ( auto & f : files_ ) {
+      auto r = f.read();
+      if ( r != nullptr ) {
+        pq.emplace( move( *r ), &f );
+      }
+    }
+
+    Channel<vector<Record>> chn( 0 );
+    thread twriter( writer, move( out ), chn );
+
+    // TWEAK: chunk size
+    const size_t CHUNK_SIZE = 104858; // 10MB
+    vector<Record> recs;
+    recs.reserve( CHUNK_SIZE );
+
+    // merge all remote files
+    for ( uint64_t i = 0; i < size and !pq.empty(); i++ ) {
+      // grab next record
+      recs.emplace_back( move( pq.top().r ) );
+      RemoteFile * f = pq.top().f;
+      pq.pop();
+
+      // advance that file
+      auto r = f->read();
+      if ( r != nullptr ) {
+        pq.emplace( move( *r ), f );
+      }
+
+      // send to writer
+      if ( recs.size() == CHUNK_SIZE ) {
+        chn.send( move( recs ) );
+        recs = vector<Record>();
+        recs.reserve( CHUNK_SIZE );
+      }
+    }
+    chn.send( move( recs ) );
+    chn.send( {} );
+
+    // wait for write to finish
+    chn.close();
+    twriter.join();
+  }
 }
