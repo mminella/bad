@@ -62,7 +62,7 @@ done
 
 # ASYNC
 for f in ${FILES}; do
-  dd if=/dev/zero of=${FILES} bs=1048576 count=$(( $WRITE_SIZE / 1048576 )) \
+  dd if=/dev/zero of=${f} bs=1048576 count=$(( $WRITE_SIZE / 1048576 )) \
     conv=fdatasync,notrunc
 done
 
