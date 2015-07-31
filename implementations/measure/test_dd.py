@@ -44,6 +44,10 @@ if __name__ == '__main__':
     log_files = [open('log_{}.txt'.format(index), 'a')
                  for index in range(0, num_files)]
 
+    # write out experiment header
+    for log_file in log_files:
+        log_file.write("%s\n" % datetime.now())
+
     DDRead(log_files, args.disks, str(args.block), str(args.count))
     DDWrite(log_files, args.disks, str(args.block), str(args.count))
 
