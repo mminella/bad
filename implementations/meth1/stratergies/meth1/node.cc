@@ -28,8 +28,8 @@ using namespace boost::sort::spreadsort;
 #endif
 
 /* Construct Node */
-Node::Node( string file, string port, uint64_t max_mem )
-  : data_{file.c_str(), O_RDONLY} // O_DIRECT
+Node::Node( string file, string port, uint64_t max_mem, bool odirect )
+  : data_{file.c_str(), odirect ? O_RDONLY | O_DIRECT : O_RDONLY}
   , recio_{data_}
   , port_{port}
   , last_{Record::MIN}

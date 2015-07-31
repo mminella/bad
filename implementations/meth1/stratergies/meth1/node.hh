@@ -35,7 +35,8 @@ private:
   uint64_t max_mem_;
 
 public:
-  Node( std::string file, std::string port, uint64_t max_memory );
+  Node( std::string file, std::string port, uint64_t max_memory,
+        bool odirect = false );
 
   /* No copy */
   Node( const Node & n ) = delete;
