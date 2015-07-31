@@ -26,6 +26,26 @@ ensure writes are synced:
 
 You may also want to consider the `nonblock` and `nocache` options for dd.
 
+## Using iperf
+
+The `iperf` tool can be used to measure throughput between two machines.
+
+One one machine, run iperf in server mode:
+
+`$ iperf -s -p 2000`
+
+One another machine, run iperf in client mode:
+
+`$ iperf -t 20 -p 2000 -i 1 -c <server>`
+
+This will run iperf for 20 seconds (`-t`), printing the throughtput at 1
+second (`-i`) intervals.
+
+## Using nload
+
+The `nload` tool allows you to monitor network throughput at a server. Just run
+`nload` and watch the pretty graphs!
+
 ## Creating the file system
 
 Command to format the file system:
