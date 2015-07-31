@@ -87,7 +87,7 @@ $stdout.sync = true
 # move any old cluster info files
 if File.exists? '.cluster.conf'
   now = Time.now.strftime("%Y%m%d_%H%M")
-  `mv -f .cluster.conf .cluster.conf.#{now}`
+  `mv -f .cluster.conf ./.old_clusters/#{now}.cluster.conf`
 end
 
 # start new cluster config
