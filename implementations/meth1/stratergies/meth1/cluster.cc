@@ -89,14 +89,19 @@ Record Cluster::ReadFirst( void )
 void Cluster::ReadAll( void )
 {
   if ( files_.size() == 1 ) {
-    uint64_t size = Size();
-
+    // optimize for 1 node
+    Size();
     auto & f = files_[0];
     f.seek( 0 );
-    for ( uint64_t i = 0; i < size; i++ ) {
-      f.read();
+    while ( !f.eof() ) {
+      auto recs = f.read_chunk();
+      if ( recs.size() == 0 ) {
+        break;
+      }
     }
+
   } else {
+    // general n node case
     mystl::priority_queue_min<RecordNode> pq{files_.size()};
 
     uint64_t size = Size();
