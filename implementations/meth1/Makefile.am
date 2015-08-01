@@ -16,7 +16,7 @@ check-all:
 
 bin-dist:
 	rm -Rf dist_root
-	mkdir -p dist_root/usr/bin
+	mkdir -p dist_root/usr/bin dist_root/etc/init
 	cp app/meth1_node dist_root/usr/bin/meth1_node
 	cp app/meth1_shell dist_root/usr/bin/meth1_shell
 	cp app/meth1_client dist_root/usr/bin/meth1_client
