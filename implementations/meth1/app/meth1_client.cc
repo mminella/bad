@@ -63,7 +63,7 @@ void run( int argc, char * argv[] )
   Cluster client{addrs, read_ahead};
 
   // run cmd
-  run_cmd( client, cmd, out_dir );
+  run_cmd( client, out_dir, cmd );
 }
 
 void check_usage( const int argc, const char * const argv[] )
