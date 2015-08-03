@@ -13,8 +13,8 @@ if [ -z "${SAVE}" ]; then
   exit 1
 fi
 
-# # launch
-# ./launchBAD.rb -k ${KEY} -c ${N} 'Measure-%d' -d bad.tar.gz
+# launch
+./launchBAD.rb -k ${KEY} -c ${N} 'Measure-%d' -d bad.tar.gz
 
 source .cluster.conf
 
@@ -201,11 +201,11 @@ reader() {
 # 10GB - 500MB
 backends "sudo start meth1 && sudo start meth1_node ODIRECT=true FILE=${MNT}/10g"
 
-## first
-# for i in `seq 1 $ITERS`; do
-#   reader "# 1, 10gb, 500mb, true, first" ${M500} "first"
-#   backends "sudo clear_buffers"
-# done
+# first
+for i in `seq 1 $ITERS`; do
+  reader "# 1, 10gb, 500mb, true, first" ${M500} "first"
+  backends "sudo clear_buffers"
+done
 
 # backends "sudo stop meth1"
 # backends "sudo start meth1 && sudo start meth1_node ODIRECT=true FILE=${MNT}/10g"

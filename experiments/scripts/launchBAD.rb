@@ -36,7 +36,7 @@ optparse = OptionParser.new do |opts|
 
   options[:zone] = "ap-southeast-1a"
   options[:group] = "default"
-  options[:instance_type] = "i2.8xlarge"
+  options[:instance_type] = "i2.xlarge"
   options[:arch] = 0 # 64-bit
   options[:store] = 0
   options[:terminate] = 0
