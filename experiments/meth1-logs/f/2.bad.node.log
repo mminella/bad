@@ -1,0 +1,17 @@
+read, 0, 2437
+read, 0, 2381
+insert, 1, 3030
+sort, 1, 25
+linear scan, 1, 3055
+read, 0, 2370
+insert, 2, 3024
+sort, 2, 0
+linear scan, 2, 3024
+read, 0, 2400
+insert, 3, 3047
+sort, 3, 24
+linear scan, 3, 3071
+read, 0, 2384
+insert, 4, 3042
+sort, 4, 0
+linear scan, 4, 3042

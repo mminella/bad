@@ -16,6 +16,7 @@
 
 #include "node.hh"
 #include "overlapped_io.hh"
+#include "priority_queue.hh"
 
 #include "config.h"
 
@@ -126,8 +127,6 @@ inline uint64_t Node::rec_sort( vector<Record> & recs ) const
 
 Record Node::seek( uint64_t pos )
 {
-  auto t0 = time_now();
-
   // can we continue from last time?
   if ( pos == 0 ) {
     last_ = Record::MIN;
@@ -142,7 +141,6 @@ Record Node::seek( uint64_t pos )
     }
   }
 
-  auto tt = time_diff<ms>( t0 );
   return last_;
 }
 
@@ -154,12 +152,9 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
   uint64_t p = pass++;
 
   auto t0 = time_now();
-  tdiff_t tmerge = 0, tsort = 0, tplace = 0;
+  tdiff_t tsort = 0, tplace = 0;
 
   recio_.rewind();
-
-  // TWEAK: sort + merge block size...
-  uint64_t block_size = max( size / 2, (uint64_t) 1 );
 
   if ( size == 1 ) {
     // optimized case: size = 1
@@ -177,46 +172,35 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
     return {min};
   } else {
     // general case: size = n
-    vector<Record> vnext, vpast, vin;
-    vnext.reserve( size );
-    vin.reserve( block_size );
+    mystl::priority_queue<Record> pq{size+1};
 
+    auto tp0 = time_now();
     uint64_t i = 0;
-    for ( bool run = true; run; ) {
-      auto tp0 = time_now();
-      for ( ; vin.size() < block_size; i++ ) {
-        const char * r = recio_.next_record();
-        if ( r == nullptr ) {
-          run = false;
-          break;
-        }
-        RecordPtr next{r, i};
-        if ( next > after ) {
-          vin.emplace_back( r, i );
-        }
+    while ( true ) {
+      const char * r = recio_.next_record();
+      if ( r == nullptr ) {
+        break;
       }
-      tplace += time_diff<ms>( tp0 );
-
-      // optimize for some cases
-      if ( vin.size() > 0 ) {
-        tsort += rec_sort( vin );
-        if ( vpast.size() == 0 ) {
-          swap( vpast, vin );
-        } else {
-          vnext.resize( min( size, vin.size() + vpast.size() ) );
-          tmerge += move_merge( vin, vpast, vnext );
-          swap( vnext, vpast );
-          vin.clear();
+      RecordPtr next{r, i};
+      if ( next > after ) {
+        if ( pq.size() < size ) {
+          pq.emplace( r, i );
+        } else if ( next < pq.top() ) {
+          pq.emplace( r, i );
+          pq.pop();
         }
       }
     }
+    tplace += time_diff<ms>( tp0 );
+
+    vector<Record> vrecs = move( pq.container() );
+    tsort += rec_sort( vrecs );
 
     auto tt = time_diff<ms>( t0 );
     cout << "insert, "      << p << ", " << tplace << endl;
     cout << "sort, "        << p << ", " << tsort  << endl;
-    cout << "merge, "       << p << ", " << tmerge << endl;
     cout << "linear scan, " << p << ", " << tt     << endl;
 
-    return vpast;
+    return vrecs;
   }
 }

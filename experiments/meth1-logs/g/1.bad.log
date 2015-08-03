@@ -1,0 +1,17 @@
+# 1, 1gb, 50m, true, first
+read, 0, 3012
+network, 0, 0
+cmd-first, 0, 3013
+# 1, 1gb, 50m, true, read
+size, 0, 0
+read, 0, 3029
+network, 0, 172
+read, 1, 2979
+network, 1, 0
+# 1, 1gb, 50m, true, write
+size, 0, 0
+read, 0, 3034
+network, 0, 181
+write, 0, 180
+read, 1, 2987
+network, 1, 0
