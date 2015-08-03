@@ -1,0 +1,3 @@
+[  3] local 172.30.0.71 port 33396 connected with 172.30.0.138 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  11.1 GBytes  9.53 Gbits/sec
