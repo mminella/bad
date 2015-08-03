@@ -1,6 +1,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <cstdlib>
 #include <chrono>
 #include <iostream>
 #include <sstream>
@@ -36,6 +37,16 @@ void run_cmd( Cluster & c, string out_dir, string cmd )
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
     cout << "cmd-read, 0, " << dur << endl;
+
+  } else if ( cmd.find_first_of( "chunk-" ) == 0 ) {
+    size_t i = cmd.find_last_of( '-' );
+    auto siz = atol( cmd.substr( i + 1 ).c_str() );
+
+    auto start = chrono::high_resolution_clock::now();
+    c.ReadChunk( siz );
+    auto end = chrono::high_resolution_clock::now();
+    auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
+    cout << "cmd-chunk, 0, " << dur << endl;
 
   } else if ( cmd == "write" ) {
     auto start = chrono::high_resolution_clock::now();

@@ -86,6 +86,30 @@ Record Cluster::ReadFirst( void )
   return pq.top().r;
 }
 
+void Cluster::ReadChunk( uint64_t size )
+{
+  if ( files_.size() == 1 ) {
+    // optimize for 1 node
+    Size();
+    auto & c = files_[0].client();
+    c.Read( 0, size );
+
+  } else {
+    // general n node case
+    Size();
+
+    // seek & prefetch all remote files
+    for ( auto & f : files_ ) {
+      f.client().prepareRead( 0, size );
+    }
+
+    // load first record from each remote
+    for ( auto & f : files_ ) {
+      f.client().Read( 0, size );
+    }
+  }
+}
+
 void Cluster::ReadAll( void )
 {
   if ( files_.size() == 1 ) {
