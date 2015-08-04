@@ -45,6 +45,11 @@ optparse = OptionParser.new do |opts|
     options[:key_name] = key
   end
 
+  options[:file] = '.cluster.conf'
+  opts.on("-f", "--file FILE", "File to save cluster info to") do |f|
+    options[:file] = f
+  end
+
   options[:count] = 1
   opts.on("-c", "--count NUMBER", "Number of instances to launch") do |c|
     options[:count] = c.to_i
@@ -85,14 +90,14 @@ end
 $stdout.sync = true
 
 # move any old cluster info files
-if File.exists? '.cluster.conf'
+if File.exists? options[:file]
   now = Time.now.strftime("%Y%m%d_%H%M")
-  `mv -f .cluster.conf ./.old_clusters/#{now}.cluster.conf`
+  `mv -f #{options[:file]} ./.old_clusters/#{now}.cluster.conf`
 end
 
 # start new cluster config
-`echo "# #{Time.now}" > .cluster.conf`
-`echo "export MN=#{options[:count]}" >> .cluster.conf`
+`echo "# #{Time.now}" > #{options[:file]}`
+`echo "export MN=#{options[:count]}" >> #{options[:file]}`
 
 # launch instance
 i = 0
@@ -103,8 +108,8 @@ Launcher.new(options).launch! do |instance|
   puts "New instance (#{i}) at: #{instance.dns_name}"
   
   # store machine
-  `echo "export M#{i}=#{instance.dns_name}" >> .cluster.conf`
-  `echo "export M#{i}_ID=#{instance.id}" >> .cluster.conf`
+  `echo "export M#{i}=#{instance.dns_name}" >> #{options[:file]}`
+  `echo "export M#{i}_ID=#{instance.id}" >> #{options[:file]}`
 end
 
 # configure instances
