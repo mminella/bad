@@ -1,9 +1,18 @@
 #!/bin/bash
+KEY='black.davidterei.com'
+N=3
+FILE=$1
+SAVE=$2
+
+if [ -z "${FILE}" -o -z "${SAVE}" ]; then
+  echo "runExperiment.sh <cluster file> <log path>"
+  exit 1
+fi
 
 # launch
-./launchBAD.rb -k $1 -c $2 'Measure-%d' -d measure.tar.gz
+./launchBAD.rb -f ${FILE} -k ${KEY} -c ${N} 'Measure-%d' -d measure.tar.gz
 
-source .cluster.conf
+source ${FILE}
 
 # run experiments
 for i in `seq 1 $MN`; do
@@ -15,11 +24,11 @@ wait
 # copy logs
 for i in `seq 1 $MN`; do
   declare MV="M${i}"
-  mkdir -p logs/${i}/
-  scp ubuntu@${!MV}:log_* logs/${i}/ &
+  mkdir -p ${SAVE}/${i}/
+  scp ubuntu@${!MV}:log_* ${SAVE}/${i}/ &
 done
 wait
 
 # shutdown
-./shutdown-cluster.sh
+./shutdown-cluster.sh ${FILE}
 

@@ -1,6 +1,13 @@
 #!/bin/bash
 
-source ./.cluster.conf
+FILE=$1
+
+if [ -z "${FILE}" ]; then
+  echo "shutdown-cluster.sh <cluster file>"
+  exit 1
+fi
+
+source ${FILE}
 
 instances=""
 for i in `seq 1 $MN`; do
@@ -12,5 +19,5 @@ aws ec2 --profile bad-project terminate-instances --instance-ids ${instances}
 
 now=$(date +"%Y%m%d_%H%M")
 mkdir -p ./.old_clusters
-mv ./.cluster.conf ./.old_clusters/${now}.cluster.conf
+mv ${FILE} ./.old_clusters/${now}.${FILE}.conf
 

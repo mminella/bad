@@ -6,17 +6,18 @@ ITERS=1
 PORT=9000
 MNT=/mnt/b
 READER_OUT=${MNT}/out/
-SAVE=$1
+FILE=$1
+SAVE=$2
 
-if [ -z "${SAVE}" ]; then
-  echo "runBad.sh <save path>"
+if [ -z "${FILE}" -o -z "${SAVE}" ]; then
+  echo "runBad.sh <cluster file> <log path>"
   exit 1
 fi
 
 # launch
-./launchBAD.rb -k ${KEY} -c ${N} 'Measure-%d' -d bad.tar.gz
+./launchBAD.rb -f ${FILE} -k ${KEY} -c ${N} 'Meth1-%d' -d bad.tar.gz
 
-source .cluster.conf
+source ${FILE}
 
 # setup files
 M50=$(( 1024 * 1024 * 50 / 100 ))
@@ -240,5 +241,5 @@ done
 # scp ubuntu@$M1:~/bad.log $SAVE/1.bad.log
 #
 # # kill cluster
-# ./shutdown-cluster.sh
+# ./shutdown-cluster.sh ${FILE}
 
