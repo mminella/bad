@@ -172,6 +172,7 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
     return {min};
   } else {
     // general case: size = n
+#ifdef USE_PQ
     mystl::priority_queue<Record> pq{size+1};
 
     auto tp0 = time_now();
@@ -202,5 +203,52 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
     cout << "linear scan, " << p << ", " << tt     << endl;
 
     return vrecs;
+#else
+    // TWEAK: sort + merge block size...
+    uint64_t blk_size = max( uint64_t(1), size / 4 );
+    tdiff_t tmerge = 0;
+
+    vector<Record> vnext, vpast, vin;
+    vnext.reserve( size );
+    vin.reserve( blk_size );
+
+    uint64_t i = 0;
+    for ( bool run = true; run; ) {
+      auto tp0 = time_now();
+      for ( ; vin.size() < blk_size; i++ ) {
+        const char * r = recio_.next_record();
+        if ( r == nullptr ) {
+          run = false;
+          break;
+        }
+        RecordPtr next{r, i};
+        if ( next > after ) {
+          vin.emplace_back( r, i );
+        }
+      }
+      tplace += time_diff<ms>( tp0 );
+
+      // optimize for some cases
+      if ( vin.size() > 0 ) {
+        tsort += rec_sort( vin );
+        if ( vpast.size() == 0 ) {
+          swap( vpast, vin );
+        } else {
+          vnext.resize( min( size, vin.size() + vpast.size() ) );
+          tmerge += move_merge( vin, vpast, vnext );
+          swap( vnext, vpast );
+          vin.clear();
+        }
+      }
+    }
+
+    auto tt = time_diff<ms>( t0 );
+    cout << "insert, "      << p << ", " << tplace << endl;
+    cout << "sort, "        << p << ", " << tsort  << endl;
+    cout << "merge, "       << p << ", " << tmerge << endl;
+    cout << "linear scan, " << p << ", " << tt     << endl;
+
+    return vpast;
+#endif
   }
 }
