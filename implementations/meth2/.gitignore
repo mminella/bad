@@ -1,0 +1,53 @@
+# dist files
+bad.tar.gz
+dist_root
+
+# generated test files
+test/recs-1gb
+
+# generated m4 files
+m4/libtool.m4
+m4/ltoptions.m4
+m4/ltsugar.m4
+m4/ltversion.m4
+m4/lt~obsolete.m4
+
+# build files
+.deps
+.test-tmp/
+Makefile
+Makefile.in
+aclocal.m4
+app/Makefile
+ar-lib
+autom4te.cache/
+compile
+config.guess
+config.h
+config.h.in
+config.h.in~
+config.log
+config.status
+config.sub
+configure
+configure.ac~
+depcomp
+install-sh
+lib/Makefile
+libtool
+ltmain.sh
+missing
+stamp-h1
+
+# test files
+test-driver
+test-suite.log
+test/*.log
+test/*.trs
+
+# libraries
+*.la
+
+# object files
+*.o
+*.lo
