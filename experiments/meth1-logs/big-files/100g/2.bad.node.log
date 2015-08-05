@@ -1,0 +1,101 @@
+# Wed Aug  5 15:25:37 UTC 2015
+read, 0, 220936
+insert, 0, 385163
+sort, 0, 3880
+linear scan, 0, 389043
+read, 0, 221425
+insert, 1, 381831
+sort, 1, 3827
+linear scan, 1, 385659
+read, 0, 221061
+insert, 2, 371021
+sort, 2, 3853
+linear scan, 2, 374875
+read, 0, 222616
+insert, 3, 369277
+sort, 3, 3793
+linear scan, 3, 373071
+read, 0, 223374
+insert, 4, 366970
+sort, 4, 3801
+linear scan, 4, 370772
+read, 0, 222922
+insert, 5, 362215
+sort, 5, 3806
+linear scan, 5, 366022
+read, 0, 222183
+insert, 6, 360341
+sort, 6, 3812
+linear scan, 6, 364154
+read, 0, 222073
+insert, 7, 367966
+sort, 7, 3812
+linear scan, 7, 371778
+read, 0, 224040
+insert, 8, 359311
+sort, 8, 3791
+linear scan, 8, 363103
+read, 0, 224546
+insert, 9, 356998
+sort, 9, 3828
+linear scan, 9, 360827
+read, 0, 223761
+insert, 10, 351446
+sort, 10, 3813
+linear scan, 10, 355259
+read, 0, 224900
+insert, 11, 347780
+sort, 11, 3815
+linear scan, 11, 351595
+read, 0, 224081
+insert, 12, 340499
+sort, 12, 3800
+linear scan, 12, 344299
+read, 0, 225238
+insert, 13, 335692
+sort, 13, 3825
+linear scan, 13, 339517
+read, 0, 225107
+insert, 14, 329434
+sort, 14, 3832
+linear scan, 14, 333267
+read, 0, 226100
+insert, 15, 324269
+sort, 15, 3837
+linear scan, 15, 328106
+read, 0, 225686
+insert, 16, 318104
+sort, 16, 3808
+linear scan, 16, 321912
+read, 0, 227560
+insert, 17, 315928
+sort, 17, 3851
+linear scan, 17, 319779
+read, 0, 228049
+insert, 18, 310675
+sort, 18, 3824
+linear scan, 18, 314500
+read, 0, 228134
+insert, 19, 299745
+sort, 19, 3824
+linear scan, 19, 303570
+read, 0, 227825
+insert, 20, 289676
+sort, 20, 3822
+linear scan, 20, 293499
+read, 0, 229097
+insert, 21, 283369
+sort, 21, 3836
+linear scan, 21, 287206
+read, 0, 231206
+insert, 22, 281500
+sort, 22, 3827
+linear scan, 22, 285327
+read, 0, 231630
+insert, 23, 283753
+sort, 23, 3853
+linear scan, 23, 287607
+read, 0, 231921
+insert, 24, 282328
+sort, 24, 3800
+linear scan, 24, 286129
