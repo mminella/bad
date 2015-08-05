@@ -1,0 +1,121 @@
+# Wed Aug  5 15:42:36 UTC 2015
+read, 0, 322969
+insert, 0, 526122
+sort, 0, 5328
+linear scan, 0, 531450
+read, 0, 324644
+insert, 1, 536822
+sort, 1, 5185
+linear scan, 1, 542007
+read, 0, 323895
+insert, 2, 532007
+sort, 2, 5152
+linear scan, 2, 537159
+read, 0, 332220
+insert, 3, 543007
+sort, 3, 5048
+linear scan, 3, 548056
+read, 0, 334590
+insert, 4, 544577
+sort, 4, 5187
+linear scan, 4, 549764
+read, 0, 322925
+insert, 5, 512782
+sort, 5, 5153
+linear scan, 5, 517936
+read, 0, 322150
+insert, 6, 510635
+sort, 6, 5149
+linear scan, 6, 515785
+read, 0, 320852
+insert, 7, 501019
+sort, 7, 5136
+linear scan, 7, 506156
+read, 0, 320979
+insert, 8, 499700
+sort, 8, 5145
+linear scan, 8, 504846
+read, 0, 319096
+insert, 9, 489269
+sort, 9, 5123
+linear scan, 9, 494392
+read, 0, 319288
+insert, 10, 486841
+sort, 10, 5169
+linear scan, 10, 492011
+read, 0, 319574
+insert, 11, 482554
+sort, 11, 5132
+linear scan, 11, 487686
+read, 0, 321463
+insert, 12, 479136
+sort, 12, 5144
+linear scan, 12, 484281
+read, 0, 318258
+insert, 13, 469118
+sort, 13, 5127
+linear scan, 13, 474246
+read, 0, 316799
+insert, 14, 461946
+sort, 14, 5140
+linear scan, 14, 467087
+read, 0, 318087
+insert, 15, 455197
+sort, 15, 5196
+linear scan, 15, 460394
+read, 0, 316717
+insert, 16, 446688
+sort, 16, 5157
+linear scan, 16, 451846
+read, 0, 316611
+insert, 17, 453263
+sort, 17, 5212
+linear scan, 17, 458476
+read, 0, 315806
+insert, 18, 434815
+sort, 18, 5168
+linear scan, 18, 439984
+read, 0, 315789
+insert, 19, 423820
+sort, 19, 5213
+linear scan, 19, 429033
+read, 0, 317965
+insert, 20, 420088
+sort, 20, 5177
+linear scan, 20, 425266
+read, 0, 316069
+insert, 21, 409827
+sort, 21, 5185
+linear scan, 21, 415012
+read, 0, 315044
+insert, 22, 398805
+sort, 22, 5166
+linear scan, 22, 403971
+read, 0, 314844
+insert, 23, 389725
+sort, 23, 5194
+linear scan, 23, 394919
+read, 0, 315059
+insert, 24, 379906
+sort, 24, 5177
+linear scan, 24, 385084
+read, 0, 314059
+insert, 25, 368091
+sort, 25, 5180
+linear scan, 25, 373272
+read, 0, 311202
+insert, 26, 355900
+sort, 26, 5172
+linear scan, 26, 361072
+read, 0, 309038
+insert, 27, 349488
+sort, 27, 5156
+linear scan, 27, 354644
+read, 0, 307056
+insert, 28, 346493
+sort, 28, 5159
+linear scan, 28, 351653
+read, 0, 307491
+insert, 29, 346802
+sort, 29, 5166
+linear scan, 29, 351969
