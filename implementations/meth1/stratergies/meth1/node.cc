@@ -20,6 +20,8 @@
 
 #include "config.h"
 
+#define USE_PQ
+
 using namespace std;
 using namespace meth1;
 
