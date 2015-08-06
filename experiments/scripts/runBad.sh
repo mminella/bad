@@ -1,6 +1,6 @@
 #!/bin/bash
 KEY='black.davidterei.com'
-N=3
+N=2
 LOG='~/bad.log'
 ITERS=1
 PORT=9000
@@ -105,16 +105,9 @@ experiment() {
 
 all "setup_fs b"
 
-# 100G -- chunk-size
-backends "gensort -t16 ${G100},buf ${MNT}/100g"
-experiment false 100g first         ${M01}
-experiment false 100g chunk-${M01}  ${M01}
-experiment false 100g chunk-${M100} ${M100}
-experiment false 100g chunk-${M500} ${M500}
-experiment false 100g chunk-${G1}   ${G1}
-experiment false 100g chunk-${G2}   ${G2}
-experiment false 100g chunk-${G5}   ${G5}
-experiment false 100g chunk-${G10}  ${G10}
+# 500G -- chunk-size
+backends "gensort -t16 ${G500},buf ${MNT}/500g"
+experiment false 500g read ${G20}
 
 # Create log directory
 mkdir -p $SAVE
