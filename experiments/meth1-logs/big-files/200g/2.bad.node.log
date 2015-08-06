@@ -1,0 +1,101 @@
+# Wed Aug  5 18:47:16 UTC 2015
+read, 0, 434990
+insert, 0, 730326
+sort, 0, 8727
+linear scan, 0, 739053
+read, 0, 426154
+insert, 1, 726820
+sort, 1, 8424
+linear scan, 1, 735244
+read, 0, 427623
+insert, 2, 729300
+sort, 2, 8440
+linear scan, 2, 737740
+read, 0, 429576
+insert, 3, 715158
+sort, 3, 8404
+linear scan, 3, 723562
+read, 0, 428555
+insert, 4, 730559
+sort, 4, 8369
+linear scan, 4, 738928
+read, 0, 430935
+insert, 5, 727035
+sort, 5, 8441
+linear scan, 5, 735477
+read, 0, 430372
+insert, 6, 697622
+sort, 6, 8427
+linear scan, 6, 706049
+read, 0, 430125
+insert, 7, 689933
+sort, 7, 8386
+linear scan, 7, 698320
+read, 0, 430506
+insert, 8, 683082
+sort, 8, 8372
+linear scan, 8, 691455
+read, 0, 430235
+insert, 9, 671377
+sort, 9, 8449
+linear scan, 9, 679826
+read, 0, 429676
+insert, 10, 658648
+sort, 10, 8453
+linear scan, 10, 667101
+read, 0, 429982
+insert, 11, 650787
+sort, 11, 8388
+linear scan, 11, 659175
+read, 0, 433548
+insert, 12, 644793
+sort, 12, 8370
+linear scan, 12, 653163
+read, 0, 430377
+insert, 13, 629562
+sort, 13, 8401
+linear scan, 13, 637964
+read, 0, 430680
+insert, 14, 616857
+sort, 14, 8418
+linear scan, 14, 625276
+read, 0, 429137
+insert, 15, 603959
+sort, 15, 8373
+linear scan, 15, 612332
+read, 0, 442227
+insert, 16, 614473
+sort, 16, 8361
+linear scan, 16, 622835
+read, 0, 443341
+insert, 17, 600893
+sort, 17, 8408
+linear scan, 17, 609302
+read, 0, 445063
+insert, 18, 591709
+sort, 18, 8419
+linear scan, 18, 600128
+read, 0, 446337
+insert, 19, 572731
+sort, 19, 8369
+linear scan, 19, 581101
+read, 0, 449253
+insert, 20, 560363
+sort, 20, 8344
+linear scan, 20, 568708
+read, 0, 432161
+insert, 21, 511171
+sort, 21, 8391
+linear scan, 21, 519562
+read, 0, 414978
+insert, 22, 468087
+sort, 22, 8381
+linear scan, 22, 476468
+read, 0, 408491
+insert, 23, 459441
+sort, 23, 8415
+linear scan, 23, 467857
+read, 0, 409066
+insert, 24, 460455
+sort, 24, 8360
+linear scan, 24, 468816
