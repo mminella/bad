@@ -46,6 +46,7 @@ G8=$(( 1024 * 1024 * 1000 * 8 / 100 ))
 G9=$(( 1024 * 1024 * 1000 * 9 / 100 ))
 
 G10=$(( 1024 * 1024 * 1000 * 10 / 100 ))
+G15=$(( 1024 * 1024 * 1000 * 15 / 100 ))
 G20=$(( 1024 * 1024 * 1000 * 20 / 100 ))
 G30=$(( 1024 * 1024 * 1000 * 30 / 100 ))
 G40=$(( 1024 * 1024 * 1000 * 40 / 100 ))
@@ -107,7 +108,7 @@ all "setup_fs b"
 
 # 500G -- chunk-size
 backends "gensort -t16 ${G500},buf ${MNT}/500g"
-experiment false 500g read ${G20}
+experiment false 500g read ${G15}
 
 # Create log directory
 mkdir -p $SAVE
