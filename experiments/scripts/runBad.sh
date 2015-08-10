@@ -1,5 +1,5 @@
 #!/bin/bash
-KEY='black.davidterei.com'
+KEY=$( hostname )
 N=2
 LOG='~/bad.log'
 ITERS=1
@@ -8,9 +8,11 @@ MNT=/mnt/b
 READER_OUT=${MNT}/out/
 FILE=$1
 SAVE=$2
+SIZE=$3
+CHUNK=$4
 
-if [ -z "${FILE}" -o -z "${SAVE}" ]; then
-  echo "runBad.sh <cluster file> <log path>"
+if [ -z "${FILE}" -o -z "${SAVE}" -o -z "${SIZE}" -o -z "${CHUNK}" ]; then
+  echo "runBad.sh <cluster file> <log path> <size> <chunk>"
   exit 1
 fi
 
@@ -19,48 +21,8 @@ fi
 
 source ${FILE}
 
-# Some size constants
-M01=$(( 1024 * 1024 * 1 / 100 ))
-M25=$(( 1024 * 1024 * 25 / 100 ))
-M50=$(( 1024 * 1024 * 50 / 100 ))
-M75=$(( 1024 * 1024 * 75 / 100 ))
-
-M100=$(( 1024 * 1024 * 100 / 100 ))
-M150=$(( 1024 * 1024 * 150 / 100 ))
-M200=$(( 1024 * 1024 * 200 / 100 ))
-M250=$(( 1024 * 1024 * 250 / 100 ))
-
-M300=$(( 1024 * 1024 * 300 / 100 ))
-M400=$(( 1024 * 1024 * 400 / 100 ))
-M500=$(( 1024 * 1024 * 500 / 100 ))
-M750=$(( 1024 * 1024 * 750 / 100 ))
-
-G1=$(( 1024 * 1024 * 1000 * 1 / 100 ))
-G2=$(( 1024 * 1024 * 1000 * 2 / 100 ))
-G3=$(( 1024 * 1024 * 1000 * 3 / 100 ))
-G4=$(( 1024 * 1024 * 1000 * 4 / 100 ))
-G5=$(( 1024 * 1024 * 1000 * 5 / 100 ))
-G6=$(( 1024 * 1024 * 1000 * 6 / 100 ))
-G7=$(( 1024 * 1024 * 1000 * 7 / 100 ))
-G8=$(( 1024 * 1024 * 1000 * 8 / 100 ))
-G9=$(( 1024 * 1024 * 1000 * 9 / 100 ))
-
-G10=$(( 1024 * 1024 * 1000 * 10 / 100 ))
-G15=$(( 1024 * 1024 * 1000 * 15 / 100 ))
-G20=$(( 1024 * 1024 * 1000 * 20 / 100 ))
-G30=$(( 1024 * 1024 * 1000 * 30 / 100 ))
-G40=$(( 1024 * 1024 * 1000 * 40 / 100 ))
-G50=$(( 1024 * 1024 * 1000 * 50 / 100 ))
-G60=$(( 1024 * 1024 * 1000 * 60 / 100 ))
-G70=$(( 1024 * 1024 * 1000 * 70 / 100 ))
-G80=$(( 1024 * 1024 * 1000 * 80 / 100 ))
-G90=$(( 1024 * 1024 * 1000 * 90 / 100 ))
-
-G100=$(( 1024 * 1024 * 1000 * 100 / 100 ))
-G200=$(( 1024 * 1024 * 1000 * 200 / 100 ))
-G300=$(( 1024 * 1024 * 1000 * 300 / 100 ))
-G400=$(( 1024 * 1024 * 1000 * 400 / 100 ))
-G500=$(( 1024 * 1024 * 1000 * 500 / 100 ))
+SIZE_B=$(( $SIZE * 1024 * 1024 * 1000 / 100 ))
+CHUNK_B=$(( $CHUNK * 1024 * 1024 * 1000 / 100 ))
 
 # Backend nodes
 BACKENDS=""
@@ -91,24 +53,22 @@ reader() {
     "meth1_client $2 ${READER_OUT} $3 ${BACKENDS} >> ${LOG}"
 }
 
-# 1 - odirect?
-# 2 - file size? 1g 10g
-# 3 - op?
-# 4 - read-ahead
+# 1 - odirect
+# 2 - op
 experiment() {
   for i in `seq 1 $ITERS`; do
-    backends "sudo start meth1 && sudo start meth1_node ODIRECT=${1} FILE=${MNT}/${2}"
-    reader "# $(( $N - 1 )), ${2}, ${4}, ${1}, ${3}" ${4} "${3}"
-      backends "sudo clear_buffers"
+    backends "sudo start meth1 && sudo start meth1_node ODIRECT=${1} FILE=${MNT}/recs"
+    reader "# $(( $N - 1 )), ${SIZE}, ${CHUNK}, ${1}, ${2}" \
+      ${CHUNK_B} ${2}
+    backends "sudo clear_buffers"
     backends "sudo stop meth1"
   done
 }
 
+# Run experiment
 all "setup_fs b"
-
-# 500G -- chunk-size
-backends "gensort -t16 ${G500},buf ${MNT}/500g"
-experiment false 500g read ${G15}
+backends "gensort -t16 ${SIZE_B},buf ${MNT}/recs"
+experiment false read
 
 # Create log directory
 mkdir -p $SAVE
