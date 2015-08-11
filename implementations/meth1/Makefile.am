@@ -22,6 +22,7 @@ bin-dist:
 	cp app/meth1_client dist_root/usr/bin/meth1_client
 	cp scripts/clear_buffers.sh dist_root/usr/bin/clear_buffers
 	cp scripts/setup_fs.sh dist_root/usr/bin/setup_fs
+	cp scripts/setup_all_fs.sh dist_root/usr/bin/setup_all_fs
 	cp upstart/meth1.conf dist_root/etc/init/
 	cp upstart/meth1_node.conf dist_root/etc/init/
 	tar cvzf bad.tar.gz -C dist_root .
