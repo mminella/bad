@@ -30,5 +30,5 @@ recs-1gb:
 	../../gensort/gensort 10485700 test/recs-1gb
 
 recs-10gb:
-	../../gensort/gensort 104857000 test/recs-1gb
+	../../gensort/gensort 104857000 test/recs-10gb
 

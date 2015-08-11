@@ -3,9 +3,9 @@
  *
  * - Uses BufferedIO file IO.
  * - Uses libsort record type.
- * - Use C++ std::set.
+ * - Uses insertion sort.
  */
-#include <set>
+#include <vector>
 
 #include "buffered_io.hh"
 #include "exception.hh"
@@ -16,24 +16,39 @@
 
 using namespace std;
 
+template<typename T>
+typename std::vector<T>::iterator 
+insert_sorted( std::vector<T> & vec, T const& item )
+{
+  return vec.insert ( 
+    std::upper_bound( vec.begin(), vec.end(), item ),
+    item 
+  );
+}
+
 void run( char * fin )
 {
   // get in/out files
   BufferedIO_O<File> fdi( {fin, O_RDONLY} );
-  set<RecordLoc> recs;
+  size_t nrecs = fdi.io().size() / 100;
+  vector<RecordLoc> recs;
+  recs.reserve( nrecs );
+  auto t1 = time_now();
 
   // read
-  auto t0 = time_now();
   for ( uint64_t i = 0;; i++ ) {
-    const char * r = fdi.read_buf( Record::SIZE ).first;
+    const char * r = fdi.read_buf( 100 ).first;
     if ( fdi.eof() ) {
       break;
     }
-    recs.emplace( r, i * Record::SIZE + Record::KEY_LEN );
+    insert_sorted( recs, {r, i * Record::SIZE + Record::KEY_LEN} );
   }
-  auto tt = time_diff<ms>( t0 );
+  auto t2 = time_now();
 
-  cout << "Total: " << tt << "ms" << endl;
+  // stats
+  auto t21 = time_diff<ms>( t2, t1 );
+
+  cout << "Total took " << t21 << "ms" << endl;
 }
 
 void check_usage( const int argc, const char * const argv[] )

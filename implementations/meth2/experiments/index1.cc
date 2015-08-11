@@ -6,7 +6,6 @@
  * - Use C++ std::sort method + std::vector.
  */
 #include <algorithm>
-#include <chrono>
 #include <vector>
 
 #include "buffered_io.hh"
@@ -23,7 +22,7 @@ using namespace boost::sort::spreadsort;
 
 using namespace std;
 
-int run( char * fin )
+void run( char * fin )
 {
   // get in/out files
   BufferedIO_O<File> fdi( {fin, O_RDONLY} );
@@ -58,8 +57,6 @@ int run( char * fin )
   cout << "Read  took " << t21 << "ms" << endl;
   cout << "Sort  took " << t32 << "ms" << endl;
   cout << "Total took " << t31 << "ms" << endl;
-
-  return EXIT_SUCCESS;
 }
 
 void check_usage( const int argc, const char * const argv[] )

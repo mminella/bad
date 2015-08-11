@@ -1,5 +1,10 @@
 /**
- * Basic index building test. Same as index1 but using overlapped io.
+ * Basic index building test.
+ *
+ * - Uses Overlapping IO.
+ * - Uses libsort record type.
+ * - Uses threadpool for parallelism.
+ * - Use own chunking strategy.
  */
 #include <algorithm>
 #include <future>
@@ -22,12 +27,26 @@ using namespace boost::sort::spreadsort;
 
 using namespace std;
 
-void mysort( vector<RecordLoc>::iterator begin, vector<RecordLoc>::iterator end )
+using rec_i = vector<Record>::iterator;
+using rec_ip = pair<rec_i, rec_i>;
+using f_rec_ip = future<rec_ip>;
+using s_rec_ip = shared_ptr<f_rec_ip>;
+
+rec_ip mysort( rec_i begin, rec_i end )
 {
-  return sort( begin, end );
+  sort( begin, end );
+  return make_pair( begin, end );
 }
 
-int run( char * fin )
+rec_ip mymerge( s_rec_ip left, s_rec_ip right )
+{
+  auto l = left->get();
+  auto r = right->get();
+  inplace_merge( l.first, l.second, r.second );
+  return make_pair( l.first, r.second );
+}
+
+void run( char * fin )
 {
   // get in/out files
   File fdi( fin, O_RDONLY );
@@ -35,31 +54,64 @@ int run( char * fin )
   ThreadPool tp;
 
   size_t nrecs = fdi.size() / Record::SIZE;
-  size_t split = nrecs / 2;
-  vector<RecordLoc> recs;
+  vector<Record> recs;
   recs.reserve( nrecs );
-  auto t1 = time_now();
-  future<void> f;
+
+  // size_t split = nrecs / 4;
+  // vector<f_rec_ip> merge( 4 );
 
   // read
+  auto t1 = time_now();
   olio.rewind();
-  for ( uint64_t i = 0;; i++ ) {
+  // uint64_t split_i = 0;
+  bool run = true;
+  for ( uint64_t i = 0; run; i++ ) {
     const char * r = olio.next_record();
     if ( fdi.eof() || r == nullptr ) {
-      break;
+      run = false;
+    } else {
+      recs.emplace_back( r, i * Record::SIZE + Record::KEY_LEN );
     }
-    recs.emplace_back( r, i * Record::SIZE + Record::KEY_LEN );
-    if ( i == split ) {
-      f = tp.enqueue( &mysort, recs.begin(), recs.begin() + split );
-    }
+
+  //   // if ( i != 0 and ( i % split == 0 or !run ) and recs.begin() + split_i < recs.end() ) {
+  //   //   auto f1 = tp.enqueue( &mysort, recs.begin() + split_i,
+  //   //                                  min( recs.begin() + split_i + split, recs.end() ) );
+  //   //   split_i += split;
+  //   //   if ( merge[0].valid() ) {
+  //   //     auto f2 = tp.enqueue( &mymerge, make_shared<f_rec_ip>( move( merge[0] ) ),
+  //   //                                     make_shared<f_rec_ip>( move( f1 ) ) );
+  //   //     if ( merge[1].valid() ) {
+  //   //       auto f3 = tp.enqueue( &mymerge, make_shared<f_rec_ip>( move( merge[1] ) ),
+  //   //                                       make_shared<f_rec_ip>( move( f2 ) ) );
+  //   //       if ( merge[2].valid() ) {
+  //   //         auto f4 = tp.enqueue( &mymerge, make_shared<f_rec_ip>( move( merge[2] ) ),
+  //   //                                         make_shared<f_rec_ip>( move( f3 ) ) );
+  //   //         merge[3] = move( f4 );
+  //   //       } else {
+  //   //         merge[2] = move( f3 );
+  //   //       }
+  //   //     } else {
+  //   //       merge[1] = move( f2 );
+  //   //     }
+  //   //   } else {
+  //   //     merge[0] = move( f1 );
+  //   //   }
+    // }
   }
   auto t2 = time_now();
 
   // sort
-  sort( recs.begin() + split, recs.end() );
-  f.get();
+  mysort( recs.begin(), recs.begin() + nrecs / 2 );
+  mysort( recs.begin() + nrecs / 2, recs.end() );
+  // mysort( recs.begin(), recs.end() );
+
+  // // merge
   auto tb = time_now();
-  inplace_merge( recs.begin(), recs.begin() + split, recs.end() );
+  vector<Record> recs2;
+  recs2.reserve( nrecs );
+  // merge( recs2.begin(), recs2.end(), recs.begin(), recs.begin() + nrecs / 2, recs.begin() + nrecs / 2, recs.end() );
+  // inplace_merge( recs.begin(), recs.begin() + nrecs / 2, recs.end() );
+  // // merge[2].wait();
   auto t3 = time_now();
 
   // stats
@@ -71,8 +123,6 @@ int run( char * fin )
   cout << "Sort  took " << t32 << "ms" << endl;
   cout << "Merge took " << time_diff<ms>( t3, tb ) << "ms" << endl;
   cout << "Total took " << t31 << "ms" << endl;
-
-  return EXIT_SUCCESS;
 }
 
 void check_usage( const int argc, const char * const argv[] )

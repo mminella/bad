@@ -1,4 +1,4 @@
-bin_PROGRAMS = index1 index2 index3 index4
+bin_PROGRAMS = index1 index2 index3 index4 index5 index6
 
 AM_CPPFLAGS = \
 	-D_REENTRANT \
@@ -21,4 +21,6 @@ index1_SOURCES = index1.cc
 index2_SOURCES = index2.cc
 index3_SOURCES = index3.cc
 index4_SOURCES = index4.cc
+index5_SOURCES = index5.cc
+index6_SOURCES = index6.cc
 

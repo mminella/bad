@@ -56,35 +56,35 @@ private:
 
   void read_file( void )
   {
-    while ( true ) {
-      try {
-        ctrl_chn_.recv();
-      } catch ( const std::exception & e ) {
-          return;
-      }
-      io_.rewind();
-
-      tdiff_t tt = 0;
-      char * wptr_ = buf_;
+    try {
       while ( true ) {
-        auto t0 = time_now();
-        size_t n = io_.read( wptr_, BLOCK );
-        tt += time_diff<ms>( t0 );
+        ctrl_chn_.recv();
+        io_.rewind();
 
-        if ( n > 0 ) {
-          block_chn_.send( {wptr_, n} );
-          wptr_ += BLOCK;
-          if ( wptr_ == buf_ + BUF_SIZE ) {
-            wptr_ = buf_;
+        tdiff_t tt = 0;
+        char * wptr_ = buf_;
+        while ( true ) {
+          auto t0 = time_now();
+          size_t n = io_.read( wptr_, BLOCK );
+          tt += time_diff<ms>( t0 );
+
+          if ( n > 0 ) {
+            block_chn_.send( {wptr_, n} );
+            wptr_ += BLOCK;
+            if ( wptr_ == buf_ + BUF_SIZE ) {
+              wptr_ = buf_;
+            }
+          }
+
+          if ( io_.eof() || n < BLOCK ) {
+            block_chn_.send( { nullptr, 0} ); // indicate EOF
+            break;
           }
         }
-
-        if ( io_.eof() || n < BLOCK ) {
-          block_chn_.send( { nullptr, 0} ); // indicate EOF
-          break;
-        }
+        std::cout << "read, 0, " << tt << std::endl;
       }
-      std::cout << "read, 0, " << tt << std::endl;
+    } catch ( const std::exception & e ) {
+        return;
     }
   }
 
@@ -104,6 +104,7 @@ public:
   ~OverlappedIO( void )
   {
     ctrl_chn_.close();
+    block_chn_.close();
     if ( reader_.joinable() ) { reader_.join(); }
     delete buf_;
   }

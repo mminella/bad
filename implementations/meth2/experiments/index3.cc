@@ -3,11 +3,9 @@
  *
  * - Uses BufferedIO file IO.
  * - Uses libsort record type.
- * - Use C++ std::sort method + std::vector.
+ * - Uses google::btree.
  */
-#include <algorithm>
-#include <chrono>
-#include <set>
+#include <vector>
 
 #include "buffered_io.hh"
 #include "exception.hh"
@@ -17,33 +15,41 @@
 #include "record.hh"
 #include "btree_set.h"
 
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-#include <boost/sort/spreadsort/string_sort.hpp>
-using namespace boost::sort::spreadsort;
-#endif
-
 using namespace std;
 
-int run( char * fin )
+void run( char * fin )
 {
   // get in/out files
   BufferedIO_O<File> fdi( {fin, O_RDONLY} );
-  btree::btree_set<RecordLoc, less<RecordLoc>, allocator<RecordLoc>, 1024> recs;
+  size_t nrecs = fdi.io().size() / 100;
+  vector<RecordLoc> recs;
+  recs.reserve( nrecs );
+  auto t1 = time_now();
 
   // read
-  auto t0 = time_now();
   for ( uint64_t i = 0;; i++ ) {
-    const char * r = fdi.read_buf( Record::SIZE ).first;
+    const char * r = fdi.read_buf( 100 ).first;
     if ( fdi.eof() ) {
       break;
     }
-    recs.insert( {r, i * Record::SIZE + Record::KEY_LEN} );
+    recs.emplace_back( r, i * 100 + 10 );
   }
-  auto tt = time_diff<ms>( t0 );
+  auto t2 = time_now();
 
-  cout << "Total: " << tt << "ms" << endl;
+  btree::btree_set<RecordLoc, less<RecordLoc>, allocator<RecordLoc>, 1024> bt;
+  for ( const auto & r : recs ) {
+    bt.insert( r );
+  }
+  auto t3 = time_now();
 
-  return EXIT_SUCCESS;
+  // stats
+  auto t21 = time_diff<ms>( t2, t1 );
+  auto t32 = time_diff<ms>( t3, t2 );
+  auto t31 = time_diff<ms>( t3, t1 );
+
+  cout << "Read  took " << t21 << "ms" << endl;
+  cout << "Sort  took " << t32 << "ms" << endl;
+  cout << "Total took " << t31 << "ms" << endl;
 }
 
 void check_usage( const int argc, const char * const argv[] )
