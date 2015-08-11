@@ -36,13 +36,18 @@ optparse = OptionParser.new do |opts|
 
   options[:zone] = "ap-southeast-1a"
   options[:group] = "default"
-  options[:instance_type] = "i2.xlarge"
   options[:arch] = 0 # 64-bit
   options[:store] = 0
   options[:terminate] = 0
 
+  options[:key_name] = `hostname`
   opts.on("-k", "--key KEY_NAME", "Security key name") do |key|
     options[:key_name] = key
+  end
+
+  options[:instance_type] = "i2.xlarge"
+  opts.on("-i", "--instance INST", "Instance type") do |i|
+    options[:instance_type] = i
   end
 
   options[:file] = '.cluster.conf'

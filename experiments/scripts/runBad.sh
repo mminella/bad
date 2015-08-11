@@ -1,6 +1,5 @@
 #!/bin/bash
 KEY=$( hostname )
-N=2
 LOG='~/bad.log'
 ITERS=1
 PORT=9000
@@ -10,19 +9,22 @@ FILE=$1
 SAVE=$2
 SIZE=$3
 CHUNK=$4
+MACHINE=$5
+N=$6
+ODIR=$7
+SIZE_B=$( calc "$SIZE * 1024 * 1024 * 1000 / 100" )
+CHUNK_B=$( calc "$CHUNK * 1024 * 1024 * 1000 / 100" )
 
-if [ -z "${FILE}" -o -z "${SAVE}" -o -z "${SIZE}" -o -z "${CHUNK}" ]; then
-  echo "runBad.sh <cluster file> <log path> <size> <chunk>"
+# Args
+if [ $# != 7 ]; then
+  echo "runBad.sh <cluster file> <log path> <size> <chunk> <machine> <nodes> <o_direct>"
   exit 1
 fi
 
 # Launch
-./launchBAD.rb -f ${FILE} -k ${KEY} -c ${N} 'Meth1-%d' -d bad.tar.gz
+./launchBAD.rb -f ${FILE} -k ${KEY} -c ${N} -n 'Meth1-%d' -d bad.tar.gz -i ${MACHINE}
 
 source ${FILE}
-
-SIZE_B=$(( $SIZE * 1024 * 1024 * 1000 / 100 ))
-CHUNK_B=$(( $CHUNK * 1024 * 1024 * 1000 / 100 ))
 
 # Backend nodes
 BACKENDS=""
@@ -48,11 +50,15 @@ backends() {
 }
 
 # Run a command on the reader
+# 1 - header
+# 2 - chunk size
+# 3 - op
 reader() {
   ssh ubuntu@${M1} "echo '$1' >> ${LOG};" \
     "meth1_client $2 ${READER_OUT} $3 ${BACKENDS} >> ${LOG}"
 }
 
+# Run an experiment (start + run + stop method)
 # 1 - odirect
 # 2 - op
 experiment() {
@@ -68,7 +74,7 @@ experiment() {
 # Run experiment
 all "setup_fs b"
 backends "gensort -t16 ${SIZE_B},buf ${MNT}/recs"
-experiment false read
+experiment ${ODIR} read
 
 # Create log directory
 mkdir -p $SAVE
