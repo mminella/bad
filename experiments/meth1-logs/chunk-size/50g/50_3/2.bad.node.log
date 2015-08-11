@@ -1,0 +1,69 @@
+# Mon Aug 10 20:37:53 UTC 2015
+read, 0, 121903
+insert, 0, 200556
+sort, 0, 2458
+linear scan, 0, 203015
+read, 0, 111321
+insert, 1, 199055
+sort, 1, 2474
+linear scan, 1, 201530
+read, 0, 109922
+insert, 2, 193504
+sort, 2, 2456
+linear scan, 2, 195960
+read, 0, 110587
+insert, 3, 190289
+sort, 3, 2469
+linear scan, 3, 192759
+read, 0, 109422
+insert, 4, 186488
+sort, 4, 2486
+linear scan, 4, 188974
+read, 0, 109835
+insert, 5, 181640
+sort, 5, 2467
+linear scan, 5, 184108
+read, 0, 111369
+insert, 6, 180198
+sort, 6, 2482
+linear scan, 6, 182680
+read, 0, 111942
+insert, 7, 180912
+sort, 7, 2510
+linear scan, 7, 183423
+read, 0, 111207
+insert, 8, 172729
+sort, 8, 2489
+linear scan, 8, 175219
+read, 0, 112334
+insert, 9, 167844
+sort, 9, 2483
+linear scan, 9, 170328
+read, 0, 112270
+insert, 10, 162821
+sort, 10, 2490
+linear scan, 10, 165311
+read, 0, 112880
+insert, 11, 158290
+sort, 11, 2482
+linear scan, 11, 160772
+read, 0, 112758
+insert, 12, 151533
+sort, 12, 2507
+linear scan, 12, 154040
+read, 0, 113285
+insert, 13, 144617
+sort, 13, 2503
+linear scan, 13, 147121
+read, 0, 116697
+insert, 14, 141851
+sort, 14, 2509
+linear scan, 14, 144361
+read, 0, 116234
+insert, 15, 143064
+sort, 15, 2505
+linear scan, 15, 145570
+read, 0, 115863
+insert, 16, 140631
+sort, 16, 1654
+linear scan, 16, 142286

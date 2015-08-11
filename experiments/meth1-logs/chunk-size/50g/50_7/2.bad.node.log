@@ -1,0 +1,33 @@
+# Mon Aug 10 20:38:56 UTC 2015
+read, 0, 116553
+insert, 0, 309343
+sort, 0, 6619
+linear scan, 0, 315963
+read, 0, 106685
+insert, 1, 292620
+sort, 1, 6956
+linear scan, 1, 299576
+read, 0, 114609
+insert, 2, 277058
+sort, 2, 7027
+linear scan, 2, 284085
+read, 0, 108748
+insert, 3, 249589
+sort, 3, 6925
+linear scan, 3, 256514
+read, 0, 109291
+insert, 4, 217629
+sort, 4, 6938
+linear scan, 4, 224568
+read, 0, 110095
+insert, 5, 180973
+sort, 5, 6942
+linear scan, 5, 187915
+read, 0, 115031
+insert, 6, 140870
+sort, 6, 6964
+linear scan, 6, 147834
+read, 0, 117322
+insert, 7, 137833
+sort, 7, 815
+linear scan, 7, 138648

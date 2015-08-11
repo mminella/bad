@@ -1,0 +1,201 @@
+# Mon Aug 10 20:37:32 UTC 2015
+read, 0, 138434
+insert, 0, 171697
+sort, 0, 830
+linear scan, 0, 172528
+read, 0, 121944
+insert, 1, 161633
+sort, 1, 851
+linear scan, 1, 162484
+read, 0, 117997
+insert, 2, 157523
+sort, 2, 827
+linear scan, 2, 158350
+read, 0, 114351
+insert, 3, 148544
+sort, 3, 836
+linear scan, 3, 149381
+read, 0, 114728
+insert, 4, 148328
+sort, 4, 826
+linear scan, 4, 149155
+read, 0, 115429
+insert, 5, 148683
+sort, 5, 829
+linear scan, 5, 149513
+read, 0, 114813
+insert, 6, 147969
+sort, 6, 828
+linear scan, 6, 148797
+read, 0, 114432
+insert, 7, 147116
+sort, 7, 837
+linear scan, 7, 147954
+read, 0, 114719
+insert, 8, 147242
+sort, 8, 831
+linear scan, 8, 148073
+read, 0, 115194
+insert, 9, 147527
+sort, 9, 829
+linear scan, 9, 148356
+read, 0, 114705
+insert, 10, 146451
+sort, 10, 827
+linear scan, 10, 147278
+read, 0, 114541
+insert, 11, 148355
+sort, 11, 829
+linear scan, 11, 149185
+read, 0, 114614
+insert, 12, 147089
+sort, 12, 830
+linear scan, 12, 147919
+read, 0, 112527
+insert, 13, 143235
+sort, 13, 837
+linear scan, 13, 144072
+read, 0, 114000
+insert, 14, 144696
+sort, 14, 827
+linear scan, 14, 145524
+read, 0, 113943
+insert, 15, 144237
+sort, 15, 832
+linear scan, 15, 145069
+read, 0, 114967
+insert, 16, 144984
+sort, 16, 823
+linear scan, 16, 145807
+read, 0, 116570
+insert, 17, 147726
+sort, 17, 829
+linear scan, 17, 148556
+read, 0, 114611
+insert, 18, 143671
+sort, 18, 828
+linear scan, 18, 144500
+read, 0, 114442
+insert, 19, 142787
+sort, 19, 830
+linear scan, 19, 143618
+read, 0, 115859
+insert, 20, 144715
+sort, 20, 830
+linear scan, 20, 145545
+read, 0, 114566
+insert, 21, 142554
+sort, 21, 826
+linear scan, 21, 143380
+read, 0, 114378
+insert, 22, 141809
+sort, 22, 827
+linear scan, 22, 142636
+read, 0, 114538
+insert, 23, 141338
+sort, 23, 826
+linear scan, 23, 142165
+read, 0, 115908
+insert, 24, 143213
+sort, 24, 826
+linear scan, 24, 144040
+read, 0, 116125
+insert, 25, 142728
+sort, 25, 827
+linear scan, 25, 143556
+read, 0, 114215
+insert, 26, 139846
+sort, 26, 832
+linear scan, 26, 140678
+read, 0, 115855
+insert, 27, 141030
+sort, 27, 824
+linear scan, 27, 141855
+read, 0, 116065
+insert, 28, 140790
+sort, 28, 824
+linear scan, 28, 141615
+read, 0, 118179
+insert, 29, 143370
+sort, 29, 825
+linear scan, 29, 144195
+read, 0, 115545
+insert, 30, 139473
+sort, 30, 827
+linear scan, 30, 140301
+read, 0, 118113
+insert, 31, 142187
+sort, 31, 832
+linear scan, 31, 143019
+read, 0, 116066
+insert, 32, 139167
+sort, 32, 830
+linear scan, 32, 139997
+read, 0, 115425
+insert, 33, 137729
+sort, 33, 824
+linear scan, 33, 138554
+read, 0, 117053
+insert, 34, 138510
+sort, 34, 829
+linear scan, 34, 139339
+read, 0, 115888
+insert, 35, 137204
+sort, 35, 826
+linear scan, 35, 138030
+read, 0, 115605
+insert, 36, 137818
+sort, 36, 833
+linear scan, 36, 138651
+read, 0, 114614
+insert, 37, 134398
+sort, 37, 832
+linear scan, 37, 135230
+read, 0, 115069
+insert, 38, 134224
+sort, 38, 826
+linear scan, 38, 135050
+read, 0, 116001
+insert, 39, 134315
+sort, 39, 826
+linear scan, 39, 135142
+read, 0, 117082
+insert, 40, 135395
+sort, 40, 833
+linear scan, 40, 136228
+read, 0, 119161
+insert, 41, 137914
+sort, 41, 828
+linear scan, 41, 138743
+read, 0, 116428
+insert, 42, 134567
+sort, 42, 827
+linear scan, 42, 135395
+read, 0, 116411
+insert, 43, 134472
+sort, 43, 825
+linear scan, 43, 135298
+read, 0, 117671
+insert, 44, 136008
+sort, 44, 834
+linear scan, 44, 136843
+read, 0, 118638
+insert, 45, 137114
+sort, 45, 829
+linear scan, 45, 137943
+read, 0, 117273
+insert, 46, 135299
+sort, 46, 825
+linear scan, 46, 136124
+read, 0, 116072
+insert, 47, 134157
+sort, 47, 833
+linear scan, 47, 134991
+read, 0, 118820
+insert, 48, 137275
+sort, 48, 827
+linear scan, 48, 138103
+read, 0, 118454
+insert, 49, 136692
+sort, 49, 826
+linear scan, 49, 137518

@@ -1,0 +1,19 @@
+# 1, 50, 7, false, read
+size, 0, 0
+read, 0, 315966
+network, 0, 89833
+read, 1, 299651
+network, 1, 86888
+read, 2, 287340
+network, 2, 86816
+read, 3, 259740
+network, 3, 86764
+read, 4, 227677
+network, 4, 87000
+read, 5, 190844
+network, 5, 86889
+read, 6, 150940
+network, 6, 87012
+read, 7, 142110
+network, 7, 8965
+cmd-read, 0, 2494778

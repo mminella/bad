@@ -1,0 +1,53 @@
+# Mon Aug 10 20:38:01 UTC 2015
+read, 0, 118422
+insert, 0, 228875
+sort, 0, 3303
+linear scan, 0, 232179
+read, 0, 106744
+insert, 1, 228513
+sort, 1, 3346
+linear scan, 1, 231859
+read, 0, 106644
+insert, 2, 219551
+sort, 2, 3346
+linear scan, 2, 222898
+read, 0, 107867
+insert, 3, 213351
+sort, 3, 3314
+linear scan, 3, 216666
+read, 0, 108544
+insert, 4, 204022
+sort, 4, 3338
+linear scan, 4, 207360
+read, 0, 108606
+insert, 5, 200168
+sort, 5, 3345
+linear scan, 5, 203514
+read, 0, 108785
+insert, 6, 189074
+sort, 6, 3349
+linear scan, 6, 192423
+read, 0, 109586
+insert, 7, 180360
+sort, 7, 3364
+linear scan, 7, 183724
+read, 0, 110546
+insert, 8, 170157
+sort, 8, 3358
+linear scan, 8, 173516
+read, 0, 111292
+insert, 9, 159882
+sort, 9, 3392
+linear scan, 9, 163274
+read, 0, 113153
+insert, 10, 150193
+sort, 10, 3359
+linear scan, 10, 153553
+read, 0, 114842
+insert, 11, 146802
+sort, 11, 3357
+linear scan, 11, 150159
+read, 0, 115122
+insert, 12, 147241
+sort, 12, 1672
+linear scan, 12, 148914
