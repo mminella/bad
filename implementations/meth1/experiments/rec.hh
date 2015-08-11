@@ -15,12 +15,12 @@ static constexpr size_t VAL_BYTES = 90;
 static constexpr size_t REC_BYTES = KEY_BYTES + VAL_BYTES;
 
 // array for record values -- bump allocator (no free, not thread-safe)
-static char * vals;
-static char * cur_v;
+static unsigned char * vals;
+static unsigned char * cur_v;
 
 void setup_value_storage( size_t nrecs )
 {
-  cur_v = vals = new char[ nrecs * VAL_BYTES ];
+  cur_v = vals = new unsigned char[ nrecs * VAL_BYTES ];
 }
 
 // our record struct
@@ -29,8 +29,8 @@ class Rec
 private:
   // Pulling the key inline with Rec improves sort performance by 2x. Appears
   // to be due to saving an indirection during sort.
-  char key_[KEY_BYTES];
-  char * val_;
+  unsigned char key_[KEY_BYTES];
+  unsigned char * val_;
 
   inline void checked_fread( void * ptr, size_t size, size_t nmemb, FILE * f )
   {
@@ -66,12 +66,18 @@ public:
 
   inline int compare( const Rec & b ) const
   {
-    return memcmp( key_, b.key_, KEY_BYTES );
+    // return memcmp( key_, b.key_, KEY_BYTES );
+    for ( size_t i = 0; i < KEY_BYTES; i++ ) {
+      if ( key_[i] != b.key_[i] ) {
+        return key_[i] - b.key_[i];
+      }
+    }
+    return 0;
   }
 
   inline const char * data( void ) const
   {
-    return key_;
+    return (char *) key_;
   }
 
   inline unsigned char operator[]( size_t offset ) const

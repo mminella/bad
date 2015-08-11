@@ -19,10 +19,10 @@
 #include "io_device.hh"
 
 template <typename R1, typename R2>
-int compare( const R1 & a, const R2 & b );
+inline int compare( const R1 & a, const R2 & b );
 
 #define comp_op( op, t ) \
-  bool operator op( const t & b ) const \
+  inline bool operator op( const t & b ) const \
   { \
     return compare( b ) op 0 ? true : false; \
   }
@@ -177,9 +177,9 @@ public:
   ~Record( void ) { dealloc_val( val_ ); }
 
   /* Accessors */
-  const char * key( void ) const noexcept { return key_; }
-  const char * val( void ) const noexcept { return val_; }
-  uint64_t loc( void ) const noexcept { return loc_; }
+  inline const char * key( void ) const noexcept { return key_; }
+  inline const char * val( void ) const noexcept { return val_; }
+  inline uint64_t loc( void ) const noexcept { return loc_; }
 
   /* methods for boost::sort */
   const char * data( void ) const noexcept { return key_; }
@@ -194,8 +194,8 @@ public:
   comp_op( >, Record )
   comp_op( >, RecordPtr )
 
-  int compare( const Record & b ) const { return ::compare( *this, b ); }
-  int compare( const RecordPtr & b ) const { return ::compare( *this, b ); }
+  inline int compare( const Record & b ) const { return ::compare( *this, b ); }
+  inline int compare( const RecordPtr & b ) const { return ::compare( *this, b ); }
 
   /* To string */
   std::string str( loc_t locinfo = NO_LOC ) const
@@ -244,9 +244,9 @@ public:
   RecordPtr( RecordPtr && rptr ) = delete;
   RecordPtr & operator=( RecordPtr && rptr ) = delete;
 
-  const char * key( void ) const noexcept { return r_; }
-  const char * val( void ) const noexcept { return r_ + Record::KEY_LEN; }
-  uint64_t loc( void ) const noexcept { return loc_; }
+  inline const char * key( void ) const noexcept { return r_; }
+  inline const char * val( void ) const noexcept { return r_ + Record::KEY_LEN; }
+  inline uint64_t loc( void ) const noexcept { return loc_; }
 
   /* comparison (with Record & RecordPtr) */
   comp_op( <, Record )
@@ -256,25 +256,27 @@ public:
   comp_op( >, Record )
   comp_op( >, RecordPtr )
 
-  int compare( const Record & b ) const { return ::compare( *this, b ); }
-  int compare( const RecordPtr & b ) const { return ::compare( *this, b ); }
+  inline int compare( const Record & b ) const { return ::compare( *this, b ); }
+  inline int compare( const RecordPtr & b ) const { return ::compare( *this, b ); }
 };
 
 /* Comparison */
 template <typename R1, typename R2>
-int compare( const R1 & a, const R2 & b )
+inline int compare( const R1 & a, const R2 & b )
 {
   // we compare on key first, and then on loc_
-  int cmp = std::memcmp( a.key(), b.key(), Record::KEY_LEN );
-  if ( cmp == 0 ) {
-    if ( a.loc_ < b.loc_ ) {
-      cmp = -1;
-    }
-    if ( a.loc_ > b.loc_ ) {
-      cmp = 1;
+  for ( size_t i = 0; i < Record::KEY_LEN; i++ ) {
+    if ( a.key()[i] != b.key()[i] ) {
+      return a.key()[i] - b.key()[i];
     }
   }
-  return cmp;
+  if ( a.loc_ < b.loc_ ) {
+    return -1;
+  }
+  if ( a.loc_ > b.loc_ ) {
+    return 1;
+  }
+  return 0;
 }
 
 #endif /* RECORD_HH */
