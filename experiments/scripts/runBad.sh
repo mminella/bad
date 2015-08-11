@@ -72,7 +72,7 @@ experiment() {
 }
 
 # Run experiment
-all "setup_fs b"
+all "setup_all_fs"
 backends "gensort -t16 ${SIZE_B},buf ${MNT}/recs"
 experiment ${ODIR} read
 

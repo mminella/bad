@@ -1,11 +1,11 @@
 #!/bin/bash
-KEY='black.davidterei.com'
-N=3
+KEY=$( hostname )
 FILE=$1
 SAVE=$2
+N=$3
 
-if [ -z "${FILE}" -o -z "${SAVE}" ]; then
-  echo "runExperiment.sh <cluster file> <log path>"
+if [ -z "${FILE}" -o -z "${SAVE}" -o -z "${N}" ]; then
+  echo "runExperiment.sh <cluster file> <log path> <nodes>"
   exit 1
 fi
 
