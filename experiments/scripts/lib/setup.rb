@@ -55,7 +55,9 @@ class Setup
       interactive!
     end
 
-    Net::SSH.start(@opts[:host], @opts[:user], @opts[:skey]) do |ssh|
+    @ssh_opts = @opts[:skey].merge({:user_known_hosts_file => '/dev/null', :paranoid => false})
+
+    Net::SSH.start(@opts[:host], @opts[:user], @ssh_opts) do |ssh|
       # load ssh keys
       for u in USERS
         ssh.exec! "curl -X GET https://api.github.com/users/#{u}/keys \

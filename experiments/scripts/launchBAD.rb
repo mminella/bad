@@ -40,7 +40,7 @@ optparse = OptionParser.new do |opts|
   options[:store] = 0
   options[:terminate] = 0
 
-  options[:key_name] = `hostname`
+  options[:key_name] = `hostname`.strip
   opts.on("-k", "--key KEY_NAME", "Security key name") do |key|
     options[:key_name] = key
   end

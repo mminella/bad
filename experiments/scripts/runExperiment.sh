@@ -1,4 +1,5 @@
 #!/bin/bash
+SSH=ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
 KEY=$( hostname )
 FILE=$1
 SAVE=$2
@@ -17,7 +18,7 @@ source ${FILE}
 # run experiments
 for i in `seq 1 $MN`; do
   declare MV="M${i}"
-  ssh ubuntu@${!MV} run_experiment &
+  ${SSH} ubuntu@${!MV} run_experiment &
 done
 wait
 

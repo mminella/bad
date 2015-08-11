@@ -1,4 +1,5 @@
 #!/bin/bash
+SSH=ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
 KEY=$( hostname )
 LOG='~/bad.log'
 ITERS=1
@@ -37,7 +38,7 @@ done
 all() {
   for i in `seq 1 $MN`; do
     declare MV="M${i}"
-    ssh ubuntu@${!MV} $1
+    ${SSH} ubuntu@${!MV} $1
   done
 }
 
@@ -45,7 +46,7 @@ all() {
 backends() {
   for i in `seq 2 $MN`; do
     declare MV="M${i}"
-    ssh ubuntu@${!MV} $1
+    ${SSH} ubuntu@${!MV} $1
   done
 }
 
@@ -54,7 +55,7 @@ backends() {
 # 2 - chunk size
 # 3 - op
 reader() {
-  ssh ubuntu@${M1} "echo '$1' >> ${LOG};" \
+  ${SSH} ubuntu@${M1} "echo '$1' >> ${LOG};" \
     "meth1_client $2 ${READER_OUT} $3 ${BACKENDS} >> ${LOG}"
 }
 

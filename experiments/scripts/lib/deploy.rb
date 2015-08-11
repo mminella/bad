@@ -53,9 +53,11 @@ class Deploy
       exit 1
     end
 
-    Net::SCP.start(@hostname, @user, @skey).upload!(@tarfile, HOME)
+    @ssh_opts = @skey.merge({:user_known_hosts_file => '/dev/null', :paranoid => false})
 
-    Net::SSH.start(@hostname, @user, @skey) do |ssh|
+    Net::SCP.start(@hostname, @user, @ssh_opts).upload!(@tarfile, HOME)
+
+    Net::SSH.start(@hostname, @user, @ssh_opts) do |ssh|
       ssh.root! "tar xvzf #{HOME}/#{@tarfile} -C /"
     end
   end
