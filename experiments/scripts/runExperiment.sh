@@ -1,5 +1,5 @@
 #!/bin/bash
-SSH=ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
+SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 KEY=$( hostname )
 FILE=$1
 SAVE=$2

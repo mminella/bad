@@ -42,7 +42,7 @@ optparse = OptionParser.new do |opts|
 
   options[:key_name] = `hostname`.strip
   opts.on("-k", "--key KEY_NAME", "Security key name") do |key|
-    options[:key_name] = key
+    options[:key_name] = key.strip
   end
 
   options[:instance_type] = "i2.xlarge"
