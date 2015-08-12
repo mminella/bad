@@ -2,7 +2,7 @@
 #define REC_HH
 
 #include <cstdint>
-#include <string>
+#include <cstring>
 
 /**
  * Record key + disk location

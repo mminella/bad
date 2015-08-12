@@ -14,7 +14,7 @@ LDADD = \
 # need `whole-archive nonsense to work around bug with C++11 condition
 # variables and static linking, and need to be careful to us `-Wl,-lpthread`
 # to avoid libtool reordering flags.
-AM_LDFLAGS = -static -static-libstdc++ -all-static
+AM_LDFLAGS = -static -static-libstdc++ -all-static -lpthread
 #	-Wl,--whole-archive -Wl,-lpthread -Wl,--no-whole-archive
 
 index1_SOURCES = index1.cc
