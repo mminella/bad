@@ -50,6 +50,8 @@ void Client::waitOnRPC( unique_lock<mutex> & lck )
 
 void Client::sendRead( unique_lock<mutex> & lck, uint64_t pos, uint64_t siz )
 {
+  static int pass = 0;
+
   if ( rpcActive_ == Read_ and rpcPos_ == pos ) {
     return;
   }
@@ -59,6 +61,8 @@ void Client::sendRead( unique_lock<mutex> & lck, uint64_t pos, uint64_t siz )
   rpcPos_ = pos;
   rpcSize_ = siz;
   rpcStart_ = time_now();
+
+  cout << "start-read, " << pass++ << ", " << pos << ", " << siz << endl;
 
   char data[1 + 2 * sizeof( uint64_t )];
   data[0] = 0;
@@ -86,6 +90,8 @@ void Client::recvRead( void )
   auto r = sock_.read_buf_all( sizeof( uint64_t ) ).first;
   uint64_t nrecs = *reinterpret_cast<const uint64_t *>( r );
 
+  cout << "recv-read, " << pass << ", " << rpcPos_ << ", " << nrecs << endl;
+
   if ( nrecs > 0 ) {
     vector<Record> recs{};
     recs.reserve( nrecs );
@@ -107,6 +113,7 @@ void Client::recvSize( void )
   static int pass = 0;
   auto str = sock_.read_buf_all( sizeof( uint64_t ) ).first;
   size_ = *reinterpret_cast<const uint64_t *>( str );
+  cout << "recv-size, " << pass << ", " << size_ << endl;
   cout << "size, " << pass++ << ", " << time_diff<ms>( rpcStart_ ) << endl;
 }
 
@@ -144,6 +151,7 @@ vector<Record> Client::DoRead( uint64_t pos, uint64_t size )
     if ( pos >= size_ ) {
       return {};
     } else if ( pos + size > size_ ) {
+      cout << "decreasing size: " << size << " vs " << size_ - pos << endl;
       size = size_ - pos;
     }
   }
@@ -154,6 +162,9 @@ vector<Record> Client::DoRead( uint64_t pos, uint64_t size )
       auto r = move( it->records );
       cache_.erase( it );
       return r;
+    } else if ( it->fpos == pos ) {
+      cout << "matched pos! but wrong size: " << it->records.size() << " vs "
+        << size << endl;
     }
   }
 

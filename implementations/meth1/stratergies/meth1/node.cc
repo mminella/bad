@@ -156,6 +156,8 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
   auto t0 = time_now();
   tdiff_t tsort = 0, tplace = 0;
 
+  size_t rrs = 0, cmps = 0, pushes = 0, pops = 0;
+
   recio_.rewind();
 
   if ( size == 1 ) {
@@ -185,10 +187,15 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
         break;
       }
       RecordPtr next{r, i};
+      rrs++;
+      cmps++;
       if ( next > after ) {
+        cmps++;
         if ( pq.size() < size ) {
+          pushes++;
           pq.emplace( r, i );
         } else if ( next < pq.top() ) {
+          pushes++; pops++;
           pq.emplace( r, i );
           pq.pop();
         }
@@ -203,6 +210,11 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
     cout << "insert, "      << p << ", " << tplace << endl;
     cout << "sort, "        << p << ", " << tsort  << endl;
     cout << "linear scan, " << p << ", " << tt     << endl;
+    cout << "recs, "        << p << ", " << rrs    << endl;
+    cout << "cmps, "        << p << ", " << cmps   << endl;
+    cout << "pushes, "      << p << ", " << pushes << endl;
+    cout << "pops, "        << p << ", " << pops   << endl;
+    cout << "size, "        << p << ", " << size   << endl;
 
     return vrecs;
 #else

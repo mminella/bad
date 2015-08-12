@@ -55,7 +55,9 @@ private:
 
   void read_file( void )
   {
+    static uint64_t pass = 0;
     while ( true ) {
+      size_t blks = 0;
       try {
         ctrl_chn_.recv();
       } catch ( const std::exception & e ) {
@@ -71,6 +73,7 @@ private:
         tt += time_diff<ms>( t0 );
 
         if ( n > 0 ) {
+          blks++;
           block_chn_.send( {wptr_, n} );
           wptr_ += BLOCK;
           if ( wptr_ == buf_ + BUF_SIZE ) {
@@ -83,7 +86,8 @@ private:
           break;
         }
       }
-      std::cout << "read, 0, " << tt << std::endl;
+      std::cout << "read, " << pass++ << ", " << tt << std::endl;
+      std::cout << "blks, " << pass << ", " << blks << std::endl;
     }
   }
 
