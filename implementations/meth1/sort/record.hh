@@ -58,6 +58,10 @@ public:
   /* Should we include or not include disk location information? */
   enum loc_t { WITH_LOC, NO_LOC };
 
+  static size_t cmps;
+  static size_t k_cpys;
+  static size_t v_cpys;
+
 private:
   uint64_t loc_ = 0;
   unsigned char * val_ = nullptr;
@@ -120,8 +124,11 @@ public:
     : loc_{loc}
     , val_{alloc_val()}
   {
+    
     memcpy( key_, s, KEY_LEN );
     memcpy( val_, s+KEY_LEN, VAL_LEN );
+    k_cpys++;
+    v_cpys++;
   }
 
   /* Copy constructor */
@@ -130,8 +137,11 @@ public:
     , val_{alloc_val()}
   {
     memcpy( key_, other.key_, KEY_LEN );
+    k_cpys++;
+
     if ( other.val_ != nullptr ) {
       memcpy( val_, other.val_, VAL_LEN );
+      v_cpys++;
     }
   }
 
@@ -141,11 +151,13 @@ public:
     if ( this != &other ) {
       loc_ = other.loc_;
       memcpy( key_, other.key_, KEY_LEN );
+      k_cpys++;
       if ( other.val_ != nullptr ) {
         if ( val_ == nullptr ) {
           val_ = alloc_val();
         }
         memcpy( val_, other.val_, VAL_LEN );
+        v_cpys++;
       }
     }
     return *this;
@@ -157,6 +169,7 @@ public:
     , val_{other.val_}
   {
     memcpy( key_, other.key_, KEY_LEN );
+    k_cpys++;
     other.val_ = nullptr;
   }
 
@@ -168,6 +181,7 @@ public:
       loc_ = other.loc_;
       val_ = other.val_;
       memcpy( key_, other.key_, KEY_LEN );
+      k_cpys++;
       other.val_ = nullptr;
     }
     return *this;
@@ -264,6 +278,7 @@ public:
 template <typename R1, typename R2>
 inline int compare( const R1 & a, const R2 & b )
 {
+  Record::cmps++;
   // we compare on key first, and then on loc_
   for ( size_t i = 0; i < Record::KEY_LEN; i++ ) {
     if ( a.key()[i] != b.key()[i] ) {

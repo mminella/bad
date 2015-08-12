@@ -5,6 +5,10 @@
 
 using namespace std;
 
+size_t Record::cmps = 0;
+size_t Record::k_cpys = 0;
+size_t Record::v_cpys = 0;
+
 ostream & operator<<( ostream & o, const Record & r )
 {
   o << hex;

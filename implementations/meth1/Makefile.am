@@ -28,10 +28,10 @@ bin-dist:
 	tar cvzf bad.tar.gz -C dist_root .
 
 recs-1gb:
-	../../gensort/gensort 10485700 test/recs-1gb
+	../../gensort/gensort -t8 10485700 test/recs-1gb,buf
 
 recs-10gb:
-	../../gensort/gensort 104857000 test/recs-1gb
+	../../gensort/gensort -t8 104857000 test/recs-10gb,buf
 
 TESTS = \
 	test/channels.test \

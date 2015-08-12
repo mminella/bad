@@ -215,6 +215,9 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
     cout << "pushes, "      << p << ", " << pushes << endl;
     cout << "pops, "        << p << ", " << pops   << endl;
     cout << "size, "        << p << ", " << size   << endl;
+    cout << "r_cmps, "      << p << ", " << Record::cmps << endl;
+    cout << "k_cpys, "      << p << ", " << Record::k_cpys << endl;
+    cout << "v_cpys, "      << p << ", " << Record::v_cpys << endl;
 
     return vrecs;
 #else
