@@ -49,8 +49,8 @@ public:
   static constexpr size_t LOC_LEN = sizeof( uint64_t );
   static constexpr size_t SIZE_WITH_LOC = SIZE + LOC_LEN;
 
-  using key_type = char[KEY_LEN];
-  using val_type = char[VAL_LEN];
+  using key_type = unsigned char[KEY_LEN];
+  using val_type = unsigned char[VAL_LEN];
 
   /* A Max or minimum record type. */
   enum limit_t { MAX, MIN };
@@ -60,7 +60,7 @@ public:
 
 private:
   uint64_t loc_ = 0;
-  char * val_ = nullptr;
+  unsigned char * val_ = nullptr;
   key_type key_;
 
   /* Use a pool allocator for speed */
@@ -80,16 +80,16 @@ private:
     >;
 #endif
 
-  static inline char * alloc_val( void )
+  static inline unsigned char * alloc_val( void )
   {
 #if USE_POOL == 1
-    return reinterpret_cast<char *>( Alloc::allocate() );
+    return reinterpret_cast<unsigned char *>( Alloc::allocate() );
 #else
     return new val_type;
 #endif
   }
 
-  static inline void dealloc_val( char * v )
+  static inline void dealloc_val( unsigned char * v )
   {
     if ( v != nullptr ) {
 #if USE_POOL == 1
@@ -177,12 +177,12 @@ public:
   ~Record( void ) { dealloc_val( val_ ); }
 
   /* Accessors */
-  inline const char * key( void ) const noexcept { return key_; }
-  inline const char * val( void ) const noexcept { return val_; }
+  inline const unsigned char * key( void ) const noexcept { return key_; }
+  inline const unsigned char * val( void ) const noexcept { return val_; }
   inline uint64_t loc( void ) const noexcept { return loc_; }
 
   /* methods for boost::sort */
-  const char * data( void ) const noexcept { return key_; }
+  const char * data( void ) const noexcept { return (char *) key_; }
   unsigned char operator[]( size_t i ) const noexcept { return key_[i]; }
   size_t size( void ) const noexcept { return KEY_LEN; }
 
@@ -200,8 +200,8 @@ public:
   /* To string */
   std::string str( loc_t locinfo = NO_LOC ) const
   {
-    std::string buf( key_, KEY_LEN );
-    buf.append( val_, VAL_LEN );
+    std::string buf( (char *) key_, KEY_LEN );
+    buf.append( (char *) val_, VAL_LEN );
 
     if ( locinfo == WITH_LOC  ) {
       buf.append( reinterpret_cast<const char *>( &loc_  ),
@@ -213,8 +213,8 @@ public:
   /* Write to IO device */
   void write( IODevice & io, loc_t locinfo = NO_LOC ) const
   {
-    io.write_all( key_, KEY_LEN );
-    io.write_all( val_, VAL_LEN );
+    io.write_all( (char *) key_, KEY_LEN );
+    io.write_all( (char *) val_, VAL_LEN );
     if ( locinfo == WITH_LOC ) {
       io.write_all( reinterpret_cast<const char *>( &loc_ ),
                     sizeof( uint64_t ) );
@@ -234,18 +234,18 @@ private:
   friend int compare( const R1 & a, const R2 & b );
 
   uint64_t loc_;
-  const char * r_;
+  const unsigned char * r_;
 
 public:
-  RecordPtr( const char * r, uint64_t loc ) : loc_{loc}, r_{r} {}
+  RecordPtr( const char * r, uint64_t loc ) : loc_{loc}, r_{(unsigned char *) r} {}
 
   RecordPtr( const RecordPtr & rptr ) = delete;
   RecordPtr & operator=( const RecordPtr & rptr ) = delete;
   RecordPtr( RecordPtr && rptr ) = delete;
   RecordPtr & operator=( RecordPtr && rptr ) = delete;
 
-  inline const char * key( void ) const noexcept { return r_; }
-  inline const char * val( void ) const noexcept { return r_ + Record::KEY_LEN; }
+  inline const unsigned char * key( void ) const noexcept { return r_; }
+  inline const unsigned char * val( void ) const noexcept { return r_ + Record::KEY_LEN; }
   inline uint64_t loc( void ) const noexcept { return loc_; }
 
   /* comparison (with Record & RecordPtr) */
@@ -270,13 +270,17 @@ inline int compare( const R1 & a, const R2 & b )
       return a.key()[i] - b.key()[i];
     }
   }
-  if ( a.loc_ < b.loc_ ) {
-    return -1;
+  int cmp = 0;
+  // int cmp = std::memcmp( a.key(), b.key(), Record::KEY_LEN );
+  if ( cmp == 0 ) {
+    if ( a.loc_ < b.loc_ ) {
+      return -1;
+    }
+    if ( a.loc_ > b.loc_ ) {
+      return 1;
+    }
   }
-  if ( a.loc_ > b.loc_ ) {
-    return 1;
-  }
-  return 0;
+  return cmp;
 }
 
 #endif /* RECORD_HH */
