@@ -219,6 +219,10 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
     cout << "k_cpys, "      << p << ", " << Record::k_cpys << endl;
     cout << "v_cpys, "      << p << ", " << Record::v_cpys << endl;
 
+    Record::cmps = 0;
+    Record::k_cpys = 0;
+    Record::v_cpys = 0;
+
     return vrecs;
 #else
     // TWEAK: sort + merge block size...
