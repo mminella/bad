@@ -63,10 +63,13 @@ private:
       } catch ( const std::exception & e ) {
           return;
       }
+      std::cout << "read_file, " << pass << ", " << timestamp<ms>()
+        << ", start" << std::endl;
       io_.rewind();
 
       tdiff_t tt = 0;
       char * wptr_ = buf_;
+      auto ts = time_now();
       while ( true ) {
         auto t0 = time_now();
         size_t n = io_.read( wptr_, BLOCK );
@@ -86,8 +89,10 @@ private:
           break;
         }
       }
-      std::cout << "read, " << pass++ << ", " << tt << std::endl;
-      std::cout << "blks, " << pass << ", " << blks << std::endl;
+      auto tblocked = time_diff<ms>( ts );
+      std::cout << "read, " << pass << ", " << tt << std::endl;
+      std::cout << "read (blocked), " << pass << ", " << tblocked << std::endl;
+      std::cout << "blks, " << pass++ << ", " << blks << std::endl;
     }
   }
 
@@ -190,6 +195,68 @@ public:
       memcpy( rec + partial, pos_, rec_size - partial );
       pos_ += rec_size - partial;
       return rec;
+    }
+  }
+};
+
+/**
+ * Reads whole file into memory and serves from there.
+ */
+template<size_t rec_size>
+class MemoryIO
+{
+private:
+  OverlappedIO io_;
+  char * bstart_;
+  char * bend_;
+  char * bready_;
+  char * pos_;
+  bool eof_;
+
+public:
+  MemoryIO( File & io )
+    : io_{io}, bstart_{new char[io.size()]}, bend_{bstart_ + io.size()}
+    , bready_{bstart_}, pos_{bstart_} , eof_{false}
+  {
+    io_.rewind();
+  };
+
+  MemoryIO( const MemoryIO & r ) = delete;
+  MemoryIO( MemoryIO && r ) = delete;
+  MemoryIO & operator=( const MemoryIO & r ) = delete;
+  MemoryIO & operator=( MemoryIO && r ) = delete;
+
+  void rewind( void )
+  {
+    eof_ = false;
+    pos_ = bstart_;
+  }
+
+  bool eof( void ) const noexcept { return eof_; }
+
+  const char * next_record( void )
+  {
+    if ( eof_ ) {
+      return nullptr;
+    }
+
+    while ( true ) {
+      if ( pos_ + rec_size <= bready_ ) {
+        const char * p = pos_;
+        pos_ += rec_size;
+        return p;
+      } else if ( pos_ + rec_size > bend_ ) {
+        eof_ = true;
+        return nullptr;
+      } else {
+        auto blk = io_.next_block();
+        if ( blk.first == nullptr ) {
+          eof_ = true;
+          return nullptr;
+        }
+        memcpy( pos_, blk.first, blk.second );
+        bready_ += blk.second;
+      }
     }
   }
 };

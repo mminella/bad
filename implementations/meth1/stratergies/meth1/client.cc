@@ -96,7 +96,7 @@ void Client::recvRead( void )
     vector<Record> recs{};
     recs.reserve( nrecs );
     for ( uint64_t i = 0; i < nrecs; i++ ) {
-      r = sock_.read_buf_all( Record::SIZE ).first;
+      r = sock_.read_buf_all( Rec::SIZE ).first;
       recs.emplace_back( r );
     }
 

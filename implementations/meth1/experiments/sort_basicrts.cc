@@ -23,7 +23,7 @@ int run( char * fin, char * fout )
   BufferedIO_O<File> fdi( {fin, O_RDONLY} );
   BufferedIO_O<File> fdo( {fout, O_WRONLY | O_CREAT | O_TRUNC,
                                  S_IRUSR | S_IWUSR} );
-  size_t nrecs = fdi.io().size() / Record::SIZE;
+  size_t nrecs = fdi.io().size() / Rec::SIZE;
   vector<Record> recs;
   recs.reserve( nrecs );
 
@@ -31,7 +31,7 @@ int run( char * fin, char * fout )
 
   // read
   for ( uint64_t i = 0;; i++ ) {
-    const char * r = fdi.read_buf( Record::SIZE ).first;
+    const char * r = fdi.read_buf( Rec::SIZE ).first;
     if ( fdi.eof() ) {
       break;
     }

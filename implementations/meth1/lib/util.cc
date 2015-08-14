@@ -20,6 +20,11 @@ string str_to_hex( const string & in )
   return str_to_hex( buf, in.length() );
 }
 
+string str_to_hex( const char * const in, size_t size )
+{
+  return str_to_hex( (const uint8_t * const) in, size );
+}
+
 /* Convert a string to hexadecimal form */
 string str_to_hex( const uint8_t * const in, size_t size )
 {
@@ -27,7 +32,7 @@ string str_to_hex( const uint8_t * const in, size_t size )
     return "";
   }
 
-  static const char * const lut = "0123456789ABCDEF";
+  static const char * const lut = "0123456789abcdef";
 
   string str;
   str.reserve( size * 2 );

@@ -17,6 +17,7 @@ LDADD = \
 	../lib/libbasicrts.la \
 	../sort/libsort.la \
 	../stratergies/meth1/libmeth1.la \
+	-lpthread \
 	$(BOOST_LIBS)
 
 # need `whole-archive nonsense to work around bug with C++11 condition

@@ -35,7 +35,7 @@ Node::Node( string file, string port, uint64_t max_mem, bool odirect )
   : data_{file.c_str(), odirect ? O_RDONLY | O_DIRECT : O_RDONLY}
   , recio_{data_}
   , port_{port}
-  , last_{Record::MIN}
+  , last_{Rec::MIN}
   , fpos_{0}
   , max_mem_{max_mem}
 {
@@ -60,12 +60,15 @@ void Node::Run( void )
         }
         switch ( str[0] ) {
         case 0:
+          cout << "rpc: read" << endl;
           RPC_Read( client );
           break;
         case 1:
+          cout << "rpc: size" << endl;
           RPC_Size( client );
           break;
         default:
+          cout << "rpc: unknown" << endl;
           throw runtime_error( "Unknown RPC method: " + to_string(str[0]) );
           break;
         }
@@ -82,9 +85,12 @@ void Node::RPC_Read( BufferedIO_O<TCPSocket> & client )
   uint64_t pos = *( reinterpret_cast<const uint64_t *>( str ) );
   uint64_t amt = *( reinterpret_cast<const uint64_t *>( str ) + 1 );
 
-  vector<Record> recs = Read( pos, amt );
-  uint64_t siz = recs.size();
+  vector<Record> recs;
+  if ( pos < Size() ) {
+    recs = Read( pos, amt );
+  }
 
+  uint64_t siz = recs.size();
   client.write_all( reinterpret_cast<const char *>( &siz ), sizeof( uint64_t ) );
   for ( auto const & r : recs ) {
     r.write( client );
@@ -103,17 +109,24 @@ void Node::DoInitialize( void ) { return; }
 
 vector<Record> Node::DoRead( uint64_t pos, uint64_t size )
 {
+  static size_t pass = 0;
+
+  auto t0 = time_now();
   auto recs = linear_scan( seek( pos ), size );
   if ( recs.size() > 0 ) {
     last_ = recs.back();
     fpos_ = pos + recs.size();
   }
+  cout << "do-read, " << pass++ << ", " << time_diff<ms>( t0 ) << endl;
+  cout << endl;
+  cout << endl;
+
   return recs;
 }
 
 uint64_t Node::DoSize( void )
 {
-  return data_.size() / Record::SIZE;
+  return data_.size() / Rec::SIZE;
 }
 
 inline uint64_t Node::rec_sort( vector<Record> & recs ) const
@@ -131,11 +144,13 @@ Record Node::seek( uint64_t pos )
 {
   // can we continue from last time?
   if ( pos == 0 ) {
-    last_ = Record::MIN;
+    last_ = Rec::MIN;
+  } else if ( pos >= Size() ) {
+    last_ = Rec::MAX;
   } else if ( fpos_ != pos ) {
     // remember, retrieving the record just before `pos`
     for ( uint64_t i = 0; i < pos; i += max_mem_ ) {
-      auto recs = linear_scan( Record{Record::MIN}, min( pos - i, max_mem_ ) );
+      auto recs = linear_scan( Record{Rec::MIN}, min( pos - i, max_mem_ ) );
       if ( recs.size() == 0 ) {
         break;
       }
@@ -156,13 +171,16 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
   auto t0 = time_now();
   tdiff_t tsort = 0, tplace = 0;
 
+  cout << "linear_scan, " << p << ", " << timestamp<ms>()
+    << ", start" << endl;
+
   size_t rrs = 0, cmps = 0, pushes = 0, pops = 0;
 
   recio_.rewind();
 
   if ( size == 1 ) {
     // optimized case: size = 1
-    auto min = Record( Record::MAX );
+    auto min = Record( Rec::MAX );
     for ( uint64_t i = 0;; i++ ) {
       const char * r = recio_.next_record();
       if ( r == nullptr ) {
@@ -173,6 +191,10 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
         min = Record( r, i );
       }
     }
+
+    auto tt = time_diff<ms>( t0 );
+    cout << "linear scan, " << p << ", " << tt     << endl;
+
     return {min};
   } else {
     // general case: size = n
@@ -210,18 +232,12 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
     cout << "insert, "      << p << ", " << tplace << endl;
     cout << "sort, "        << p << ", " << tsort  << endl;
     cout << "linear scan, " << p << ", " << tt     << endl;
+    cout << endl;
     cout << "recs, "        << p << ", " << rrs    << endl;
     cout << "cmps, "        << p << ", " << cmps   << endl;
     cout << "pushes, "      << p << ", " << pushes << endl;
     cout << "pops, "        << p << ", " << pops   << endl;
     cout << "size, "        << p << ", " << size   << endl;
-    cout << "r_cmps, "      << p << ", " << Record::cmps << endl;
-    cout << "k_cpys, "      << p << ", " << Record::k_cpys << endl;
-    cout << "v_cpys, "      << p << ", " << Record::v_cpys << endl;
-
-    Record::cmps = 0;
-    Record::k_cpys = 0;
-    Record::v_cpys = 0;
 
     return vrecs;
 #else
@@ -268,6 +284,7 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
     cout << "sort, "        << p << ", " << tsort  << endl;
     cout << "merge, "       << p << ", " << tmerge << endl;
     cout << "linear scan, " << p << ", " << tt     << endl;
+    cout << endl;
 
     return vpast;
 #endif

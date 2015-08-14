@@ -28,7 +28,7 @@ class Node : public Implementation
 {
 private:
   File data_;
-  OverlappedRecordIO<Record::SIZE> recio_;
+  MemoryIO<Rec::SIZE> recio_;
   std::string port_;
   Record last_;
   uint64_t fpos_;
