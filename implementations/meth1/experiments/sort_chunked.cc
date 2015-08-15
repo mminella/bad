@@ -24,7 +24,8 @@ using namespace boost::sort::spreadsort;
 
 using namespace std;
 
-using RR = R;
+// using RR = R;
+using RR = RecordS;
 
 RR * scan( char * buf, size_t nrecs, size_t size, const RR & after )
 {
@@ -40,7 +41,7 @@ RR * scan( char * buf, size_t nrecs, size_t size, const RR & after )
     for ( r1s = 0; r1s < r1x and i < nrecs; i++ ) {
       const unsigned char * r = (const unsigned char *) buf + Rec::SIZE * i;
       if ( after.compare( r, i ) < 0 ) {
-        r1[r1s++].init( r, i );
+        r1[r1s++].copy( r, i );
       }
     }
     
@@ -69,7 +70,7 @@ RR * scan( char * buf, size_t nrecs, size_t size, const RR & after )
   // r3 and r2 share storage cells, so clear to nullptr first.
   // TODO: arena or other stratergy may be better here.
   for ( uint64_t i = 0; i < size; i++ ) {
-    r3[i].val = nullptr;
+    r3[i].val_ = nullptr;
   }
 #endif
   delete[] r3;
@@ -113,14 +114,14 @@ void run( char * fin )
 
   // starting record
   RR after;
-  memset( after.key, 0x00, Rec::KEY_LEN );
+  memset( after.key_, 0x00, Rec::KEY_LEN );
 
   // scan file
   auto t1 = time_now();
   for ( uint64_t i = 0; i < split; i++ ) {
     auto r = scan( buf, nrecs, chunk, after );
     after = move( r[chunk - 1] );
-    cout << "last: " << str_to_hex( after.key, Rec::KEY_LEN ) << endl;
+    cout << "last: " << str_to_hex( after.key_, Rec::KEY_LEN ) << endl;
   }
   cout << endl << "total: " << time_diff<ms>( t1 ) << endl;
 }

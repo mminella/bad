@@ -90,14 +90,14 @@ void run( char * fin )
 
   // starting record
   R after;
-  memset( after.key, 0x00, Rec::KEY_LEN );
+  memset( after.key_, 0x00, Rec::KEY_LEN );
 
   // scan file
   auto t1 = time_now();
   for ( uint64_t i = 0; i < split; i++ ) {
     auto r = scan( buf, nrecs, chunk, after );
     after = move( r[chunk - 1] );
-    cout << "last: " << str_to_hex( after.key, Rec::KEY_LEN ) << endl;
+    cout << "last: " << str_to_hex( after.key_, Rec::KEY_LEN ) << endl;
   }
   cout << endl << "total: " << time_diff<ms>( t1 ) << endl;
 }

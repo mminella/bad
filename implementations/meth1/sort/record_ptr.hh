@@ -45,8 +45,8 @@ public:
   comp_op( >, Record )
   comp_op( >, RecordPtr )
 
-  int compare( const Record & b ) const;
-  int compare( const RecordPtr & b ) const;
+  int compare( const Record & b ) const noexcept;
+  int compare( const RecordPtr & b ) const noexcept;
 };
 
 #endif /* RECORD_PTR_HH */

@@ -1,5 +1,5 @@
-#ifndef RECORD_T_HH
-#define RECORD_T_HH
+#ifndef RECORD_T_SHALLOW_HH
+#define RECORD_T_SHALLOW_HH
 
 #include <cstdint>
 #include <cstring>
@@ -11,9 +11,12 @@
 #include "record_common.hh"
 
 /**
- * Represent a record in the sort benchmark.
+ * Represent a record in the sort benchmark. This differs slightly from
+ * `Record` in that the copy constructor does a shallow copy of the value. This is
+ * dangerous to use then since each RecordS assumes it owns the raw value pointer,
+ * yet we copy it. But this can be powerful for performance when used correctly.
  */
-class Record
+class RecordS
 {
 public:
   uint64_t loc_ = 0;
@@ -28,10 +31,10 @@ public:
     memcpy( key_, r, Rec::KEY_LEN );
   }
 
-  Record( void ) noexcept {}
+  RecordS( void ) noexcept {}
 
   /* Construct a min or max record. */
-  Record( Rec::limit_t lim ) noexcept
+  RecordS( Rec::limit_t lim ) noexcept
     : val_{alloc_val()}
   {
     if ( lim == Rec::MAX ) {
@@ -42,40 +45,34 @@ public:
   }
 
   /* Construct from c string read from disk */
-  Record( const uint8_t * s, uint64_t loc = 0 ) { copy( s, loc ); }
-  Record( const char * s, uint64_t loc = 0 ) { copy( (uint8_t *) s, loc ); }
+  RecordS( const uint8_t * s, uint64_t loc = 0 ) { copy( s, loc ); }
+  RecordS( const char * s, uint64_t loc = 0 ) { copy( (uint8_t *) s, loc ); }
 
-  Record( const Record & other )
+  RecordS( const RecordS & other )
     : loc_{other.loc_}
-    , val_{alloc_val()}
   {
-    if ( other.val_ != nullptr ) {
-      memcpy( val_, other.val_, Rec::VAL_LEN );
-    }
+    val_ = other.val_;
     memcpy( key_, other.key_, Rec::KEY_LEN );
   }
 
-  Record & operator=( const Record & other )
+  RecordS & operator=( const RecordS & other )
   {
     if ( this != &other ) {
       loc_ = other.loc_;
-      if ( other.val_ != nullptr ) {
-        if ( val_ == nullptr ) { val_ = alloc_val(); }
-        memcpy( val_, other.val_, Rec::VAL_LEN );
-      }
+      val_ = other.val_;
       memcpy( key_, other.key_, Rec::KEY_LEN );
     }
     return *this;
   }
 
-  Record( Record && other )
+  RecordS( RecordS && other )
     : loc_{other.loc_}
   {
     std::swap( val_, other.val_ );
     memcpy( key_, other.key_, Rec::KEY_LEN );
   }
 
-  Record & operator=( Record && other )
+  RecordS & operator=( RecordS && other )
   {
     if ( this != &other ) {
       loc_ = other.loc_;
@@ -85,7 +82,7 @@ public:
     return *this;
   }
 
-  ~Record( void ) { dealloc_val( val_ ); }
+  ~RecordS( void ) { dealloc_val( val_ ); }
 
   /* Accessors */
   const uint8_t * key( void ) const noexcept { return key_; }
@@ -98,15 +95,15 @@ public:
   size_t size( void ) const noexcept { return Rec::KEY_LEN; }
 
   /* comparison */
-  comp_op( <, Record )
+  comp_op( <, RecordS )
   comp_op( <, RecordPtr )
-  comp_op( <=, Record )
+  comp_op( <=, RecordS )
   comp_op( <=, RecordPtr )
-  comp_op( >, Record )
+  comp_op( >, RecordS )
   comp_op( >, RecordPtr )
 
   int compare( const uint8_t * k, uint64_t l ) const noexcept;
-  int compare( const Record & b ) const noexcept;
+  int compare( const RecordS & b ) const noexcept;
   int compare( const RecordPtr & b ) const noexcept;
 
   /* Write to IO device */
@@ -121,11 +118,11 @@ public:
   }
 };
 
-std::ostream & operator<<( std::ostream & o, const Record & r );
+std::ostream & operator<<( std::ostream & o, const RecordS & r );
 
-inline void iter_swap ( Record * a, Record * b ) noexcept
+inline void iter_swap ( RecordS * a, RecordS * b ) noexcept
 {
   std::swap( *a, *b );
 }
 
-#endif /* RECORD_T_HH */
+#endif /* RECORD_T_SHALLOW_HH */

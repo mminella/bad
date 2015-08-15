@@ -11,15 +11,16 @@
  * - new                     -- 285ms
  * - boost::pool (mutex)     -- 540ms
  */
+#include "record_common.hh"
 
 #include "../config.h"
 #ifdef HAVE_BOOST_POOL_POOL_ALLOC_HPP
-#define USE_POOL 1
+#define USE_POOL 0
 #include <boost/pool/pool_alloc.hpp>
 #endif
 
 #if USE_POOL == 1
-using val_type = unsigned char[90];
+using val_type = uint8_t[Rec::VAL_LEN];
 
 using Alloc = boost::fast_pool_allocator
   < val_type
@@ -30,20 +31,20 @@ using Alloc = boost::fast_pool_allocator
   , 42 , 42 >;
 #endif
 
-inline unsigned char * alloc_val( void )
+inline uint8_t * alloc_val( void )
 {
 #if USE_POOL == 1
-  return reinterpret_cast<unsigned char *>( Alloc::allocate() );
+  return (uint8_t *) Alloc::allocate();
 #else
-  return new unsigned char[90];
+  return new uint8_t[Rec::VAL_LEN];
 #endif
 }
 
-inline void dealloc_val( unsigned char * v )
+inline void dealloc_val( uint8_t * v )
 {
   if ( v != nullptr ) {
 #if USE_POOL == 1
-    Alloc::deallocate( reinterpret_cast<val_type *>( v ) );
+    Alloc::deallocate( (val_type *) v );
 #else
     delete v;
 #endif

@@ -5,7 +5,7 @@
 #include <cstring>
 
 #define comp_op( op, t ) \
-  bool operator op( const t & b ) const \
+  bool operator op( const t & b ) const noexcept \
   { \
     return compare( b ) op 0 ? true : false; \
   }

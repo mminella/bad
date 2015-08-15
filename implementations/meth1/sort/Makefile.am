@@ -4,6 +4,7 @@ libsort_la_SOURCES = \
 	alloc.hh \
 	record.hh \
 	record_t.hh record_t.cc \
+	record_t_shallow.hh record_t_shallow.cc \
 	record_ptr.hh \
 	record_common.hh
 
