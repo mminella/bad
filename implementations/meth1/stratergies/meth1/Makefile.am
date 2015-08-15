@@ -12,7 +12,8 @@ libmeth1_la_CPPFLAGS = \
 	-I$(srcdir)/.. \
 	-I$(srcdir)/../.. \
 	-I$(srcdir)/../../sort \
-	-I$(srcdir)/../../lib
+	-I$(srcdir)/../../lib \
+	-I$(srcdir)/../../contrib
 
 libmeth1_la_LIBADD = \
 	../../lib/libbasicrts.la \

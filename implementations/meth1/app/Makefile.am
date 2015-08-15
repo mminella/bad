@@ -11,14 +11,14 @@ AM_CPPFLAGS = \
 	-I$(srcdir)/../lib \
 	-I$(srcdir)/../sort \
 	-I$(srcdir)/../stratergies \
-	-I$(srcdir)/../stratergies/meth1
+	-I$(srcdir)/../stratergies/meth1 \
+	-I$(srcdir)/../contrib
 
 LDADD = \
 	../lib/libbasicrts.la \
 	../sort/libsort.la \
 	../stratergies/meth1/libmeth1.la \
-	-lpthread \
-	$(BOOST_LIBS)
+	-lpthread
 
 # need `whole-archive nonsense to work around bug with C++11 condition
 # variables and static linking, and need to be careful to us `-Wl,-lpthread`
