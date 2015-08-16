@@ -1,28 +1,24 @@
 /**
- * Do a local machine sort using the method1::Node backend.
- *
- * Variation that overlaps read+write of sorted records.
+ * Do a local machine sort using the method1::Node backend + write out
+ * (overlapped) to disk.
  */
-#include <chrono>
 #include <iostream>
 #include <system_error>
 #include <thread>
 
 #include "channel.hh"
+#include "timestamp.hh"
 #include "record.hh"
-
 #include "node.hh"
 
 using namespace std;
 using namespace meth1;
 
-using clk = chrono::high_resolution_clock;
-
 static constexpr size_t MAX_MEM = 2097152; // 200MB
 
 using Recs = vector<Record>;
 
-clk::duration ttr, ttw;
+tdiff_t ttr, ttw;
 
 // reader co-ordinator -- seperate thread to allow R+W overlap.
 void reader( Node * node, size_t block_size,
@@ -35,85 +31,84 @@ void reader( Node * node, size_t block_size,
     } catch ( const std::exception & e ) {
         return;
     }
-    auto tr = clk::now();
+    auto tr = time_now();
     auto recs = node->Read( pos, block_size );
-    ttr += clk::now() - tr;
+    ttr += time_diff<ms>( tr );
     resp.send( move( recs ) );
   }
 }
 
-int run( char * fin, char * fout, double block )
+void run( char * fin, char * fout, double block )
 {
   BufferedIO_O<File> out( {fout, O_WRONLY | O_CREAT | O_TRUNC,
                                  S_IRUSR | S_IWUSR} );
-  auto t0 = clk::now();
+  auto t0 = time_now();
 
   // start node
   Node node{fin, "0", MAX_MEM};
   node.Initialize();
-  auto t1 = clk::now();
+  auto t1 = time_now();
 
   // size
   auto siz = node.Size();
-  auto t2 = clk::now();
+  auto t2 = time_now();
+
+  if ( siz <= 0 ) {
+    cout << "Empty file!" << endl;
+    return;
+  }
 
   // read + write
-  if ( siz > 0 ) {
-    Channel<size_t> req( 0 );
-    Channel<Recs> resp( 0 );
-    size_t block_size = block * siz;
-    thread rthread( reader, &node, block_size, req, resp );
+  Channel<size_t> req( 0 );
+  Channel<Recs> resp( 0 );
+  size_t block_size = block * siz;
+  thread rthread( reader, &node, block_size, req, resp );
 
-    req.send( 0 );
-    for ( size_t i = block_size; i < siz; i += block_size ) {
-      auto recs = resp.recv();
-      req.send( i ); // send now to overlap with writing.
-
-      auto tw = clk::now();
-      for ( auto & r : recs ) {
-        r.write( out );
-      }
-      out.flush( true );
-      out.io().fsync();
-      ttw += clk::now() - tw;
-    }
-
-    // last block
+  req.send( 0 );
+  for ( size_t i = block_size; i < siz; i += block_size ) {
     auto recs = resp.recv();
-    auto tw = clk::now();
+    req.send( i ); // send now to overlap with writing.
+
+    auto tw = time_now();
     for ( auto & r : recs ) {
       r.write( out );
     }
     out.flush( true );
     out.io().fsync();
-    ttw += clk::now() - tw;
-    
-    // done
-    req.close();
-    rthread.join();
+    ttw += time_diff<ms>( tw );
   }
 
-  auto t3 = clk::now();
+  // last block
+  auto recs = resp.recv();
+  auto tw = time_now();
+  for ( auto & r : recs ) {
+    r.write( out );
+  }
+  out.flush( true );
+  out.io().fsync();
+  ttw += time_diff<ms>( tw );
+  
+  // done
+  req.close();
+  rthread.join();
+
+  auto t3 = time_now();
 
   // stats
-  auto tinit = chrono::duration_cast<chrono::milliseconds>( t1 - t0 ).count();
-  auto tsize = chrono::duration_cast<chrono::milliseconds>( t2 - t1 ).count();
-  auto tread = chrono::duration_cast<chrono::milliseconds>( ttr ).count();
-  auto twrit = chrono::duration_cast<chrono::milliseconds>( ttw ).count();
-  auto ttota = chrono::duration_cast<chrono::milliseconds>( t3 - t0 ).count();
+  auto tinit = time_diff<ms>( t1, t0 );
+  auto tsize = time_diff<ms>( t2, t1 );
+  auto ttota = time_diff<ms>( t3, t0 );
 
   cout << "-----------------------" << endl;
   cout << "Records " << siz << endl;
   cout << "-----------------------" << endl;
   cout << "Start took " << tinit << "ms" << endl;
   cout << "Size  took " << tsize << "ms" << endl;
-  cout << "Read  took " << tread << "ms (read + sort)" << endl;
-  cout << "Write took " << twrit << "ms" << endl;
+  cout << "Read  took " << ttr   << "ms (read + sort)" << endl;
+  cout << "Write took " << ttw   << "ms" << endl;
   cout << "Total took " << ttota << "ms" << endl;
   cout << "Writ calls (buf) " << out.write_count() << endl;
   cout << "Writ calls (dir) " << out.io().write_count() << endl;
-
-  return EXIT_SUCCESS;
 }
 
 void check_usage( const int argc, const char * const argv[] )

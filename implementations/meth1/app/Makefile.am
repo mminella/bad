@@ -2,8 +2,8 @@ bin_PROGRAMS = \
 	meth1_client \
 	meth1_client_test \
 	meth1_node \
-	meth1_node_test \
-	meth1_node_test2 \
+	meth1_node_test_r \
+	meth1_node_test_rw \
 	meth1_shell
 
 AM_CPPFLAGS = \
@@ -20,14 +20,14 @@ LDADD = \
 	../stratergies/meth1/libmeth1.la \
 	-lpthread
 
-# need `whole-archive nonsense to work around bug with C++11 condition
-# variables and static linking, and need to be careful to us `-Wl,-lpthread`
-# to avoid libtool reordering flags.
-AM_LDFLAGS = -static -static-libstdc++ -all-static \
-	-Wl,--whole-archive -Wl,-lpthread -Wl,--no-whole-archive
+# # need `whole-archive nonsense to work around bug with C++11 condition
+# # variables and static linking, and need to be careful to us `-Wl,-lpthread`
+# # to avoid libtool reordering flags.
+# AM_LDFLAGS = -static -static-libstdc++ -all-static \
+# 	-Wl,--whole-archive -Wl,-lpthread -Wl,--no-whole-archive
 
-meth1_node_test_SOURCES = meth1_node_test.cc
-meth1_node_test2_SOURCES = meth1_node_test2.cc
+meth1_node_test_r_SOURCES = meth1_node_test_r.cc
+meth1_node_test_rw_SOURCES = meth1_node_test_rw.cc
 meth1_client_test_SOURCES = meth1_client_test.cc
 
 meth1_client_SOURCES = meth1_client.cc

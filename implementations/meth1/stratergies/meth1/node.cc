@@ -20,7 +20,7 @@
 
 #include "config.h"
 
-#define USE_PQ
+#define USE_PQ 0
 
 using namespace std;
 using namespace meth1;
@@ -167,7 +167,7 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
   if ( size == 1 ) {
     return linear_scan_one( after );
   } else {
-#ifdef USE_PQ
+#if USE_PQ == 1
     return linear_scan_pq( after, size );
 #else
     return linear_scan_chunk( after, size );
@@ -219,14 +219,15 @@ vector<Record> Node::linear_scan_pq( const Record & after, uint64_t size )
     rrs++;
     cmps++;
     if ( next > after ) {
-      cmps++;
       if ( pq.size() < size ) {
         pushes++;
         pq.emplace( r, i );
       } else if ( next < pq.top() ) {
-        pushes++; pops++;
+        cmps++; pushes++; pops++;
         pq.emplace( r, i );
         pq.pop();
+      } else {
+        cmps++;
       }
     }
   }
