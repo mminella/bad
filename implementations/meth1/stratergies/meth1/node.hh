@@ -6,11 +6,11 @@
 
 #include "buffered_io.hh"
 #include "file.hh"
+#include "overlapped_rec_io.hh"
 #include "socket.hh"
 #include "timestamp.hh"
 
 #include "implementation.hh"
-#include "overlapped_io.hh"
 #include "record.hh"
 
 /**
@@ -28,21 +28,20 @@ class Node : public Implementation
 {
 private:
   File data_;
-  MemoryIO<Rec::SIZE> recio_;
+  OverlappedRecordIO<Rec::SIZE> recio_;
   std::string port_;
   Record last_;
   uint64_t fpos_;
   uint64_t max_mem_;
+  uint64_t lpass_;
 
 public:
   Node( std::string file, std::string port, uint64_t max_memory,
         bool odirect = false );
 
-  /* No copy */
+  /* No copy or move */
   Node( const Node & n ) = delete;
   Node & operator=( const Node & n ) = delete;
-
-  /* Allow move */
   Node( Node && n ) = delete;
   Node & operator=( Node && n ) = delete;
 
@@ -58,6 +57,9 @@ private:
   Record seek( uint64_t pos );
 
   std::vector<Record> linear_scan( const Record & after, uint64_t size = 1 );
+  std::vector<Record> linear_scan_one( const Record & after );
+  std::vector<Record> linear_scan_pq( const Record & after, uint64_t size );
+  std::vector<Record> linear_scan_chunk( const Record & after, uint64_t size );
 
   void RPC_Read( BufferedIO_O<TCPSocket> & client );
   void RPC_Size( BufferedIO_O<TCPSocket> & client );

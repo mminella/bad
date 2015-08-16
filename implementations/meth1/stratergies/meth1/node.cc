@@ -8,6 +8,7 @@
 #include "buffered_io.hh"
 #include "exception.hh"
 #include "file.hh"
+#include "overlapped_rec_io.hh"
 #include "socket.hh"
 #include "timestamp.hh"
 #include "util.hh"
@@ -15,7 +16,6 @@
 #include "record.hh"
 
 #include "node.hh"
-#include "overlapped_io.hh"
 #include "priority_queue.hh"
 
 #include "config.h"
@@ -38,10 +38,13 @@ Node::Node( string file, string port, uint64_t max_mem, bool odirect )
   , last_{Rec::MIN}
   , fpos_{0}
   , max_mem_{max_mem}
+  , lpass_{0}
 {
 }
 
-/* run the node - list and respond to RPCs */
+void Node::DoInitialize( void ) { return; }
+
+/* Run the node - list and respond to RPCs */
 void Node::Run( void )
 {
   TCPSocket sock{IPV4};
@@ -52,7 +55,6 @@ void Node::Run( void )
   while ( true ) {
     try {
       BufferedIO_O<TCPSocket> client {sock.accept()};
-
       while ( true ) {
         const char * str = client.read_buf_all( 1 ).first;
         if ( client.eof() ) {
@@ -60,15 +62,12 @@ void Node::Run( void )
         }
         switch ( str[0] ) {
         case 0:
-          cout << "rpc: read" << endl;
           RPC_Read( client );
           break;
         case 1:
-          cout << "rpc: size" << endl;
           RPC_Size( client );
           break;
         default:
-          cout << "rpc: unknown" << endl;
           throw runtime_error( "Unknown RPC method: " + to_string(str[0]) );
           break;
         }
@@ -105,8 +104,6 @@ void Node::RPC_Size( BufferedIO_O<TCPSocket> & client )
   client.flush( true );
 }
 
-void Node::DoInitialize( void ) { return; }
-
 vector<Record> Node::DoRead( uint64_t pos, uint64_t size )
 {
   static size_t pass = 0;
@@ -117,7 +114,7 @@ vector<Record> Node::DoRead( uint64_t pos, uint64_t size )
     last_ = recs.back();
     fpos_ = pos + recs.size();
   }
-  cout << "do-read, " << pass++ << ", " << time_diff<ms>( t0 ) << endl;
+  cout << "do-read, " << ++pass << ", " << time_diff<ms>( t0 ) << endl;
   cout << endl;
   cout << endl;
 
@@ -140,6 +137,7 @@ inline uint64_t Node::rec_sort( vector<Record> & recs ) const
   return time_diff<ms>( t0 );
 }
 
+/* Return the record that corresponds to the specified position. */
 Record Node::seek( uint64_t pos )
 {
   // can we continue from last time?
@@ -157,136 +155,148 @@ Record Node::seek( uint64_t pos )
       last_ = recs.back();
     }
   }
-
   return last_;
 }
 
-/* Perform a full linear scan to return the next smallest record that occurs
- * after the 'after' record. */
+/* Perform a single linear scan of the file, returning the next `size` smallest
+ * records that occur directly after the `after` record. */
 vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 {
-  static uint64_t pass = 0;
-  uint64_t p = pass++;
-
-  auto t0 = time_now();
-  tdiff_t tsort = 0, tplace = 0;
-
-  cout << "linear_scan, " << p << ", " << timestamp<ms>()
+  cout << "linear_scan, " << ++lpass_ << ", " << timestamp<ms>()
     << ", start" << endl;
+  if ( size == 1 ) {
+    return linear_scan_one( after );
+  } else {
+#ifdef USE_PQ
+    return linear_scan_pq( after, size );
+#else
+    return linear_scan_chunk( after, size );
+#endif
+  }
+}
 
-  size_t rrs = 0, cmps = 0, pushes = 0, pops = 0;
+/* Linear scan optimized for retrieving just one record. */
+vector<Record> Node::linear_scan_one( const Record & after )
+{
+  auto t0 = time_now();
+  auto min = Record( Rec::MAX );
 
   recio_.rewind();
 
-  if ( size == 1 ) {
-    // optimized case: size = 1
-    auto min = Record( Rec::MAX );
-    for ( uint64_t i = 0;; i++ ) {
-      const char * r = recio_.next_record();
-      if ( r == nullptr ) {
-        break;
-      }
-      RecordPtr next{r, i};
-      if ( next < min and next > after ) {
-        min = Record( r, i );
+  for ( uint64_t i = 0;; i++ ) {
+    const char * r = recio_.next_record();
+    if ( r == nullptr ) {
+      break;
+    }
+    RecordPtr next{r, i};
+    if ( next > after and min > next ) {
+      min = Record( r, i );
+    }
+  }
+
+  auto tt = time_diff<ms>( t0 );
+  cout << "linear scan, " << lpass_ << ", " << tt << endl;
+  return {min};
+}
+
+/* Linear scan using a priority queue for sorting. */
+vector<Record> Node::linear_scan_pq( const Record & after, uint64_t size )
+{
+  auto t0 = time_now();
+  tdiff_t tsort = 0, tplace = 0;
+  size_t rrs = 0, cmps = 0, pushes = 0, pops = 0;
+
+  recio_.rewind();
+  mystl::priority_queue<Record> pq{size+1};
+  uint64_t i = 0;
+
+  while ( true ) {
+    const char * r = recio_.next_record();
+    if ( r == nullptr ) {
+      break;
+    }
+    RecordPtr next{r, i};
+    rrs++;
+    cmps++;
+    if ( next > after ) {
+      cmps++;
+      if ( pq.size() < size ) {
+        pushes++;
+        pq.emplace( r, i );
+      } else if ( next < pq.top() ) {
+        pushes++; pops++;
+        pq.emplace( r, i );
+        pq.pop();
       }
     }
+  }
+  tplace += time_diff<ms>( t0 );
 
-    auto tt = time_diff<ms>( t0 );
-    cout << "linear scan, " << p << ", " << tt     << endl;
+  vector<Record> vrecs = move( pq.container() );
+  tsort += rec_sort( vrecs );
 
-    return {min};
-  } else {
-    // general case: size = n
-#ifdef USE_PQ
-    mystl::priority_queue<Record> pq{size+1};
+  auto tt = time_diff<ms>( t0 );
+  cout << "insert, "      << lpass_ << ", " << tplace << endl;
+  cout << "sort, "        << lpass_ << ", " << tsort  << endl;
+  cout << "linear scan, " << lpass_ << ", " << tt     << endl;
+  cout << endl;
+  cout << "recs, "        << lpass_ << ", " << rrs    << endl;
+  cout << "cmps, "        << lpass_ << ", " << cmps   << endl;
+  cout << "pushes, "      << lpass_ << ", " << pushes << endl;
+  cout << "pops, "        << lpass_ << ", " << pops   << endl;
+  cout << "size, "        << lpass_ << ", " << size   << endl;
+  return vrecs;
+}
 
+/* Linear scan using a chunked sorting + merge strategy. */
+vector<Record> Node::linear_scan_chunk( const Record & after, uint64_t size )
+{
+  auto t0 = time_now();
+  tdiff_t tsort = 0, tplace = 0, tmerge = 0;
+
+  recio_.rewind();
+
+  // TWEAK: sort + merge block size...
+  uint64_t blk_size = max( uint64_t(1), size / 4 );
+  vector<Record> vnext, vpast, vin;
+  vnext.reserve( size );
+  vin.reserve( blk_size );
+
+  uint64_t i = 0;
+  for ( bool run = true; run; ) {
     auto tp0 = time_now();
-    uint64_t i = 0;
-    while ( true ) {
+    for ( ; vin.size() < blk_size; i++ ) {
       const char * r = recio_.next_record();
       if ( r == nullptr ) {
+        run = false;
         break;
       }
       RecordPtr next{r, i};
-      rrs++;
-      cmps++;
       if ( next > after ) {
-        cmps++;
-        if ( pq.size() < size ) {
-          pushes++;
-          pq.emplace( r, i );
-        } else if ( next < pq.top() ) {
-          pushes++; pops++;
-          pq.emplace( r, i );
-          pq.pop();
-        }
+        vin.emplace_back( r, i );
       }
     }
     tplace += time_diff<ms>( tp0 );
 
-    vector<Record> vrecs = move( pq.container() );
-    tsort += rec_sort( vrecs );
-
-    auto tt = time_diff<ms>( t0 );
-    cout << "insert, "      << p << ", " << tplace << endl;
-    cout << "sort, "        << p << ", " << tsort  << endl;
-    cout << "linear scan, " << p << ", " << tt     << endl;
-    cout << endl;
-    cout << "recs, "        << p << ", " << rrs    << endl;
-    cout << "cmps, "        << p << ", " << cmps   << endl;
-    cout << "pushes, "      << p << ", " << pushes << endl;
-    cout << "pops, "        << p << ", " << pops   << endl;
-    cout << "size, "        << p << ", " << size   << endl;
-
-    return vrecs;
-#else
-    // TWEAK: sort + merge block size...
-    uint64_t blk_size = max( uint64_t(1), size / 4 );
-    tdiff_t tmerge = 0;
-
-    vector<Record> vnext, vpast, vin;
-    vnext.reserve( size );
-    vin.reserve( blk_size );
-
-    uint64_t i = 0;
-    for ( bool run = true; run; ) {
-      auto tp0 = time_now();
-      for ( ; vin.size() < blk_size; i++ ) {
-        const char * r = recio_.next_record();
-        if ( r == nullptr ) {
-          run = false;
-          break;
-        }
-        RecordPtr next{r, i};
-        if ( next > after ) {
-          vin.emplace_back( r, i );
-        }
-      }
-      tplace += time_diff<ms>( tp0 );
-
-      // optimize for some cases
-      if ( vin.size() > 0 ) {
-        tsort += rec_sort( vin );
-        if ( vpast.size() == 0 ) {
-          swap( vpast, vin );
-        } else {
-          vnext.resize( min( size, vin.size() + vpast.size() ) );
-          tmerge += move_merge( vin, vpast, vnext );
-          swap( vnext, vpast );
-          vin.clear();
-        }
+    if ( vin.size() > 0 ) {
+      tsort += rec_sort( vin );
+      if ( vpast.size() == 0 ) {
+        swap( vpast, vin );
+      } else {
+        vnext.resize( min( size, vin.size() + vpast.size() ) );
+        tmerge += move_merge( vin, vpast, vnext );
+        swap( vnext, vpast );
+        vin.clear();
       }
     }
-
-    auto tt = time_diff<ms>( t0 );
-    cout << "insert, "      << p << ", " << tplace << endl;
-    cout << "sort, "        << p << ", " << tsort  << endl;
-    cout << "merge, "       << p << ", " << tmerge << endl;
-    cout << "linear scan, " << p << ", " << tt     << endl;
-    cout << endl;
-
-    return vpast;
-#endif
   }
+
+  auto tt = time_diff<ms>( t0 );
+  cout << "insert, "      << lpass_ << ", " << tplace << endl;
+  cout << "sort, "        << lpass_ << ", " << tsort  << endl;
+  cout << "merge, "       << lpass_ << ", " << tmerge << endl;
+  cout << "linear scan, " << lpass_ << ", " << tt     << endl;
+  cout << endl;
+
+  return vpast;
 }
