@@ -29,15 +29,9 @@ AX_CXX_COMPILE_STDCXX_11([noext])
 AM_PROG_AR
 LT_INIT([disable-shared])
 
-# Checks for libraries.
-AX_BOOST_BASE
-AX_BOOST_SYSTEM
-
 # Checks for header files.
-AC_CHECK_HEADERS([boost/pool/pool_alloc.hpp], [BOOST_LIBS="-lboost_system"])
 AC_CHECK_HEADERS([boost/sort/spreadsort/string_sort.hpp])
 AC_CHECK_HEADERS([boost/heap/d_ary_heap.hpp])
-AC_SUBST(BOOST_LIBS)
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_UINT16_T

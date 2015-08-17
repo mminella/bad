@@ -2,7 +2,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = lib sort stratergies app experiments
 
-.PHONY: format check-all bin-dist recs-1gb recs-10gb
+.PHONY: format check-all bin-dist recs-1gb recs-10gb recs-30gb
 
 format:
 	@list='$(SUBDIRS)'; for subdir in $$list; do \
