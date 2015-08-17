@@ -43,7 +43,7 @@ noexcept
 }
 
 template <typename T, size_t BlockSize>
-MemoryPool<T, BlockSize>::MemoryPool(const MemoryPool& memoryPool)
+MemoryPool<T, BlockSize>::MemoryPool(const MemoryPool&)
 noexcept :
 MemoryPool()
 {}
@@ -61,7 +61,7 @@ noexcept
 
 template <typename T, size_t BlockSize>
 template<class U>
-MemoryPool<T, BlockSize>::MemoryPool(const MemoryPool<U>& memoryPool)
+MemoryPool<T, BlockSize>::MemoryPool(const MemoryPool<U>&)
 noexcept :
 MemoryPool()
 {}
