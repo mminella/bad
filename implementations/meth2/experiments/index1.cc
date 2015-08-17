@@ -3,7 +3,7 @@
  *
  * - Uses BufferedIO file IO.
  * - Uses libsort record type.
- * - Use C++ std::sort method + std::vector.
+ * - Use C++ std::sort method + std::vector or boost::sort if available.
  */
 #include <algorithm>
 #include <vector>
