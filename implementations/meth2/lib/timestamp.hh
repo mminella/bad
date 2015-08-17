@@ -8,6 +8,8 @@
 #include <chrono>
 
 using clk = std::chrono::high_resolution_clock;
+using ns  = std::chrono::nanoseconds;
+using us  = std::chrono::microseconds;
 using ms  = std::chrono::milliseconds;
 using sec = std::chrono::seconds;
 using tdiff_t = uint64_t;

@@ -50,10 +50,10 @@ void run( char * fin )
 {
   // get in/out files
   File fdi( fin, O_RDONLY );
-  OverlappedRecordIO<Record::SIZE> olio( fdi );
+  OverlappedRecordIO<Rec::SIZE> olio( fdi );
   ThreadPool tp;
 
-  size_t nrecs = fdi.size() / Record::SIZE;
+  size_t nrecs = fdi.size() / Rec::SIZE;
   vector<Record> recs;
   recs.reserve( nrecs );
 
@@ -70,7 +70,7 @@ void run( char * fin )
     if ( fdi.eof() || r == nullptr ) {
       run = false;
     } else {
-      recs.emplace_back( r, i * Record::SIZE + Record::KEY_LEN );
+      recs.emplace_back( r, i * Rec::SIZE + Rec::KEY_LEN );
     }
 
   //   // if ( i != 0 and ( i % split == 0 or !run ) and recs.begin() + split_i < recs.end() ) {

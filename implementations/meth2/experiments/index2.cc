@@ -12,7 +12,7 @@
 #include "file.hh"
 #include "timestamp.hh"
 
-#include "record.hh"
+#include "record_loc.hh"
 
 using namespace std;
 
@@ -25,11 +25,11 @@ void run( char * fin )
   // read
   auto t0 = time_now();
   for ( uint64_t i = 0;; i++ ) {
-    const char * r = fdi.read_buf( Record::SIZE ).first;
+    const uint8_t * r = (const uint8_t *) fdi.read_buf( Rec::SIZE ).first;
     if ( fdi.eof() ) {
       break;
     }
-    recs.emplace( r, i * Record::SIZE + Record::KEY_LEN );
+    recs.emplace( r, i * Rec::SIZE + Rec::KEY_LEN );
   }
   auto tt = time_diff<ms>( t0 );
 

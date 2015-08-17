@@ -1,8 +1,10 @@
-#ifndef REC_HH
-#define REC_HH
+#ifndef RECORD_LOC_HH
+#define RECORD_LOC_HH
 
 #include <cstdint>
 #include <cstring>
+
+#include "record_common.hh"
 
 /**
  * Record key + disk location
@@ -11,13 +13,15 @@ class RecordLoc
 {
 public:
   uint64_t loc_;
-  unsigned char key_[10];
+  uint8_t key_[Rec::KEY_LEN];
 
   /* Default constructor */
-  RecordLoc( void ) noexcept {}
+  RecordLoc( void ) noexcept
+    : loc_{0}
+  {}
 
   /* Construct from c string read from disk */
-  RecordLoc( const char * s, uint64_t loc = 0 )
+  RecordLoc( const uint8_t * s, uint64_t loc = 0 )
     : loc_{loc}
   {
     memcpy( key_, s, 10 );
@@ -53,7 +57,7 @@ public:
   inline int compare( const RecordLoc & b ) const
   {
     // we compare on key first, and then on loc_
-    for ( size_t i = 0; i < 10; i++ ) {
+    for ( size_t i = 0; i < Rec::KEY_LEN; i++ ) {
       if ( key_[i] != b.key_[i] ) {
         return key_[i] - b.key_[i];
       }
@@ -69,4 +73,4 @@ public:
 
 } __attribute__((packed));
 
-#endif /* REC_HH */
+#endif /* RECORD_LOC_HH */

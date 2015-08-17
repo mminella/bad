@@ -3,52 +3,48 @@
  *
  * - Uses BufferedIO file IO.
  * - Uses libsort record type.
- * - Uses insertion sort.
+ * - Uses google::btree.
  */
-#include <algorithm>
 #include <vector>
 
-#include "buffered_io.hh"
 #include "exception.hh"
 #include "file.hh"
+#include "overlapped_rec_io.hh"
 #include "timestamp.hh"
 
 #include "record_loc.hh"
+#include "btree_set.h"
 
 using namespace std;
 
-template<typename T>
-typename std::vector<T>::iterator 
-insert_sorted( std::vector<T> & vec, T const& item )
-{
-  return vec.insert ( 
-    std::upper_bound( vec.begin(), vec.end(), item ),
-    item 
-  );
-}
-
 void run( char * fin )
 {
-  // get in/out files
-  BufferedIO_O<File> fdi( {fin, O_RDONLY} );
-  size_t nrecs = fdi.io().size() / Rec::SIZE;
-  vector<RecordLoc> recs;
-  recs.reserve( nrecs );
-  auto t1 = time_now();
+  // open file
+  File file( fin, O_RDONLY | O_DIRECT );
+  OverlappedRecordIO<Rec::SIZE> rio( file );
 
-  // read
+  // stats
+  size_t nrecs = file.size() / Rec::SIZE;
+  cout << "size, " << nrecs << endl;
+  cout << "sizeof, " << sizeof(RecordLoc) << endl;
+  cout << endl;
+
+  rio.rewind();
+
+  // index
+  btree::btree_set<RecordLoc, less<RecordLoc>, allocator<RecordLoc>, 227> bt;
+  auto t1 = time_now();
   for ( uint64_t i = 0;; i++ ) {
-    const uint8_t * r = (const uint8_t *) fdi.read_buf( Rec::SIZE ).first;
-    if ( fdi.eof() ) {
+    const uint8_t * r = (const uint8_t *) rio.next_record();
+    if ( r == nullptr ) {
       break;
     }
-    insert_sorted( recs, {r, i * Rec::SIZE + Rec::KEY_LEN} );
+    bt.insert( {r, i} );
   }
   auto t2 = time_now();
 
-  // stats
+  // timings
   auto t21 = time_diff<ms>( t2, t1 );
-
   cout << "Total took " << t21 << "ms" << endl;
 }
 
@@ -70,4 +66,5 @@ int main( int argc, char * argv[] )
   }
   return EXIT_SUCCESS;
 }
+
 

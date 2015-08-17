@@ -9,9 +9,11 @@ libbasicrts_la_SOURCES = \
 	file.hh file.cc \
 	file_descriptor.hh file_descriptor.cc \
 	io_device.hh io_device.cc \
+	memory_io.hh overlapped_io.hh overlapped_rec_io.hh \
 	pipe.hh pipe.cc \
 	poller.hh poller.cc \
 	privs.hh privs.cc \
+	raw_vector.hh \
 	socket.hh socket.cc \
 	timestamp.hh timestamp.cc \
 	util.hh util.cc

@@ -39,7 +39,8 @@ public:
   * number of error hardware threads as detected by calling
   * thread::hardware_concurrency.
   */
-  ThreadPool(int size = -1) : waiting(false), interrupted(false)
+  ThreadPool(int size = -1)
+    : lock{}, cv{}, waiting{false}, interrupted{false}, threads{}, tasks{}
   {
     int i;
     if (size == -1)

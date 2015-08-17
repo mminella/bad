@@ -7,11 +7,19 @@
  */
 #include <sys/stat.h>
 
+#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <vector>
 
-#include "rec.hh"
+#include "record_loc.hh"
+
+#include "config.h"
+
+#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
+#include <boost/sort/spreadsort/string_sort.hpp>
+using namespace boost::sort::spreadsort;
+#endif
 
 using namespace std;
 
@@ -21,17 +29,17 @@ void run( char * fin )
 
   struct stat st;
   fstat( fileno( fdi ), &st );
-  size_t nrecs = st.st_size / 100;
+  size_t nrecs = st.st_size / Rec::SIZE;
 
   vector<RecordLoc> recs( nrecs );
   recs.reserve( nrecs );
   auto t1 = chrono::high_resolution_clock::now();
 
   // read
-  char r[100];
+  uint8_t r[100];
   for ( uint64_t i = 0; i < nrecs; i++ ) {
-    fread( r, 100, 1, fdi );
-    recs.emplace_back( r, i * 100 + 10 );
+    fread( r, Rec::SIZE, 1, fdi );
+    recs.emplace_back( r, i * Rec::SIZE + Rec::KEY_LEN );
   }
   auto t2 = chrono::high_resolution_clock::now();
 

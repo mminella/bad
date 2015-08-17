@@ -13,7 +13,7 @@
 #include "file.hh"
 #include "timestamp.hh"
 
-#include "record.hh"
+#include "record_loc.hh"
 
 #ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
 #include <boost/sort/spreadsort/string_sort.hpp>
@@ -26,18 +26,18 @@ void run( char * fin )
 {
   // get in/out files
   BufferedIO_O<File> fdi( {fin, O_RDONLY} );
-  size_t nrecs = fdi.io().size() / Record::SIZE;
+  size_t nrecs = fdi.io().size() / Rec::SIZE;
   vector<RecordLoc> recs;
   recs.reserve( nrecs );
   auto t1 = time_now();
 
   // read
   for ( uint64_t i = 0;; i++ ) {
-    const char * r = fdi.read_buf( Record::SIZE ).first;
+    const uint8_t * r = (const uint8_t *) fdi.read_buf( Rec::SIZE ).first;
     if ( fdi.eof() ) {
       break;
     }
-    recs.emplace_back( r, i * Record::SIZE + Record::KEY_LEN );
+    recs.emplace_back( r, i * Rec::SIZE + Rec::KEY_LEN );
   }
   auto t2 = time_now();
 
