@@ -1,0 +1,45 @@
+# 1, 50, 5, false, read
+recv-size, 0, 524288000
+size, 0, 0
+start-read, 0, 0, 52428800
+read, 0, 202801
+recv-read, 0, 0, 52428800
+network, 0, 61364
+start-read, 1, 52428800, 52428800
+read, 1, 181869
+recv-read, 1, 52428800, 52428800
+network, 1, 59317
+start-read, 2, 104857600, 52428800
+read, 2, 164911
+recv-read, 2, 104857600, 52428800
+network, 2, 59308
+start-read, 3, 157286400, 52428800
+read, 3, 148014
+recv-read, 3, 157286400, 52428800
+network, 3, 59471
+start-read, 4, 209715200, 52428800
+read, 4, 145584
+recv-read, 4, 209715200, 52428800
+network, 4, 59438
+start-read, 5, 262144000, 52428800
+read, 5, 142935
+recv-read, 5, 262144000, 52428800
+network, 5, 59614
+start-read, 6, 314572800, 52428800
+read, 6, 137902
+recv-read, 6, 314572800, 52428800
+network, 6, 59363
+start-read, 7, 367001600, 52428800
+read, 7, 133507
+recv-read, 7, 367001600, 52428800
+network, 7, 59298
+start-read, 8, 419430400, 52428800
+read, 8, 132623
+recv-read, 8, 419430400, 52428800
+network, 8, 59213
+start-read, 9, 471859200, 52428800
+read, 9, 136066
+recv-read, 9, 471859200, 52428800
+network, 9, 59250
+start-read, 10, 524288000, 52428800
+cmd-read, 0, 2122684

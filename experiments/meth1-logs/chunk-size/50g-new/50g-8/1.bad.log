@@ -1,0 +1,57 @@
+# 1, 50, 4, false, read
+recv-size, 0, 524288000
+size, 0, 0
+start-read, 0, 0, 41943040
+read, 0, 168865
+recv-read, 0, 0, 41943040
+network, 0, 48194
+start-read, 1, 41943040, 41943040
+read, 1, 155018
+recv-read, 1, 41943040, 41943040
+network, 1, 46820
+start-read, 2, 83886080, 41943040
+read, 2, 146045
+recv-read, 2, 83886080, 41943040
+network, 2, 46770
+start-read, 3, 125829120, 41943040
+read, 3, 136770
+recv-read, 3, 125829120, 41943040
+network, 3, 46733
+start-read, 4, 167772160, 41943040
+read, 4, 138461
+recv-read, 4, 167772160, 41943040
+network, 4, 46593
+start-read, 5, 209715200, 41943040
+read, 5, 134323
+recv-read, 5, 209715200, 41943040
+network, 5, 46698
+start-read, 6, 251658240, 41943040
+read, 6, 130524
+recv-read, 6, 251658240, 41943040
+network, 6, 46601
+start-read, 7, 293601280, 41943040
+read, 7, 127908
+recv-read, 7, 293601280, 41943040
+network, 7, 46879
+start-read, 8, 335544320, 41943040
+read, 8, 125948
+recv-read, 8, 335544320, 41943040
+network, 8, 46779
+start-read, 9, 377487360, 41943040
+read, 9, 124347
+recv-read, 9, 377487360, 41943040
+network, 9, 46685
+start-read, 10, 419430400, 41943040
+read, 10, 127935
+recv-read, 10, 419430400, 41943040
+network, 10, 46828
+start-read, 11, 461373440, 41943040
+read, 11, 131076
+recv-read, 11, 461373440, 41943040
+network, 11, 46685
+start-read, 12, 503316480, 41943040
+read, 12, 126132
+recv-read, 12, 503316480, 20971520
+network, 12, 21169
+start-read, 13, 545259520, 41943040
+cmd-read, 0, 2357126
