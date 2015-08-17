@@ -70,7 +70,11 @@ RR * scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size, const RR & after )
           break;
         }
         if ( after.compare( r, i ) < 0 ) {
-          rr1[i_rrs][r1s++].copy( r, i );
+          if ( r2s < size ) {
+            rr1[i_rrs][r1s++].copy( r, i );
+          } else if ( r2[size - 1].compare( r, i ) > 0 ) {
+            rr1[i_rrs][r1s++].copy( r, i );
+          }
         }
       }
 
@@ -140,7 +144,7 @@ void run( char * fin )
 
   // stats
   size_t nrecs = file.size() / Rec::SIZE;
-  size_t rounds = 1;
+  size_t rounds = 10;
   size_t split = 10;
   size_t chunk = nrecs / split;
   cout << "size, " << nrecs << endl;

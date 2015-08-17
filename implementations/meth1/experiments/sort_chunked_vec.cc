@@ -37,6 +37,13 @@ vector<R> scan( char * buf, size_t nrecs, size_t size, const R & after )
       if ( after.compare( r, i ) < 0 ) {
         r1.emplace_back( r, i );
       }
+      if ( after.compare( r, i ) < 0 ) {
+        if ( r2.size() < size ) {
+          r1.emplace_back( r, i );
+        } else if ( r2.back().compare( r, i ) > 0 ) {
+          r1.emplace_back( r, i );
+        }
+      }
     }
     
     if ( r1.size() > 0 ) {

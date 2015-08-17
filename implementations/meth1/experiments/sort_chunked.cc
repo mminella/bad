@@ -41,7 +41,11 @@ RR * scan( char * buf, size_t nrecs, size_t size, const RR & after )
     for ( r1s = 0; r1s < r1x and i < nrecs; i++ ) {
       const unsigned char * r = (const unsigned char *) buf + Rec::SIZE * i;
       if ( after.compare( r, i ) < 0 ) {
-        r1[r1s++].copy( r, i );
+        if ( r2s < size ) {
+          r1[r1s++].copy( r, i );
+        } else if ( r2[size - 1].compare( r, i ) > 0 ) {
+          r1[r1s++].copy( r, i );
+        }
       }
     }
     
@@ -106,7 +110,7 @@ void run( char * fin )
   cout << endl;
   
   // stats
-  size_t split = 20;
+  size_t split = 10;
   size_t chunk = nrecs / split;
   cout << "size, " << nrecs << endl;
   cout << "cunk, " << chunk << endl;

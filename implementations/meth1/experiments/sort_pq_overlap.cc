@@ -81,7 +81,7 @@ void run( char * fin )
 
   // stats
   size_t nrecs = file.size() / Rec::SIZE;
-  size_t split = 20;
+  size_t split = 10;
   size_t chunk = nrecs / split;
   cout << "size, " << nrecs << endl;
   cout << "cunk, " << chunk << endl;

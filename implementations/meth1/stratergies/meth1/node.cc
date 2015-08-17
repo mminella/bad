@@ -330,7 +330,11 @@ Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size )
         break;
       }
       if ( after.compare( r, i ) < 0 ) {
-        r1[r1s++].copy( r, i );
+        if ( r2s < size ) {
+          r1[r1s++].copy( r, i );
+        } else if ( r2[size - 1].compare( r, i ) > 0 ) {
+          r1[r1s++].copy( r, i );
+        }
       }
     }
     
