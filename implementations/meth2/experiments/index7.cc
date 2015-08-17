@@ -9,10 +9,11 @@
 
 #include "exception.hh"
 #include "file.hh"
+#include "linux_compat.hh"
 #include "overlapped_rec_io.hh"
 #include "timestamp.hh"
 
-#include "record_loc.hh"
+#include "record.hh"
 #include "btree_set.h"
 
 using namespace std;
@@ -66,5 +67,4 @@ int main( int argc, char * argv[] )
   }
   return EXIT_SUCCESS;
 }
-
 

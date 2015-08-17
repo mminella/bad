@@ -3,6 +3,7 @@
 
 /**
  * Allocation critical for performance. Best results have been:
+ * - MemoryPool              -- 60ms
  * - boost::pool (null lock) -- 60ms
  * - tcmalloc                -- 135ms
  * - jemalloc                -- 180ms
@@ -25,12 +26,12 @@ namespace Rec {
 
   extern Alloc rec_pool;
 
-  static inline uint8_t * alloc_val( void )
+  inline uint8_t * alloc_val( void )
   {
     return (uint8_t *) Rec::rec_pool.allocate();
   }
 
-  static inline void dealloc_val( uint8_t * v )
+  inline void dealloc_val( uint8_t * v )
   {
     Rec::rec_pool.deallocate( (val_type *) v );
   }
@@ -38,12 +39,12 @@ namespace Rec {
 
 #else /* USE_NEW */
 namespace Rec {
-  static inline uint8_t * alloc_val( void )
+  inline uint8_t * alloc_val( void )
   {
     return new uint8_t[Rec::VAL_LEN];
   }
 
-  static inline void dealloc_val( uint8_t * v )
+  inline void dealloc_val( uint8_t * v )
   {
     if ( v != nullptr ) { delete v; }
   }

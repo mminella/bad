@@ -12,13 +12,6 @@
 
 #include "r.hh"
 
-#include "config.h"
-
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-#include <boost/sort/spreadsort/string_sort.hpp>
-using namespace boost::sort::spreadsort;
-#endif
-
 using namespace std;
 
 vector<R> scan( char * buf, size_t nrecs, size_t size, const R & after )
@@ -48,7 +41,7 @@ vector<R> scan( char * buf, size_t nrecs, size_t size, const R & after )
     
     if ( r1.size() > 0 ) {
       auto ts1 = time_now();
-      string_sort( r1.begin(), r1.end() );
+      rec_sort( r1.begin(), r1.end() );
       ts += time_diff<ms>( ts1 );
       r3.resize( min( size, r1.size() + r2.size() ) );
       tm += move_merge( r1, r2, r3 );

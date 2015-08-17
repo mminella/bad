@@ -10,13 +10,6 @@
 #include "r.hh"
 #include "record.hh"
 
-#include "config.h"
-
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-#include <boost/sort/spreadsort/string_sort.hpp>
-using namespace boost::sort::spreadsort;
-#endif
-
 /* We can use a move or copy strategy -- the copy is actaully a little better
  * as we play some tricks to ensure we reuse allocations as much as possible.
  */
@@ -51,11 +44,7 @@ RR * scan( char * buf, size_t nrecs, size_t size, const RR & after )
     
     if ( r1s > 0 ) {
       auto ts1 = time_now();
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-      string_sort( r1, r1 + r1s );
-#else
-      sort( r1, r1 + r1s );
-#endif
+      rec_sort( r1, r1 + r1s );
       ts += time_diff<ms>( ts1 );
 #if USE_MOVE == 1
       tm += move_merge( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );

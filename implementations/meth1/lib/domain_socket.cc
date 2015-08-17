@@ -24,9 +24,9 @@ void UnixDomainSocket::send_fd( const FileDescriptor & fd )
   msghdr message_header;
   zero( message_header );
 
-  char control_buffer[CMSG_SPACE( sizeof( fd.fd_num() ) )];
-  message_header.msg_control = control_buffer;
-  message_header.msg_controllen = sizeof( control_buffer );
+  unique_ptr<char[]> control_buffer(new char[CMSG_SPACE( sizeof( int ) )] );
+  message_header.msg_control = control_buffer.get();
+  message_header.msg_controllen = CMSG_SPACE( sizeof( int ) );
 
   cmsghdr * const control_message = CMSG_FIRSTHDR( &message_header );
   control_message->cmsg_level = SOL_SOCKET;
@@ -48,9 +48,9 @@ FileDescriptor UnixDomainSocket::recv_fd( void )
   msghdr message_header;
   zero( message_header );
 
-  char control_buffer[CMSG_SPACE( sizeof( int ) )];
-  message_header.msg_control = control_buffer;
-  message_header.msg_controllen = sizeof( control_buffer );
+  unique_ptr<char[]> control_buffer(new char[CMSG_SPACE( sizeof( int ) )] );
+  message_header.msg_control = control_buffer.get();
+  message_header.msg_controllen = CMSG_SPACE( sizeof( int ) );
 
   if ( SystemCall( "recvmsg", recvmsg( fd_num(), &message_header, 0 ) ) ) {
     throw runtime_error( "recv_fd: recvmsg unexpectedly received data" );

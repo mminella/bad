@@ -9,17 +9,12 @@
 #include <iostream>
 
 #include "file.hh"
+#include "linux_compat.hh"
 #include "overlapped_rec_io.hh"
 #include "record.hh"
 #include "timestamp.hh" 
 
-#include "config.h"
 #include "pq.hh"
-
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-#include <boost/sort/spreadsort/string_sort.hpp>
-using namespace boost::sort::spreadsort;
-#endif
 
 using namespace std;
 
@@ -58,11 +53,7 @@ vector<RR> scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size, const RR & af
   auto t1 = time_now();
 
   vector<RR> vrecs = move( pq.container() );
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-  string_sort( vrecs.begin(), vrecs.end() );
-#else
-  sort( vrecs.begin(), vrecs.end() );
-#endif
+  rec_sort( vrecs.begin(), vrecs.end() );
 
   cout << "pq, " << time_diff<ms>( t1, t0 ) << endl;
   cout << "* cmps   , " << cmps << endl;

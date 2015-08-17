@@ -12,14 +12,7 @@
 #include <iostream>
 #include <vector>
 
-#include "record_loc.hh"
-
-#include "config.h"
-
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-#include <boost/sort/spreadsort/string_sort.hpp>
-using namespace boost::sort::spreadsort;
-#endif
+#include "record.hh"
 
 using namespace std;
 
@@ -44,11 +37,7 @@ void run( char * fin )
   auto t2 = chrono::high_resolution_clock::now();
 
   // sort
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-  string_sort( recs.begin(), recs.end() );
-#else
-  sort( recs.begin(), recs.end() );
-#endif
+  rec_sort( recs.begin(), recs.end() );
   auto t3 = chrono::high_resolution_clock::now();
 
   // stats

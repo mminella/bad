@@ -12,7 +12,7 @@
 #include "file.hh"
 #include "timestamp.hh"
 
-#include "record_loc.hh"
+#include "record.hh"
 #include "btree_set.h"
 
 using namespace std;

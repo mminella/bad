@@ -9,7 +9,7 @@
 
 #define TSC_OVERHEAD_N 100000
 
-static inline uint64_t bench_start(void)
+inline uint64_t bench_start(void)
 {
   unsigned  cycles_low, cycles_high;
 
@@ -22,7 +22,7 @@ static inline uint64_t bench_start(void)
   return ((uint64_t) cycles_high << 32) | cycles_low;
 }
 
-static inline uint64_t bench_end(void)
+inline uint64_t bench_end(void)
 {
   unsigned  cycles_low, cycles_high;
 
@@ -35,7 +35,7 @@ static inline uint64_t bench_end(void)
   return ((uint64_t) cycles_high << 32) | cycles_low;
 }
 
-static uint64_t measure_bench_overhead(void)
+inline uint64_t measure_bench_overhead(void)
 {
   uint64_t t0, t1, overhead = ~0;
   int i;

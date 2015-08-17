@@ -52,6 +52,7 @@ public:
   }
 
   size_t size( void ) const noexcept { return size_; }
+  size_t & size( void ) noexcept { return size_; }
 
   T & operator[]( size_t i ) { return data_[i]; }
   T & back( void ) { return data_[size_ - 1]; }

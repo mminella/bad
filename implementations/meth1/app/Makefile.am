@@ -8,6 +8,7 @@ bin_PROGRAMS = \
 
 AM_CPPFLAGS = \
 	-D_REENTRANT \
+	-I$(srcdir)/.. \
 	-I$(srcdir)/../lib \
 	-I$(srcdir)/../sort \
 	-I$(srcdir)/../stratergies \

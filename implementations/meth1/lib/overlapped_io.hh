@@ -78,11 +78,13 @@ private:
 public:
   OverlappedIO( File & io )
     : io_{io}
-    , buf_{(char *) aligned_alloc( ALIGNMENT, BUF_SIZE )}
+    , buf_{nullptr}
     , blocks_{NBLOCKS-2}
     , start_{0}
     , reader_{std::thread( &OverlappedIO::read_file,  this )}
-  {};
+  {
+    posix_memalign( (void **) &buf_, ALIGNMENT, BUF_SIZE );
+  };
 
   OverlappedIO( const OverlappedIO & r ) = delete;
   OverlappedIO( OverlappedIO && r ) = delete;

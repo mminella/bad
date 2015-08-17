@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstring>
 #include <iostream>
+#include <utility>
 
 #include "io_device.hh"
 
@@ -11,10 +12,13 @@
 #include "record_common.hh"
 
 /**
- * Represent a record in the sort benchmark. This differs slightly from
- * `Record` in that the copy constructor does a shallow copy of the value. This is
- * dangerous to use then since each RecordS assumes it owns the raw value pointer,
- * yet we copy it. But this can be powerful for performance when used correctly.
+ * Version of Record that only performs a shallow copy on copy construction or
+ * copy assignment. THIS IS DANGEROUS! It's very easy to end up with two
+ * RecordS's that both think they own the same value memory, leading to
+ * double-free's or use-after-free.
+ *
+ * However, we provide it as when used correctly it can be useful for some
+ * performance sensitive situations.
  */
 class RecordS
 {
@@ -26,7 +30,7 @@ public:
   void copy( const uint8_t* r, uint64_t i ) noexcept
   {
     loc_ = i;
-    if ( val_ == nullptr ) { val_ = alloc_val(); }
+    if ( val_ == nullptr ) { val_ = Rec::alloc_val(); }
     memcpy( val_, r + Rec::KEY_LEN, Rec::VAL_LEN );
     memcpy( key_, r, Rec::KEY_LEN );
   }
@@ -34,7 +38,7 @@ public:
   void copy( const RecordS & r ) noexcept
   {
     loc_ = r.loc_;
-    if ( val_ == nullptr ) { val_ = alloc_val(); }
+    if ( val_ == nullptr ) { val_ = Rec::alloc_val(); }
     memcpy( val_, r.val_, Rec::VAL_LEN );
     memcpy( key_, r.key_, Rec::KEY_LEN );
   }
@@ -50,7 +54,7 @@ public:
 
   /* Construct a min or max record. */
   RecordS( Rec::limit_t lim ) noexcept
-    : val_{alloc_val()}
+    : val_{Rec::alloc_val()}
   {
     if ( lim == Rec::MAX ) {
       memset( key_, 0xFF, Rec::KEY_LEN );
@@ -97,7 +101,7 @@ public:
     return *this;
   }
 
-  ~RecordS( void ) { dealloc_val( val_ ); }
+  ~RecordS( void ) { Rec::dealloc_val( val_ ); }
 
   /* Accessors */
   const uint8_t * key( void ) const noexcept { return key_; }

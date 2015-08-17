@@ -11,12 +11,15 @@ class RecordPtr
 {
 private:
   uint64_t loc_;
-  const unsigned char * r_;
+  const uint8_t * r_;
 
 public:
+  RecordPtr( const uint8_t * r, uint64_t loc )
+    : loc_{loc} , r_{r}
+  {}
+
   RecordPtr( const char * r, uint64_t loc )
-    : loc_{loc}
-    , r_{(unsigned char *) r}
+    : RecordPtr( (const uint8_t *) r, loc )
   {}
 
   RecordPtr( const RecordPtr & rptr )
@@ -33,11 +36,12 @@ public:
     return *this;
   }
 
-  const unsigned char * key( void ) const noexcept { return r_; }
-  const unsigned char * val( void ) const noexcept { return r_ + Rec::KEY_LEN; }
+  /* Accessors */
+  const uint8_t * key( void ) const noexcept { return r_; }
+  const uint8_t * val( void ) const noexcept { return r_ + Rec::KEY_LEN; }
   uint64_t loc( void ) const noexcept { return loc_; }
 
-  /* comparison (with Record & RecordPtr) */
+  /* comparison */
   comp_op( <, Record )
   comp_op( <, RecordS )
   comp_op( <, RecordPtr )

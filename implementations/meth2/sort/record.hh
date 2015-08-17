@@ -1,14 +1,33 @@
 #ifndef RECORD_HH
 #define RECORD_HH
 
+#include <algorithm>
+
 #include "record_common.hh"
+#include "record_loc.hh"
 #include "record_ptr.hh"
 #include "record_t.hh"
 #include "record_t_shallow.hh"
 
-static inline int
-compare( const unsigned char * k1, uint64_t loc1,
-         const unsigned char * k2, uint64_t loc2 ) noexcept
+#include "config.h"
+
+#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
+#include <boost/sort/spreadsort/string_sort.hpp>
+#endif
+
+template <typename R>
+inline void rec_sort( R first, R last )
+{
+#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
+  boost::sort::spreadsort::string_sort( first, last );
+#else
+  sort( first, last, std::less<typename std::iterator_traits<R>::value_type>() );
+#endif
+}
+
+inline int
+compare( const uint8_t * k1, uint64_t loc1,
+         const uint8_t * k2, uint64_t loc2 ) noexcept
 {
   // we compare on key first, and then on loc
   for ( size_t i = 0; i < Rec::KEY_LEN; i++ ) {
@@ -87,6 +106,18 @@ inline int RecordPtr::compare( const RecordS & b ) const noexcept
 }
 
 inline int RecordPtr::compare( const RecordPtr & b ) const noexcept
+{
+  return ::compare( key(), loc(), b.key(), b.loc() );
+}
+
+
+/* RecordLoc */
+inline int RecordLoc::compare( const uint8_t * k, uint64_t l ) const noexcept
+{
+  return ::compare( key(), loc(), k, l );
+}
+
+inline int RecordLoc::compare( const RecordLoc & b ) const noexcept
 {
   return ::compare( key(), loc(), b.key(), b.loc() );
 }

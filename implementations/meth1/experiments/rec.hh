@@ -32,7 +32,7 @@ private:
   unsigned char key_[KEY_BYTES];
   unsigned char * val_;
 
-  inline void checked_fread( void * ptr, size_t size, size_t nmemb, FILE * f )
+  void checked_fread( void * ptr, size_t size, size_t nmemb, FILE * f )
   {
     size_t n = fread( ptr, size, nmemb, f );
     if ( n != 1 ) {
@@ -43,7 +43,7 @@ private:
 public:
   Rec() : val_{nullptr} {}
 
-  inline void read( FILE *fdi )
+  void read( FILE *fdi )
   {
     val_ = cur_v;
     cur_v += VAL_BYTES;
@@ -51,7 +51,7 @@ public:
     checked_fread( val_, VAL_BYTES, 1, fdi );
   }
 
-  inline size_t write( FILE *fdo )
+  size_t write( FILE *fdo )
   {
     size_t n = 0;
     n += fwrite( key_, KEY_BYTES, 1, fdo );
@@ -59,12 +59,12 @@ public:
     return n;
   }
 
-  inline bool operator<( const Rec & b ) const
+  bool operator<( const Rec & b ) const
   {
     return compare( b ) < 0 ? true : false;
   }
 
-  inline int compare( const Rec & b ) const
+  int compare( const Rec & b ) const
   {
     // return memcmp( key_, b.key_, KEY_BYTES );
     for ( size_t i = 0; i < KEY_BYTES; i++ ) {
@@ -75,17 +75,17 @@ public:
     return 0;
   }
 
-  inline const char * data( void ) const
+  const char * data( void ) const
   {
     return (char *) key_;
   }
 
-  inline unsigned char operator[]( size_t offset ) const
+  unsigned char operator[]( size_t offset ) const
   {
     return key_[offset];
   }
 
-  inline size_t size( void ) const
+  size_t size( void ) const
   {
     return KEY_BYTES;
   }

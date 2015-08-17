@@ -63,7 +63,7 @@ namespace internal {
     Channel_( Channel_ && c ) = delete;
     Channel_ & operator=( Channel_ && c ) = delete;
 
-    inline void close()
+    void close()
     {
       std::unique_lock<std::mutex> lck( mtx_ );
       closed_ = true;
@@ -72,7 +72,7 @@ namespace internal {
     }
 
     template <typename U>
-    inline void send( U && u )
+    void send( U && u )
     {
       std::unique_lock<std::mutex> lck( mtx_ );
       if ( closed_ ) {
@@ -112,7 +112,7 @@ namespace internal {
       }
     }
 
-    inline T && recv( void )
+    T && recv( void )
     {
       std::unique_lock<std::mutex> lck( mtx_ );
       if ( closed_ ) {
@@ -170,10 +170,10 @@ public:
 
     Channel( size_t buf = 1 ) : chn{new internal::Channel_<T>{buf}} {}
 
-    inline void close() { chn->close(); }
-    inline void send( T && t ) { chn->send( std::move( t ) ); }
-    inline void send( const T & t ) { chn->send( t ); }
-    inline T && recv( void ) { return chn->recv(); }
+    void close() { chn->close(); }
+    void send( T && t ) { chn->send( std::move( t ) ); }
+    void send( const T & t ) { chn->send( t ); }
+    T && recv( void ) { return chn->recv(); }
 };
 
 #endif /* CHANNEL_HH */

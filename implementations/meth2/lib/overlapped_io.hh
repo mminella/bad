@@ -17,8 +17,8 @@
 class OverlappedIO
 {
 public:
-  static constexpr size_t BLOCK = 4096 * 256;
-  static constexpr size_t NBLOCKS = 100;
+  static constexpr size_t BLOCK = 4096 * 256 * 10; // 10MB
+  static constexpr size_t NBLOCKS = 100;           // 1GB
   static constexpr size_t BUF_SIZE = NBLOCKS * BLOCK;
   static constexpr size_t ALIGNMENT = 4096;
 
@@ -78,11 +78,13 @@ private:
 public:
   OverlappedIO( File & io )
     : io_{io}
-    , buf_{(char *) aligned_alloc( ALIGNMENT, BUF_SIZE )}
+    , buf_{nullptr}
     , blocks_{NBLOCKS-2}
     , start_{0}
     , reader_{std::thread( &OverlappedIO::read_file,  this )}
-  {};
+  {
+    posix_memalign( (void **) &buf_, ALIGNMENT, BUF_SIZE );
+  };
 
   OverlappedIO( const OverlappedIO & r ) = delete;
   OverlappedIO( OverlappedIO && r ) = delete;

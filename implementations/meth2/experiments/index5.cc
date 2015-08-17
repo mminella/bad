@@ -13,7 +13,7 @@
 #include "file.hh"
 #include "timestamp.hh"
 
-#include "record_loc.hh"
+#include "record.hh"
 
 using namespace std;
 

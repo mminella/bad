@@ -20,11 +20,6 @@
 #include "olio.hh"
 #include "threadpool.hh"
 
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-#include <boost/sort/spreadsort/string_sort.hpp>
-using namespace boost::sort::spreadsort;
-#endif
-
 using namespace std;
 
 using rec_i = vector<Record>::iterator;
@@ -34,7 +29,7 @@ using s_rec_ip = shared_ptr<f_rec_ip>;
 
 rec_ip mysort( rec_i begin, rec_i end )
 {
-  sort( begin, end );
+  rec_sort( begin, end );
   return make_pair( begin, end );
 }
 

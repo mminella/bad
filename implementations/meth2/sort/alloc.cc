@@ -5,6 +5,8 @@
 #include <iostream>
 #include "MemoryPool.h"
 
-MemoryPool<uint8_t[Rec::VAL_LEN]> rec_pool;
+namespace Rec {
+  Alloc rec_pool;
+}
 
 #endif

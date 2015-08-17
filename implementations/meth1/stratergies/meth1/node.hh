@@ -55,7 +55,7 @@ private:
   RecV DoRead( uint64_t pos, uint64_t size );
   uint64_t DoSize( void );
 
-  inline tdiff_t rec_sort( std::vector<RR> & recs ) const;
+  tdiff_t rec_sort( std::vector<RR> & recs ) const;
   Record seek( uint64_t pos );
 
   RecV linear_scan( const Record & after, uint64_t size = 1 );

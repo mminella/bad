@@ -13,12 +13,7 @@
 #include "file.hh"
 #include "timestamp.hh"
 
-#include "record_loc.hh"
-
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-#include <boost/sort/spreadsort/string_sort.hpp>
-using namespace boost::sort::spreadsort;
-#endif
+#include "record.hh"
 
 using namespace std;
 
@@ -42,11 +37,7 @@ void run( char * fin )
   auto t2 = time_now();
 
   // sort
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-  string_sort( recs.begin(), recs.end() );
-#else
-  sort( recs.begin(), recs.end() );
-#endif
+  rec_sort( recs.begin(), recs.end() );
   auto t3 = time_now();
 
   // stats

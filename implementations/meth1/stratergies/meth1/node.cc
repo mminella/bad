@@ -8,6 +8,7 @@
 #include "buffered_io.hh"
 #include "exception.hh"
 #include "file.hh"
+#include "linux_compat.hh"
 #include "overlapped_rec_io.hh"
 #include "socket.hh"
 #include "timestamp.hh"
@@ -18,19 +19,12 @@
 #include "node.hh"
 #include "priority_queue.hh"
 
-#include "config.h"
-
 #define USE_PQ 0
 #define USE_NEW_CHUNK 1
 #define USE_MOVE 0
 
 using namespace std;
 using namespace meth1;
-
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-#include <boost/sort/spreadsort/string_sort.hpp>
-using namespace boost::sort::spreadsort;
-#endif
 
 /* Construct Node */
 Node::Node( string file, string port, uint64_t max_mem, bool odirect )
@@ -128,14 +122,10 @@ uint64_t Node::DoSize( void )
   return data_.size() / Rec::SIZE;
 }
 
-inline uint64_t Node::rec_sort( vector<RR> & recs ) const
+uint64_t Node::rec_sort( vector<RR> & recs ) const
 {
   auto t0 = time_now();
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-  string_sort( recs.begin(), recs.end() );
-#else
-  sort( recs.begin(), recs.end() );
-#endif
+  ::rec_sort( recs.begin(), recs.end() );
   return time_diff<ms>( t0 );
 }
 
@@ -289,7 +279,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
       if ( vpast.size() == 0 ) {
         swap( vpast, vin );
       } else {
-        vnext.resize( min( size, vin.size() + vpast.size() ) );
+        vnext.resize( min( (size_t) size, vin.size() + vpast.size() ) );
         tmerge += move_merge( vin, vpast, vnext );
         swap( vnext, vpast );
         vin.clear();
@@ -315,8 +305,8 @@ Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size )
 
   recio_.rewind();
 
-  size_t r1s = 0, r2s = 0;
-  size_t r1x = max( min( (size_t) 1572864, size / 6 ), (size_t) 1 );
+  uint64_t r1s = 0, r2s = 0;
+  uint64_t r1x = max( min( (uint64_t) 1572864, size / 6 ), (uint64_t) 1 );
   RR * r1 = new RR[r1x];
   RR * r2 = new RR[size];
   RR * r3 = new RR[size];

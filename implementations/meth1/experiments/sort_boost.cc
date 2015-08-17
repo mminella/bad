@@ -17,9 +17,9 @@
 #include <system_error>
 #include <vector>
 
-#include "config.h"
-
 #include "rec.hh"
+
+#include "config.h"
 
 #ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
 #include <boost/sort/spreadsort/string_sort.hpp>

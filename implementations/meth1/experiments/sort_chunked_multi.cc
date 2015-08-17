@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "file.hh"
+#include "linux_compat.hh"
 #include "overlapped_rec_io.hh"
 #include "raw_vector.hh"
 #include "timestamp.hh" 
@@ -13,13 +14,6 @@
 
 #include "r.hh"
 #include "record.hh"
-
-#include "config.h"
-
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-#include <boost/sort/spreadsort/string_sort.hpp>
-using namespace boost::sort::spreadsort;
-#endif
 
 /* We can use a move or copy strategy -- the copy is actaully a little better
  * as we play some tricks to ensure we reuse allocations as much as possible.
@@ -82,11 +76,7 @@ RR * scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size, const RR & after )
       if ( r1s > 0 ) {
         // sort one sort buffer
         auto ts1 = time_now();
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-        string_sort( rr1[i_rrs], rr1[i_rrs] + r1s );
-#else
-        sort( rr1[i_rrs], rr1[i_rrs] + r1s );
-#endif
+        rec_sort( rr1[i_rrs], rr1[i_rrs] + r1s );
         ts += time_diff<ms>( ts1 );
 
         // update sort buffer size
