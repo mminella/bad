@@ -33,6 +33,9 @@ recs-1gb:
 recs-10gb:
 	../../gensort/gensort -t8 104857000 test/recs-10gb,buf
 
+recs-30gb:
+	../../gensort/gensort -t8 314572800 test/recs-30gb,buf
+
 TESTS = \
 	test/channels.test \
 	test/sort_libc.test \

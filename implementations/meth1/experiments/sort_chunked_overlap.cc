@@ -5,6 +5,8 @@
 #include <sys/stat.h>
 #include <iostream>
 
+#include "file.hh"
+#include "overlapped_rec_io.hh"
 #include "timestamp.hh" 
 #include "util.hh"
 #include "r.hh"
@@ -27,19 +29,27 @@ using namespace std;
 // using RR = R;
 using RR = RecordS;
 
-RR * scan( char * buf, size_t nrecs, size_t size, const RR & after )
+RR * scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size, const RR & after )
 {
   auto t0 = time_now();
   tdiff_t tm = 0, ts = 0, tl = 0;
 
-  size_t r1s = 0, r2s = 0, r1x = size / 4;
+  rio.rewind();
+
+  size_t r1s = 0, r2s = 0;
+  size_t r1x = max( min( (size_t) 1572864, size / 6 ), (size_t) 1 );
   RR * r1 = new RR[r1x];
   RR * r2 = new RR[size];
   RR * r3 = new RR[size];
 
-  for ( uint64_t i = 0 ; i < nrecs; ) {
-    for ( r1s = 0; r1s < r1x and i < nrecs; i++ ) {
-      const unsigned char * r = (const unsigned char *) buf + Rec::SIZE * i;
+  uint64_t i = 0;
+  for ( bool run = true; run; ) {
+    for ( r1s = 0; r1s < r1x; i++ ) {
+      const uint8_t * r = (const uint8_t *) rio.next_record();
+      if ( r == nullptr ) {
+        run = false;
+        break;
+      }
       if ( after.compare( r, i ) < 0 ) {
         r1[r1s++].copy( r, i );
       }
@@ -87,39 +97,25 @@ RR * scan( char * buf, size_t nrecs, size_t size, const RR & after )
 void run( char * fin )
 {
   // open file
-  FILE *fdi = fopen( fin, "r" );
-  struct stat st;
-  fstat( fileno( fdi ), &st );
-  size_t nrecs = st.st_size / Rec::SIZE;
+  File file( fin, O_RDONLY | O_DIRECT );
+  OverlappedRecordIO<Rec::SIZE> rio( file );
 
-  // read file into memory
-  auto t0 = time_now();
-  char * buf = new char[st.st_size];
-  for ( int nr = 0; nr < st.st_size; ) {
-    auto r = fread( buf, st.st_size - nr, 1, fdi );
-    if ( r <= 0 ) {
-      break;
-    }
-    nr += r;
-  }
-  cout << "read , " << time_diff<ms>( t0 ) << endl;
-  cout << endl;
-  
   // stats
-  size_t split = 20;
+  size_t nrecs = file.size() / Rec::SIZE;
+  size_t rounds = 10;
+  size_t split = 10;
   size_t chunk = nrecs / split;
   cout << "size, " << nrecs << endl;
   cout << "cunk, " << chunk << endl;
   cout << endl;
 
   // starting record
-  RR after;
-  memset( after.key_, 0x00, Rec::KEY_LEN );
+  RR after( Rec::MIN );
 
   // scan file
   auto t1 = time_now();
-  for ( uint64_t i = 0; i < split; i++ ) {
-    auto r = scan( buf, nrecs, chunk, after );
+  for ( uint64_t i = 0; i < rounds; i++ ) {
+    auto r = scan( rio, chunk, after );
     after = move( r[chunk - 1] );
     cout << "last: " << str_to_hex( after.key_, Rec::KEY_LEN ) << endl;
     delete[] r;

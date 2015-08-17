@@ -9,6 +9,7 @@
 
 #include "alloc.hh"
 #include "record_common.hh"
+#include "record_t_shallow.hh"
 
 /**
  * Represent a record in the sort benchmark.
@@ -26,6 +27,14 @@ public:
     if ( val_ == nullptr ) { val_ = alloc_val(); }
     memcpy( val_, r + Rec::KEY_LEN, Rec::VAL_LEN );
     memcpy( key_, r, Rec::KEY_LEN );
+  }
+
+  void copy( const RecordS & r ) noexcept
+  {
+    loc_ = r.loc_;
+    if ( val_ == nullptr ) { val_ = alloc_val(); }
+    memcpy( val_, r.val_, Rec::VAL_LEN );
+    memcpy( key_, r.key_, Rec::KEY_LEN );
   }
 
   Record( void ) noexcept {}
@@ -99,14 +108,18 @@ public:
 
   /* comparison */
   comp_op( <, Record )
+  comp_op( <, RecordS )
   comp_op( <, RecordPtr )
   comp_op( <=, Record )
+  comp_op( <=, RecordS )
   comp_op( <=, RecordPtr )
   comp_op( >, Record )
+  comp_op( >, RecordS )
   comp_op( >, RecordPtr )
 
   int compare( const uint8_t * k, uint64_t l ) const noexcept;
   int compare( const Record & b ) const noexcept;
+  int compare( const RecordS & b ) const noexcept;
   int compare( const RecordPtr & b ) const noexcept;
 
   /* Write to IO device */

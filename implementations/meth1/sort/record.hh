@@ -32,6 +32,11 @@ inline int RecordS::compare( const uint8_t * k, uint64_t l ) const noexcept
   return ::compare( key(), loc(), k, l );
 }
 
+inline int RecordS::compare( const Record & b ) const noexcept
+{
+  return ::compare( key(), loc(), b.key(), b.loc() );
+}
+
 inline int RecordS::compare( const RecordS & b ) const noexcept
 {
   return ::compare( key(), loc(), b.key(), b.loc() );
@@ -54,6 +59,11 @@ inline int Record::compare( const Record & b ) const noexcept
   return ::compare( key(), loc(), b.key(), b.loc() );
 }
 
+inline int Record::compare( const RecordS & b ) const noexcept
+{
+  return ::compare( key(), loc(), b.key(), b.loc() );
+}
+
 inline int Record::compare( const RecordPtr & b ) const noexcept
 {
   return ::compare( key(), loc(), b.key(), b.loc() );
@@ -61,7 +71,17 @@ inline int Record::compare( const RecordPtr & b ) const noexcept
 
 
 /* RecordPtr */
+inline int RecordPtr::compare( const uint8_t * k, uint64_t l ) const noexcept
+{
+  return ::compare( key(), loc(), k, l );
+}
+
 inline int RecordPtr::compare( const Record & b ) const noexcept
+{
+  return ::compare( key(), loc(), b.key(), b.loc() );
+}
+
+inline int RecordPtr::compare( const RecordS & b ) const noexcept
 {
   return ::compare( key(), loc(), b.key(), b.loc() );
 }

@@ -13,6 +13,7 @@ libbasicrts_la_SOURCES = \
 	pipe.hh pipe.cc \
 	poller.hh poller.cc \
 	privs.hh privs.cc \
+	raw_vector.hh \
 	socket.hh socket.cc \
 	timestamp.hh timestamp.cc \
 	util.hh util.cc

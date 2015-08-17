@@ -8,6 +8,8 @@
 #include <sys/stat.h>
 #include <iostream>
 
+#include "file.hh"
+#include "overlapped_rec_io.hh"
 #include "record.hh"
 #include "timestamp.hh" 
 
@@ -23,15 +25,22 @@ using namespace std;
 
 using RR = RecordS;
 
-vector<RR> scan( char * buf, size_t nrecs, size_t size, const RR & after )
+vector<RR> scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size, const RR & after )
 {
   auto t0 = time_now();
   size_t cmps = 0, pushes = 0, pops = 0;
-  mystl::priority_queue<RR> pq{nrecs / 10 + 1};
 
-  for ( uint64_t i = 0; i < nrecs; i++ ) {
-    const char * r = buf + Rec::SIZE * i;
-    RecordPtr next( r, i );
+  rio.rewind();
+
+  mystl::priority_queue<RR> pq{size + 1};
+  uint64_t i = 0;
+
+  while ( true ) {
+    const char * r = rio.next_record();
+    if ( r == nullptr ) {
+      break;
+    }
+    RecordPtr next( r, i++ );
     cmps++;
     if ( next > after ) {
       if ( pq.size() < size ) {
@@ -67,34 +76,24 @@ vector<RR> scan( char * buf, size_t nrecs, size_t size, const RR & after )
 void run( char * fin )
 {
   // open file
-  FILE *fdi = fopen( fin, "r" );
-  struct stat st;
-  fstat( fileno( fdi ), &st );
-  size_t nrecs = st.st_size / Rec::SIZE;
+  File file( fin, O_RDONLY | O_DIRECT );
+  OverlappedRecordIO<Rec::SIZE> rio( file );
 
-  // read file into memory
-  auto t0 = time_now();
-  char * buf = new char[st.st_size];
-  for ( int nr = 0; nr < st.st_size; ) {
-    auto r = fread( buf, st.st_size - nr, 1, fdi );
-    if ( r <= 0 ) {
-      break;
-    }
-    nr += r;
-  }
-  cout << "read , " << time_diff<ms>( t0 ) << endl;
-  cout << endl;
-  
   // stats
+  size_t nrecs = file.size() / Rec::SIZE;
+  size_t split = 20;
+  size_t chunk = nrecs / split;
   cout << "size, " << nrecs << endl;
-  cout << "cunk, " << nrecs / 10 << endl;
+  cout << "cunk, " << chunk << endl;
   cout << endl;
+
+  // starting record
+  RR after( Rec::MIN );
 
   // scan file
   auto t1 = time_now();
-  RR after( Rec::MIN );
-  for ( uint64_t i = 0; i < 10; i++ ) {
-    auto recs = scan( buf, nrecs, nrecs / 10, after );
+  for ( uint64_t i = 0; i < 1; i++ ) {
+    auto recs = scan( rio, chunk, after );
     after = recs.back();
     cout << "last: " << recs[recs.size()-1] << endl;
   }
@@ -119,5 +118,4 @@ int main( int argc, char * argv[] )
   }
   return EXIT_SUCCESS;
 }
-
 

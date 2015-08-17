@@ -31,6 +31,21 @@ public:
     memcpy( key_, r, Rec::KEY_LEN );
   }
 
+  void copy( const RecordS & r ) noexcept
+  {
+    loc_ = r.loc_;
+    if ( val_ == nullptr ) { val_ = alloc_val(); }
+    memcpy( val_, r.val_, Rec::VAL_LEN );
+    memcpy( key_, r.key_, Rec::KEY_LEN );
+  }
+
+  void copy( RecordS && r ) noexcept
+  {
+    loc_ = r.loc_;
+    val_ = r.val_;
+    memcpy( key_, r.key_, Rec::KEY_LEN );
+  }
+
   RecordS( void ) noexcept {}
 
   /* Construct a min or max record. */
@@ -95,14 +110,18 @@ public:
   size_t size( void ) const noexcept { return Rec::KEY_LEN; }
 
   /* comparison */
+  comp_op( <, Record )
   comp_op( <, RecordS )
   comp_op( <, RecordPtr )
+  comp_op( <=, Record )
   comp_op( <=, RecordS )
   comp_op( <=, RecordPtr )
+  comp_op( >, Record )
   comp_op( >, RecordS )
   comp_op( >, RecordPtr )
 
   int compare( const uint8_t * k, uint64_t l ) const noexcept;
+  int compare( const Record & b ) const noexcept;
   int compare( const RecordS & b ) const noexcept;
   int compare( const RecordPtr & b ) const noexcept;
 

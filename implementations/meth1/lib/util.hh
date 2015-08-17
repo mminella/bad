@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "raw_vector.hh"
 #include "timestamp.hh"
 
 /* Convert a string to hexadecimal form */
@@ -94,6 +95,42 @@ tdiff_t copy_merge( T * s1, T * e1, T * s2, T * e2, T * rs, T * re,
   }
 
   return time_diff<ms>( t0 );
+}
+
+/* A merge that move's elements rather than copy and doesn't have a stupid API
+ * like STL */
+template <class T>
+size_t move_merge_n( RawVector<T> * in, size_t n, T * rs, T * re )
+{
+  size_t nout = 0;
+  size_t * pos = new size_t[n];
+  for ( size_t i = 0; i < n; i++ ) {
+    pos[i] = 0;
+  }
+  
+  while ( rs != re ) {
+    T * min = nullptr;
+    size_t which_i = 0;
+    
+    for ( size_t i = 0; i < n; i++ ) {
+      if ( pos[i] < in[i].size() ) {
+        if ( min == nullptr or *min > in[i][pos[i]] ) {
+          min = &in[i][pos[i]];
+          which_i = i;
+        }
+      }
+    }
+
+    if ( min != nullptr ) {
+      *rs++ = std::move( *min );
+      pos[which_i]++;
+      nout++;
+    } else {
+      break;
+    }
+  }
+
+  return nout;
 }
 
 #endif /* UTIL_HH */

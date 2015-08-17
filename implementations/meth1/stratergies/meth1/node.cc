@@ -21,6 +21,8 @@
 #include "config.h"
 
 #define USE_PQ 0
+#define USE_NEW_CHUNK 1
+#define USE_MOVE 0
 
 using namespace std;
 using namespace meth1;
@@ -84,7 +86,7 @@ void Node::RPC_Read( BufferedIO_O<TCPSocket> & client )
   uint64_t pos = *( reinterpret_cast<const uint64_t *>( str ) );
   uint64_t amt = *( reinterpret_cast<const uint64_t *>( str ) + 1 );
 
-  vector<Record> recs;
+  RecV recs;
   if ( pos < Size() ) {
     recs = Read( pos, amt );
   }
@@ -104,14 +106,14 @@ void Node::RPC_Size( BufferedIO_O<TCPSocket> & client )
   client.flush( true );
 }
 
-vector<Record> Node::DoRead( uint64_t pos, uint64_t size )
+Node::RecV Node::DoRead( uint64_t pos, uint64_t size )
 {
   static size_t pass = 0;
 
   auto t0 = time_now();
   auto recs = linear_scan( seek( pos ), size );
   if ( recs.size() > 0 ) {
-    last_ = recs.back();
+    last_.copy( recs.back() );
     fpos_ = pos + recs.size();
   }
   cout << "do-read, " << ++pass << ", " << time_diff<ms>( t0 ) << endl;
@@ -126,7 +128,7 @@ uint64_t Node::DoSize( void )
   return data_.size() / Rec::SIZE;
 }
 
-inline uint64_t Node::rec_sort( vector<Record> & recs ) const
+inline uint64_t Node::rec_sort( vector<RR> & recs ) const
 {
   auto t0 = time_now();
 #ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
@@ -152,7 +154,7 @@ Record Node::seek( uint64_t pos )
       if ( recs.size() == 0 ) {
         break;
       }
-      last_ = recs.back();
+      last_.copy( recs.back() );
     }
   }
   return last_;
@@ -160,7 +162,7 @@ Record Node::seek( uint64_t pos )
 
 /* Perform a single linear scan of the file, returning the next `size` smallest
  * records that occur directly after the `after` record. */
-vector<Record> Node::linear_scan( const Record & after, uint64_t size )
+Node::RecV Node::linear_scan( const Record & after, uint64_t size )
 {
   cout << "linear_scan, " << ++lpass_ << ", " << timestamp<ms>()
     << ", start" << endl;
@@ -169,6 +171,8 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
   } else {
 #if USE_PQ == 1
     return linear_scan_pq( after, size );
+#elif USE_NEW_CHUNK == 1
+    return linear_scan_chunk2( after, size );
 #else
     return linear_scan_chunk( after, size );
 #endif
@@ -176,10 +180,10 @@ vector<Record> Node::linear_scan( const Record & after, uint64_t size )
 }
 
 /* Linear scan optimized for retrieving just one record. */
-vector<Record> Node::linear_scan_one( const Record & after )
+Node::RecV Node::linear_scan_one( const Record & after )
 {
   auto t0 = time_now();
-  auto min = Record( Rec::MAX );
+  auto min = RR( Rec::MAX );
 
   recio_.rewind();
 
@@ -190,24 +194,24 @@ vector<Record> Node::linear_scan_one( const Record & after )
     }
     RecordPtr next{r, i};
     if ( next > after and min > next ) {
-      min = Record( r, i );
+      min = RR( r, i );
     }
   }
 
   auto tt = time_diff<ms>( t0 );
   cout << "linear scan, " << lpass_ << ", " << tt << endl;
-  return {min};
+  return {{min}};
 }
 
 /* Linear scan using a priority queue for sorting. */
-vector<Record> Node::linear_scan_pq( const Record & after, uint64_t size )
+Node::RecV Node::linear_scan_pq( const Record & after, uint64_t size )
 {
   auto t0 = time_now();
   tdiff_t tsort = 0, tplace = 0;
   size_t rrs = 0, cmps = 0, pushes = 0, pops = 0;
 
   recio_.rewind();
-  mystl::priority_queue<Record> pq{size+1};
+  mystl::priority_queue<RR> pq{size+1};
   uint64_t i = 0;
 
   while ( true ) {
@@ -215,7 +219,7 @@ vector<Record> Node::linear_scan_pq( const Record & after, uint64_t size )
     if ( r == nullptr ) {
       break;
     }
-    RecordPtr next{r, i};
+    RecordPtr next{r, i++};
     rrs++;
     cmps++;
     if ( next > after ) {
@@ -233,7 +237,7 @@ vector<Record> Node::linear_scan_pq( const Record & after, uint64_t size )
   }
   tplace += time_diff<ms>( t0 );
 
-  vector<Record> vrecs = move( pq.container() );
+  vector<RR> vrecs = move( pq.container() );
   tsort += rec_sort( vrecs );
 
   auto tt = time_diff<ms>( t0 );
@@ -246,11 +250,12 @@ vector<Record> Node::linear_scan_pq( const Record & after, uint64_t size )
   cout << "pushes, "      << lpass_ << ", " << pushes << endl;
   cout << "pops, "        << lpass_ << ", " << pops   << endl;
   cout << "size, "        << lpass_ << ", " << size   << endl;
-  return vrecs;
+
+  return {move( vrecs )};
 }
 
 /* Linear scan using a chunked sorting + merge strategy. */
-vector<Record> Node::linear_scan_chunk( const Record & after, uint64_t size )
+Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
 {
   auto t0 = time_now();
   tdiff_t tsort = 0, tplace = 0, tmerge = 0;
@@ -259,7 +264,7 @@ vector<Record> Node::linear_scan_chunk( const Record & after, uint64_t size )
 
   // TWEAK: sort + merge block size...
   uint64_t blk_size = max( uint64_t(1), size / 4 );
-  vector<Record> vnext, vpast, vin;
+  vector<RR> vnext, vpast, vin;
   vnext.reserve( size );
   vin.reserve( blk_size );
 
@@ -299,5 +304,71 @@ vector<Record> Node::linear_scan_chunk( const Record & after, uint64_t size )
   cout << "linear scan, " << lpass_ << ", " << tt     << endl;
   cout << endl;
 
-  return vpast;
+  return {move( vpast )};
+}
+
+/* Linear scan using a chunked sorting + merge strategy. */
+Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size )
+{
+  auto t0 = time_now();
+  tdiff_t tm = 0, ts = 0, tl = 0;
+
+  recio_.rewind();
+
+  size_t r1s = 0, r2s = 0;
+  size_t r1x = max( min( (size_t) 1572864, size / 6 ), (size_t) 1 );
+  RR * r1 = new RR[r1x];
+  RR * r2 = new RR[size];
+  RR * r3 = new RR[size];
+
+  uint64_t i = 0;
+  for ( bool run = true; run; ) {
+    for ( r1s = 0; r1s < r1x; i++ ) {
+      const uint8_t * r = (const uint8_t *) recio_.next_record();
+      if ( r == nullptr ) {
+        run = false;
+        break;
+      }
+      if ( after.compare( r, i ) < 0 ) {
+        r1[r1s++].copy( r, i );
+      }
+    }
+    
+    if ( r1s > 0 ) {
+      auto ts1 = time_now();
+#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
+      string_sort( r1, r1 + r1s );
+#else
+      sort( r1, r1 + r1s );
+#endif
+      ts += time_diff<ms>( ts1 );
+#if USE_MOVE == 1
+      tm += move_merge( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
+#else
+      tm += copy_merge( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size, true );
+#endif
+      swap( r2, r3 );
+      r2s = min( size, r1s + r2s );
+      r1s = 0;
+      tl = time_diff<ms>( ts1 );
+    }
+  }
+  auto t1 = time_now();
+
+#if USE_MOVE == 0
+  // r3 and r2 share storage cells, so clear to nullptr first.
+  // TODO: arena or other stratergy may be better here.
+  for ( uint64_t i = 0; i < size; i++ ) {
+    r3[i].val_ = nullptr;
+  }
+#endif
+  delete[] r3;
+  delete[] r1;
+
+  cout << "total, " << time_diff<ms>( t1, t0 ) << endl;
+  cout << "sort , " << ts << endl;
+  cout << "merge, " << tm << endl;
+  cout << "last , " << tl << endl;
+  
+  return {r2, r2s};
 }

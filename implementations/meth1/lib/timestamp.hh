@@ -13,6 +13,7 @@ using us  = std::chrono::microseconds;
 using ms  = std::chrono::milliseconds;
 using sec = std::chrono::seconds;
 using tdiff_t = uint64_t;
+using tpoint_t = clk::time_point;
 
 extern const clk::time_point tstart;
 
@@ -43,7 +44,7 @@ static inline tdiff_t timestamp( const timeval & tv )
 }
 
 /* Currrent time */
-static inline clk::time_point time_now( void )
+static inline tpoint_t time_now( void )
 {
   return clk::now();
 }

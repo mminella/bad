@@ -12,6 +12,7 @@
 
 class RecordPtr;
 class Record;
+class RecordS;
 
 namespace Rec {
   constexpr size_t KEY_LEN = 10;

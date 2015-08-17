@@ -18,7 +18,7 @@ void run( char * fin, double block )
   auto t0 = time_now();
 
   // start node
-  Node node{fin, "0", MAX_MEM};
+  Node node{fin, "0", MAX_MEM, true};
   node.Initialize();
   auto t1 = time_now();
 

@@ -3,10 +3,12 @@
 
 #include <mutex>
 #include <condition_variable>
+#include <utility>
 
 #include "buffered_io.hh"
 #include "file.hh"
 #include "overlapped_rec_io.hh"
+#include "raw_vector.hh"
 #include "socket.hh"
 #include "timestamp.hh"
 
@@ -24,7 +26,7 @@ namespace meth1
 /**
  * Node defines the backend running on each node with a subset of the data.
  */
-class Node : public Implementation
+class Node : public Implementation2
 {
 private:
   File data_;
@@ -50,16 +52,17 @@ public:
 
 private:
   void DoInitialize( void );
-  std::vector<Record> DoRead( uint64_t pos, uint64_t size );
+  RecV DoRead( uint64_t pos, uint64_t size );
   uint64_t DoSize( void );
 
-  inline tdiff_t rec_sort( std::vector<Record> & recs ) const;
+  inline tdiff_t rec_sort( std::vector<RR> & recs ) const;
   Record seek( uint64_t pos );
 
-  std::vector<Record> linear_scan( const Record & after, uint64_t size = 1 );
-  std::vector<Record> linear_scan_one( const Record & after );
-  std::vector<Record> linear_scan_pq( const Record & after, uint64_t size );
-  std::vector<Record> linear_scan_chunk( const Record & after, uint64_t size );
+  RecV linear_scan( const Record & after, uint64_t size = 1 );
+  RecV linear_scan_one( const Record & after );
+  RecV linear_scan_pq( const Record & after, uint64_t size );
+  RecV linear_scan_chunk( const Record & after, uint64_t size );
+  RecV linear_scan_chunk2( const Record & after, uint64_t size );
 
   void RPC_Read( BufferedIO_O<TCPSocket> & client );
   void RPC_Size( BufferedIO_O<TCPSocket> & client );

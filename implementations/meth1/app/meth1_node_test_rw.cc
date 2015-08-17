@@ -16,7 +16,7 @@ using namespace meth1;
 
 static constexpr size_t MAX_MEM = 2097152; // 200MB
 
-using Recs = vector<Record>;
+using Recs = Node::RecV;
 
 tdiff_t ttr, ttw;
 

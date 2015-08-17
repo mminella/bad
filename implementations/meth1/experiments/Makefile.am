@@ -9,7 +9,10 @@ bin_PROGRAMS = \
 	sort_overlap_channel \
 	sort_overlap_io \
 	sort_pq \
+	sort_pq_overlap \
 	sort_chunked \
+	sort_chunked_multi \
+	sort_chunked_overlap \
 	sort_chunked_vec
 
 AM_CPPFLAGS = \
@@ -42,5 +45,8 @@ sort_libc_SOURCES = sort_libc.cc
 sort_overlap_channel_SOURCES = sort_overlap_channel.cc
 sort_overlap_io_SOURCES = sort_overlap_io.cc
 sort_pq_SOURCES = sort_pq.cc
+sort_pq_overlap_SOURCES = sort_pq_overlap.cc
 sort_chunked_SOURCES = sort_chunked.cc
+sort_chunked_multi_SOURCES = sort_chunked_multi.cc
+sort_chunked_overlap_SOURCES = sort_chunked_overlap.cc
 sort_chunked_vec_SOURCES = sort_chunked_vec.cc
