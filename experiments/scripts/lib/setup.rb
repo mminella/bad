@@ -66,7 +66,10 @@ class Setup
       end
 
       # install mosh
-      ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq apt-get install mosh"
+      ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq apt-get install mosh binutils"
+      ssh.root! "DEBIAN_FRONTEND=noninteractive add-apt-repository -y ppa:ubuntu-toolchain-r/test"
+      ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get update"
+      ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrade"
 
       # disable apt-get autoupdate
       ssh.root! 'sed -i -e"s/1/0/g" /etc/apt/apt.conf.d/10periodic'
