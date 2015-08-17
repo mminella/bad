@@ -24,7 +24,7 @@ public:
   void copy( const uint8_t* r, uint64_t i ) noexcept
   {
     loc_ = i;
-    if ( val_ == nullptr ) { val_ = alloc_val(); }
+    if ( val_ == nullptr ) { val_ = Rec::alloc_val(); }
     memcpy( val_, r + Rec::KEY_LEN, Rec::VAL_LEN );
     memcpy( key_, r, Rec::KEY_LEN );
   }
@@ -32,7 +32,7 @@ public:
   void copy( const RecordS & r ) noexcept
   {
     loc_ = r.loc_;
-    if ( val_ == nullptr ) { val_ = alloc_val(); }
+    if ( val_ == nullptr ) { val_ = Rec::alloc_val(); }
     memcpy( val_, r.val_, Rec::VAL_LEN );
     memcpy( key_, r.key_, Rec::KEY_LEN );
   }
@@ -41,7 +41,7 @@ public:
 
   /* Construct a min or max record. */
   Record( Rec::limit_t lim ) noexcept
-    : val_{alloc_val()}
+    : val_{Rec::alloc_val()}
   {
     if ( lim == Rec::MAX ) {
       memset( key_, 0xFF, Rec::KEY_LEN );
@@ -56,7 +56,7 @@ public:
 
   Record( const Record & other )
     : loc_{other.loc_}
-    , val_{alloc_val()}
+    , val_{Rec::alloc_val()}
   {
     if ( other.val_ != nullptr ) {
       memcpy( val_, other.val_, Rec::VAL_LEN );
@@ -69,7 +69,7 @@ public:
     if ( this != &other ) {
       loc_ = other.loc_;
       if ( other.val_ != nullptr ) {
-        if ( val_ == nullptr ) { val_ = alloc_val(); }
+        if ( val_ == nullptr ) { val_ = Rec::alloc_val(); }
         memcpy( val_, other.val_, Rec::VAL_LEN );
       }
       memcpy( key_, other.key_, Rec::KEY_LEN );
@@ -94,7 +94,7 @@ public:
     return *this;
   }
 
-  ~Record( void ) { dealloc_val( val_ ); }
+  ~Record( void ) { Rec::dealloc_val( val_ ); }
 
   /* Accessors */
   const uint8_t * key( void ) const noexcept { return key_; }
