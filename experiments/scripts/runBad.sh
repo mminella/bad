@@ -56,7 +56,7 @@ backends() {
 # 3 - op
 reader() {
   ${SSH} ubuntu@${M1} "echo '$1' >> ${LOG};" \
-    "meth1_client $2 ${READER_OUT} $3 ${BACKENDS} >> ${LOG}"
+    "meth1_client $2 ${READER_OUT} $3 ${BACKENDS} 2>&1 >> ${LOG}"
 }
 
 # Run an experiment (start + run + stop method)
