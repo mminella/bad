@@ -1,0 +1,31 @@
+# Wed Aug 12 08:40:06 UTC 2015
+read, 0, 2650
+blks, 1, 1000
+insert, 0, 6099
+sort, 0, 506
+linear scan, 0, 6606
+recs, 0, 10485760
+cmps, 0, 20971520
+pushes, 0, 8876935
+pops, 0, 3634055
+size, 0, 5242880
+read, 1, 0
+blks, 2, 1000
+insert, 1, 1290
+sort, 1, 507
+linear scan, 1, 1797
+recs, 1, 10485760
+cmps, 1, 15728640
+pushes, 1, 5242880
+pops, 1, 0
+size, 1, 5242880
+read, 2, 0
+blks, 3, 1000
+insert, 2, 243
+sort, 2, 0
+linear scan, 2, 243
+recs, 2, 10485760
+cmps, 2, 10485760
+pushes, 2, 0
+pops, 2, 0
+size, 2, 5242880

@@ -1,0 +1,91 @@
+# Wed Aug 12 08:38:02 UTC 2015
+read, 0, 12306
+blks, 1, 4000
+insert, 0, 18009
+sort, 0, 270
+linear scan, 0, 18279
+recs, 0, 41943040
+cmps, 0, 83886080
+pushes, 0, 16141633
+pops, 0, 10898753
+size, 0, 5242880
+read, 1, 0
+blks, 2, 4000
+insert, 1, 14446
+sort, 1, 270
+linear scan, 1, 14717
+recs, 1, 41943040
+cmps, 1, 78643200
+pushes, 1, 15442397
+pops, 1, 10199517
+size, 1, 5242880
+read, 2, 0
+blks, 3, 4000
+insert, 2, 13466
+sort, 2, 271
+linear scan, 2, 13737
+recs, 2, 41943040
+cmps, 2, 73400320
+pushes, 2, 14633741
+pops, 2, 9390861
+size, 2, 5242880
+read, 3, 0
+blks, 4, 4000
+insert, 3, 12292
+sort, 3, 268
+linear scan, 3, 12561
+recs, 3, 41943040
+cmps, 3, 68157440
+pushes, 3, 13679654
+pops, 3, 8436774
+size, 3, 5242880
+read, 4, 0
+blks, 5, 4000
+insert, 4, 11400
+sort, 4, 273
+linear scan, 4, 11674
+recs, 4, 41943040
+cmps, 4, 62914560
+pushes, 4, 12510586
+pops, 4, 7267706
+size, 4, 5242880
+read, 5, 0
+blks, 6, 4000
+insert, 5, 8944
+sort, 5, 283
+linear scan, 5, 9228
+recs, 5, 41943040
+cmps, 5, 57671680
+pushes, 5, 11003542
+pops, 5, 5760662
+size, 5, 5242880
+read, 6, 0
+blks, 7, 4000
+insert, 6, 6631
+sort, 6, 272
+linear scan, 6, 6903
+recs, 6, 41943040
+cmps, 6, 52428800
+pushes, 6, 8877427
+pops, 6, 3634547
+size, 6, 5242880
+read, 7, 0
+blks, 8, 4000
+insert, 7, 2001
+sort, 7, 269
+linear scan, 7, 2271
+recs, 7, 41943040
+cmps, 7, 47185920
+pushes, 7, 5242880
+pops, 7, 0
+size, 7, 5242880
+read, 8, 0
+blks, 9, 4000
+insert, 8, 1119
+sort, 8, 0
+linear scan, 8, 1119
+recs, 8, 41943040
+cmps, 8, 41943040
+pushes, 8, 0
+pops, 8, 0
+size, 8, 5242880
