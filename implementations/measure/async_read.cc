@@ -1,10 +1,11 @@
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
+#include <inttypes.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <inttypes.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "lib.hh"
 
@@ -14,7 +15,8 @@ int main(int argc, char* argv[]) {
       "([O_DIRECT])\n");
     return EXIT_FAILURE;
   }
-  int flags = argc == 5 ? O_DIRECT | O_RDONLY : O_RDONLY;
+  bool odirect = argc == 5;
+  int flags = odirect ? O_DIRECT | O_RDONLY : O_RDONLY;
 
   const char* file_name = argv[1];
   int fd = open(file_name, flags);
@@ -90,8 +92,8 @@ int main(int argc, char* argv[]) {
 
   double dur = time_diff(time_start, time_end);
   double mbs = file_size / dur / MB;
-  // read?, sync?, random?, block, depth, MB/s
-  printf("%c, %c, %c, %ld, %d, %f\n", 'r', 'a', 's', block_size, qdepth, mbs);
+  // read?, sync?, random?, block, depth, odirect, MB/s
+  printf("%c, %c, %c, %ld, %d, %d, %f\n", 'r', 'a', 's', block_size, qdepth, odirect, mbs);
 
   if (close(fd) != 0) {
     perror("Failed when closing.");

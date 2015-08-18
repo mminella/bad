@@ -1,8 +1,9 @@
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "lib.hh"
 
@@ -11,7 +12,8 @@ int main(int argc, char* argv[]) {
     printf("Usage: ./random_write [file] [count] [block size] ([O_DIRECT?])\n");
     return EXIT_FAILURE;
   }
-  int flags = argc == 5 ? O_DIRECT : 0;
+  bool odirect = argc == 5;
+  int flags = odirect ? O_DIRECT : 0;
 
   const char* file_name = argv[1];
   size_t num_block = atol(argv[2]);
@@ -50,8 +52,8 @@ int main(int argc, char* argv[]) {
 
   double dur = time_diff(time_start, time_end);
   double mbs = file_size / dur / MB;
-  // read?, sync?, random?, block, depth, MB/s
-  printf("%c, %c, %c, %ld, %d, %f\n", 'w', 's', 'r', block_size, 1, mbs);
+  // read?, sync?, random?, block, depth, odirect, MB/s
+  printf("%c, %c, %c, %ld, %d, %d, %f\n", 'w', 's', 'r', block_size, 1, odirect, mbs);
 
   if (close(fd) != 0) {
     perror("Failed when closing.");
