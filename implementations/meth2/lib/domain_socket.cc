@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <sys/un.h>
 
+#include <memory>
 #include <utility>
 
 #include "domain_socket.hh"
