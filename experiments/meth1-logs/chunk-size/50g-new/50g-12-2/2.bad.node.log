@@ -1,0 +1,100 @@
+# Mon Aug 17 19:56:16 UTC 2015
+linear_scan, 1, 2184, start
+read_file, 1, 2184, start
+read, 1, 116173
+read (blocked), 1, 122749
+total, 123206
+sort , 14482
+merge, 38685
+last , 454
+do-read, 1, 123732
+
+
+linear_scan, 2, 201578, start
+read_file, 2, 201578, start
+read, 2, 105853
+read (blocked), 2, 121479
+total, 121904
+sort , 14981
+merge, 39746
+last , 423
+do-read, 2, 122429
+
+
+linear_scan, 3, 399589, start
+read_file, 3, 399589, start
+read, 3, 105466
+read (blocked), 3, 115783
+total, 116222
+sort , 13691
+merge, 34795
+last , 436
+do-read, 3, 116745
+
+
+linear_scan, 4, 591874, start
+read_file, 4, 591874, start
+read, 4, 105563
+read (blocked), 4, 111347
+total, 111792
+sort , 13133
+merge, 32347
+last , 443
+do-read, 4, 112319
+
+
+linear_scan, 5, 779633, start
+read_file, 5, 779633, start
+read, 5, 105472
+read (blocked), 5, 108189
+total, 108567
+sort , 12461
+merge, 29506
+last , 376
+do-read, 5, 109089
+
+
+linear_scan, 6, 964171, start
+read_file, 6, 964171, start
+read, 6, 105506
+read (blocked), 6, 108198
+total, 108638
+sort , 11432
+merge, 25615
+last , 437
+do-read, 6, 109158
+
+
+linear_scan, 7, 1148829, start
+read_file, 7, 1148829, start
+read, 7, 105411
+read (blocked), 7, 108023
+total, 108391
+sort , 9860
+merge, 20613
+last , 366
+do-read, 7, 108911
+
+
+linear_scan, 8, 1333247, start
+read_file, 8, 1333247, start
+read, 8, 105366
+read (blocked), 8, 107939
+total, 108361
+sort , 7174
+merge, 12376
+last , 419
+do-read, 8, 108881
+
+
+linear_scan, 9, 1517636, start
+read_file, 9, 1517636, start
+read, 9, 105238
+read (blocked), 9, 107701
+total, 107861
+sort , 984
+merge, 1256
+last , 159
+do-read, 9, 108224
+
+
