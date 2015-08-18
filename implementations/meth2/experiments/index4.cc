@@ -14,11 +14,11 @@
 #include "buffered_io.hh"
 #include "exception.hh"
 #include "file.hh"
+#include "overlapped_rec_io.hh"
 #include "timestamp.hh"
+#include "threadpool.hh"
 
 #include "record.hh"
-#include "olio.hh"
-#include "threadpool.hh"
 
 using namespace std;
 
@@ -27,17 +27,25 @@ using rec_ip = pair<rec_i, rec_i>;
 using f_rec_ip = future<rec_ip>;
 using s_rec_ip = shared_ptr<f_rec_ip>;
 
-rec_ip mysort( rec_i begin, rec_i end )
+rec_ip mysort( uint64_t i, rec_i begin, rec_i end )
 {
+  (void) i;
+  // cout << "start sort, " << i << ", " << timestamp<ms>() << endl;
+  rec_sort( begin, end );
+  // cout << "end sort, " << i << ", " << timestamp<ms>() << endl;
   rec_sort( begin, end );
   return make_pair( begin, end );
 }
 
-rec_ip mymerge( s_rec_ip left, s_rec_ip right )
+rec_ip mymerge( uint64_t i, s_rec_ip left, s_rec_ip right )
 {
+  (void) i;
+  // cout << "queue merge, " << i << ", " << timestamp<ms>() << endl;
   auto l = left->get();
   auto r = right->get();
+  // cout << "start merge, " << i << ", " << timestamp<ms>() << endl;
   inplace_merge( l.first, l.second, r.second );
+  // cout << "end merge, " << i << ", " << timestamp<ms>() << endl;
   return make_pair( l.first, r.second );
 }
 
@@ -45,68 +53,59 @@ void run( char * fin )
 {
   // get in/out files
   File fdi( fin, O_RDONLY );
-  OverlappedRecordIO<Rec::SIZE> olio( fdi );
+  OverlappedRecordIO<Rec::SIZE> rio( fdi );
   ThreadPool tp;
 
+  // start reading
+  rio.rewind();
+
   size_t nrecs = fdi.size() / Rec::SIZE;
+  size_t split = 8;
+  size_t chunk = nrecs / split;
   vector<Record> recs;
   recs.reserve( nrecs );
+  vector<f_rec_ip> merges( split / 2 );
 
-  // size_t split = nrecs / 4;
-  // vector<f_rec_ip> merge( 4 );
-
-  // read
   auto t1 = time_now();
-  olio.rewind();
-  // uint64_t split_i = 0;
+  uint64_t split_i = 0;
   bool run = true;
   for ( uint64_t i = 0; run; i++ ) {
-    const char * r = olio.next_record();
+    const char * r = rio.next_record();
     if ( fdi.eof() || r == nullptr ) {
       run = false;
     } else {
       recs.emplace_back( r, i * Rec::SIZE + Rec::KEY_LEN );
     }
 
-  //   // if ( i != 0 and ( i % split == 0 or !run ) and recs.begin() + split_i < recs.end() ) {
-  //   //   auto f1 = tp.enqueue( &mysort, recs.begin() + split_i,
-  //   //                                  min( recs.begin() + split_i + split, recs.end() ) );
-  //   //   split_i += split;
-  //   //   if ( merge[0].valid() ) {
-  //   //     auto f2 = tp.enqueue( &mymerge, make_shared<f_rec_ip>( move( merge[0] ) ),
-  //   //                                     make_shared<f_rec_ip>( move( f1 ) ) );
-  //   //     if ( merge[1].valid() ) {
-  //   //       auto f3 = tp.enqueue( &mymerge, make_shared<f_rec_ip>( move( merge[1] ) ),
-  //   //                                       make_shared<f_rec_ip>( move( f2 ) ) );
-  //   //       if ( merge[2].valid() ) {
-  //   //         auto f4 = tp.enqueue( &mymerge, make_shared<f_rec_ip>( move( merge[2] ) ),
-  //   //                                         make_shared<f_rec_ip>( move( f3 ) ) );
-  //   //         merge[3] = move( f4 );
-  //   //       } else {
-  //   //         merge[2] = move( f3 );
-  //   //       }
-  //   //     } else {
-  //   //       merge[1] = move( f2 );
-  //   //     }
-  //   //   } else {
-  //   //     merge[0] = move( f1 );
-  //   //   }
-    // }
+    if ( i != 0 and ( i % chunk == 0 or !run )
+        and recs.begin() + split_i < recs.end() ) {
+
+      // start the sort
+      auto fut = tp.enqueue( &mysort, split_i / chunk,
+        recs.begin() + split_i,
+        min( recs.begin() + split_i + chunk, recs.end() ) );
+      split_i += chunk;
+
+      // queue up the needed merges
+      for ( auto & m : merges ) {
+        if ( m.valid() ) {
+          fut = tp.enqueue( &mymerge, split_i / chunk,
+            make_shared<f_rec_ip>( move( m ) ),
+            make_shared<f_rec_ip>( move( fut ) ) );
+        } else {
+          m = move( fut );
+          break;
+        }
+      }
+    }
   }
   auto t2 = time_now();
 
-  // sort
-  mysort( recs.begin(), recs.begin() + nrecs / 2 );
-  mysort( recs.begin() + nrecs / 2, recs.end() );
-  // mysort( recs.begin(), recs.end() );
-
-  // // merge
+  // final merge
   auto tb = time_now();
-  vector<Record> recs2;
-  recs2.reserve( nrecs );
-  // merge( recs2.begin(), recs2.end(), recs.begin(), recs.begin() + nrecs / 2, recs.begin() + nrecs / 2, recs.end() );
-  // inplace_merge( recs.begin(), recs.begin() + nrecs / 2, recs.end() );
-  // // merge[2].wait();
+  for ( const auto & m : merges ) {
+    if ( m.valid() ) { m.wait(); }
+  }
   auto t3 = time_now();
 
   // stats
