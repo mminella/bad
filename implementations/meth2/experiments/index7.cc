@@ -43,11 +43,11 @@ RR * scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size )
   // - on my machine, 75% for the first sort is a good point.
   // - remaining 25% should also be sorted in chunks to make
   //   final (after IO) part of algorithm just cheaper merges.
-  size_t split_at = size / 4 * 3;
-  size_t split2 = (split_at + size) / 2;
+  size_t split_at1 = size / 4 * 3;
+  size_t split_at2 = (split_at1 + size) / 2;
+  future<tdiff_t> fsort1, fsort2;
   RR * r1 = new RR[size];
   RR * r2 = new RR[size];
-  future<tdiff_t> f;
 
   for ( size_t i = 0;; i++ ) {
     // TODO: we could use a zero copy interface here, but unlikely to have an
@@ -57,25 +57,27 @@ RR * scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size )
       break;
     }
     r1[i].copy( r, i );
-    
-    if ( i == split_at ) {
-      f = tp.enqueue( &mysort, r1, r1 + split_at );
-    } else if ( i == split2 ) {
+
+    if ( i == split_at1 ) {
+      fsort1 = tp.enqueue( &mysort, r1, r1 + split_at1 );
+    } else if ( i == split_at2 ) {
       auto tt = time_now();
-      rec_sort( r1 + split_at, r1 + split2 );
+      fsort2 = tp.enqueue( &mysort, r1 + split_at1, r1 + split_at2 );
       tsort += time_diff<ms>( tt );
     }
   }
-  
+
   auto t1 = time_now();
-  rec_sort( r1 + split2, r1 + size );
+  rec_sort( r1 + split_at2, r1 + size );
   auto t2 = time_now();
 
   // inplace merge the final 25% two splits.
-  inplace_merge( r1 + split_at, r1 + split2, r1 + size );
+  tsort += fsort2.get();
+  inplace_merge( r1 + split_at1, r1 + split_at2, r1 + size );
+  tsort += fsort1.get();
 
   // external merge the 75%, 25% file chunks.
-  copy_merge( r1, r1 + split_at, r1 + split_at, r1 + size, r2, r2 + size );
+  copy_merge( r1, r1 + split_at1, r1 + split_at1, r1 + size, r2, r2 + size );
 
   // ALTERNATIVE: n-way merge the three chunks.
   // RawVector<RR> * rv = new RawVector<RR>[3];
@@ -92,8 +94,8 @@ RR * scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size )
       cerr << "Out-of-order Record: " << i << endl;
     }
   }
-  
-  tsort += time_diff<ms>( t2, t1 ) + f.get();
+
+  // tsort += time_diff<ms>( t2, t1 ) + f.get();
   auto tmerg = time_diff<ms>( t3, t2 );
   auto tread = time_diff<ms>( t1, t0 );
   auto twall = time_diff<ms>( t3, t0 );
@@ -104,7 +106,8 @@ RR * scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size )
   cout << "time, " << tread + tsort + tmerg << endl;
   cout << "extr, " << twall - tread << endl;
   
-  return r2;
+  // return r2;
+  return nullptr;
 }
 
 void run( char * fin )
