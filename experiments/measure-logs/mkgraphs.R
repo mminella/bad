@@ -36,14 +36,16 @@ loadFile <- function(f) {
 }
 
 mkGraph <- function(file, data, title) {
-  dir.create(OUT_FOLDER, showWarnings=F)
-  pdf(paste(OUT_FOLDER, file, sep='/'))
-  g <- ggplot(data)
-  g <- g + geom_histogram(aes(x=mbs), binwidth=5)
-  g <- g + geom_vline(aes(xintercept=mean(mbs)), color="red", linetype="dashed", size=1)
-  g <- g + ggtitle(title)
-  print(g)
-  dev.off()
+  if (is.data.frame(data) & nrow(data) > 0) {
+    dir.create(OUT_FOLDER, showWarnings=F)
+    pdf(paste(OUT_FOLDER, file, sep='/'))
+    g <- ggplot(data)
+    g <- g + geom_histogram(aes(x=mbs), binwidth=5)
+    g <- g + geom_vline(aes(xintercept=mean(mbs)), color="red", linetype="dashed", size=1)
+    g <- g + ggtitle(title)
+    print(g)
+    dev.off()
+  }
 }
 
 # ===========================================
@@ -66,24 +68,32 @@ seq_r <- filter( df, rw == 'r', iomode == 's', access == 's', block == 4096, odi
 mkGraph('read-seq-block-4kb.pdf', seq_r, 'Read: sequential, blocking, 4KB, !O_DIRECT')
 seq_r <- filter( df, rw == 'r', iomode == 's', access == 's', block == 1048576, odirect == 0 )
 mkGraph('read-seq-block-1mb.pdf', seq_r, 'Read: sequential, blocking, 1MB, !O_DIRECT')
+seq_r <- filter( df, rw == 'r', iomode == 's', access == 's', block == 10485760, odirect == 0 )
+mkGraph('read-seq-block-10mb.pdf', seq_r, 'Read: sequential, blocking, 10MB, !O_DIRECT')
 
 # read-sequential-blocking + O_DIRECT
 seq_r <- filter( df, rw == 'r', iomode == 's', access == 's', block == 4096, odirect == 1 )
 mkGraph('read-seq-block-4kb-o.pdf', seq_r, 'Read: sequential, blocking, 4KB, O_DIRECT')
 seq_r <- filter( df, rw == 'r', iomode == 's', access == 's', block == 1048576, odirect == 1 )
 mkGraph('read-seq-block-1mb-o.pdf', seq_r, 'Read: sequential, blocking, 1MB, O_DIRECT')
+seq_r <- filter( df, rw == 'r', iomode == 's', access == 's', block == 10485760, odirect == 1 )
+mkGraph('read-seq-block-10mb-o.pdf', seq_r, 'Read: sequential, blocking, 10MB, O_DIRECT')
 
 # read-random-blocking
 seq_r <- filter( df, rw == 'r', iomode == 's', access == 'r', block == 4096, odirect == 0 )
 mkGraph('read-ran-block-4kb.pdf', seq_r, 'Read: random, blocking, 4KB, !O_DIRECT')
 seq_r <- filter( df, rw == 'r', iomode == 's', access == 'r', block == 1048576, odirect == 0 )
 mkGraph('read-ran-block-1mb.pdf', seq_r, 'Read: random, blocking, 1MB, !O_DIRECT')
+seq_r <- filter( df, rw == 'r', iomode == 's', access == 'r', block == 10485760, odirect == 0 )
+mkGraph('read-ran-block-10mb.pdf', seq_r, 'Read: random, blocking, 10MB, !O_DIRECT')
 
 # read-random-blocking + O_DIRECT
 seq_r <- filter( df, rw == 'r', iomode == 's', access == 'r', block == 4096, odirect == 1 )
 mkGraph('read-ran-block-4kb-o.pdf', seq_r, 'Read: random, blocking, 4KB, O_DIRECT')
 seq_r <- filter( df, rw == 'r', iomode == 's', access == 'r', block == 1048576, odirect == 1 )
 mkGraph('read-ran-block-1mb-o.pdf', seq_r, 'Read: random, blocking, 1MB, O_DIRECT')
+seq_r <- filter( df, rw == 'r', iomode == 's', access == 'r', block == 10485760, odirect == 1 )
+mkGraph('read-ran-block-10mb-o.pdf', seq_r, 'Read: random, blocking, 10MB, O_DIRECT')
 
 
 # ===========================================
@@ -94,24 +104,32 @@ seq_r <- filter( df, rw == 'w', iomode == 's', access == 's', block == 4096, odi
 mkGraph('write-seq-block-4kb.pdf', seq_r, 'Write: sequential, blocking, 4KB, !O_DIRECT')
 seq_r <- filter( df, rw == 'w', iomode == 's', access == 's', block == 1048576, odirect == 0 )
 mkGraph('write-seq-block-1mb.pdf', seq_r, 'Write: sequential, blocking, 1MB, !O_DIRECT')
+seq_r <- filter( df, rw == 'w', iomode == 's', access == 's', block == 10485760, odirect == 0 )
+mkGraph('write-seq-block-10mb.pdf', seq_r, 'Write: sequential, blocking, 10MB, !O_DIRECT')
 
 # write-sequential-blocking + O_DIRECT
 seq_r <- filter( df, rw == 'w', iomode == 's', access == 's', block == 4096, odirect == 1 )
 mkGraph('write-seq-block-4kb-o.pdf', seq_r, 'Write: sequential, blocking, 4KB, O_DIRECT')
 seq_r <- filter( df, rw == 'w', iomode == 's', access == 's', block == 1048576, odirect == 1 )
 mkGraph('write-seq-block-1mb-o.pdf', seq_r, 'Write: sequential, blocking, 1MB, O_DIRECT')
+seq_r <- filter( df, rw == 'w', iomode == 's', access == 's', block == 10485760, odirect == 1 )
+mkGraph('write-seq-block-10mb-o.pdf', seq_r, 'Write: sequential, blocking, 10MB, O_DIRECT')
 
 # write-random-blocking
 seq_r <- filter( df, rw == 'w', iomode == 's', access == 'r', block == 4096, odirect == 0 )
 mkGraph('write-ran-block-4kb.pdf', seq_r, 'Write: random, blocking, 4KB, !O_DIRECT')
 seq_r <- filter( df, rw == 'w', iomode == 's', access == 'r', block == 1048576, odirect == 0 )
 mkGraph('write-ran-block-1mb.pdf', seq_r, 'Write: random, blocking, 1MB, !O_DIRECT')
+seq_r <- filter( df, rw == 'w', iomode == 's', access == 'r', block == 10485760, odirect == 0 )
+mkGraph('write-ran-block-10mb.pdf', seq_r, 'Write: random, blocking, 10MB, !O_DIRECT')
 
 # write-random-blocking + O_DIRECT
 seq_r <- filter( df, rw == 'w', iomode == 's', access == 'r', block == 4096, odirect == 1 )
 mkGraph('write-ran-block-4kb-o.pdf', seq_r, 'Write: random, blocking, 4KB, O_DIRECT')
 seq_r <- filter( df, rw == 'w', iomode == 's', access == 'r', block == 1048576, odirect == 1 )
 mkGraph('write-ran-block-1mb-o.pdf', seq_r, 'Write: random, blocking, 1MB, O_DIRECT')
+seq_r <- filter( df, rw == 'w', iomode == 's', access == 'r', block == 10485760, odirect == 1 )
+mkGraph('write-ran-block-10mb-o.pdf', seq_r, 'Write: random, blocking, 10MB, O_DIRECT')
 
 # ===========================================
 # Graphs -- read, async
@@ -131,24 +149,32 @@ seq_r <- filter( df, rw == 'r', iomode == 'a', access == 's', block == 4096, odi
 asyncGraph('read-seq-async-4kb-q%d.pdf', seq_r, 'Read: sequential, async, 4KB, Q%d, !O_DIRECT')
 seq_r <- filter( df, rw == 'r', iomode == 'a', access == 's', block == 1048576, odirect == 0 )
 asyncGraph('read-seq-async-1mb-q%d.pdf', seq_r, 'Read: sequential, async, 1MB, Q%d, !O_DIRECT')
+seq_r <- filter( df, rw == 'r', iomode == 'a', access == 's', block == 10485760, odirect == 0 )
+asyncGraph('read-seq-async-10mb-q%d.pdf', seq_r, 'Read: sequential, async, 10MB, Q%d, !O_DIRECT')
 
 # read-random-async
 seq_r <- filter( df, rw == 'r', iomode == 'a', access == 'r', block == 4096, odirect == 0 )
 asyncGraph('read-ran-async-4kb-q%d.pdf', seq_r, 'Read: random, async, 4KB, Q%d, !O_DIRECT')
 seq_r <- filter( df, rw == 'r', iomode == 'a', access == 'r', block == 1048576, odirect == 0 )
 asyncGraph('read-ran-async-1mb-q%d.pdf', seq_r, 'Read: random, async, 1MB, Q%d, !O_DIRECT')
+seq_r <- filter( df, rw == 'r', iomode == 'a', access == 'r', block == 10485760, odirect == 0 )
+asyncGraph('read-ran-async-10mb-q%d.pdf', seq_r, 'Read: random, async, 10MB, Q%d, !O_DIRECT')
 
 # read-sequential-async + O_DIRECT
 seq_r <- filter( df, rw == 'r', iomode == 'a', access == 's', block == 4096, odirect == 1 )
 asyncGraph('read-seq-async-4kb-q%d.pdf', seq_r, 'Read: sequential, async, 4KB, Q%d, O_DIRECT')
 seq_r <- filter( df, rw == 'r', iomode == 'a', access == 's', block == 1048576, odirect == 1 )
 asyncGraph('read-seq-async-1mb-q%d.pdf', seq_r, 'Read: sequential, async, 1MB, Q%d, O_DIRECT')
+seq_r <- filter( df, rw == 'r', iomode == 'a', access == 's', block == 10485760, odirect == 1 )
+asyncGraph('read-seq-async-10mb-q%d.pdf', seq_r, 'Read: sequential, async, 10MB, Q%d, O_DIRECT')
 
 # read-random-async + O_DIRECT
 seq_r <- filter( df, rw == 'r', iomode == 'a', access == 'r', block == 4096, odirect == 1 )
 asyncGraph('read-ran-async-4kb-q%d-o.pdf', seq_r, 'Read: random, async, 4KB, Q%d, O_DIRECT')
 seq_r <- filter( df, rw == 'r', iomode == 'a', access == 'r', block == 1048576, odirect == 1 )
 asyncGraph('read-ran-async-1mb-q%d-o.pdf', seq_r, 'Read: random, async, 1MB, Q%d, O_DIRECT')
+seq_r <- filter( df, rw == 'r', iomode == 'a', access == 'r', block == 10485760, odirect == 1 )
+asyncGraph('read-ran-async-10mb-q%d-o.pdf', seq_r, 'Read: random, async, 10MB, Q%d, O_DIRECT')
 
 
 # ===========================================
@@ -159,7 +185,7 @@ boxplot <- function(file, data, title, inc_q) {
   rw_t=c(r='read', w='write')
   io_t=c(s='block', a='async')
   a_t=c(s='seq', r='rand')
-  b_t=c('4096'='4KB', '1048576'='1MB')
+  b_t=c('4096'='4KB', '1048576'='1MB', '10485760'='10MB')
   o_t=c('0'='BUF', '1'='OD')
   q_t=c('1'='Q01', '15'='Q15', '31'='Q31', '62'='Q62', ordered=T)
   data <- mutate(data, rw=rw_t[as.character(rw)],
@@ -173,7 +199,6 @@ boxplot <- function(file, data, title, inc_q) {
     data <- transmute(data,
                       id=paste(rw,iomode,access,block,queue,odirect,sep='-'),
                       mbs=mbs)
-    print(data)
   } else {
     data <- transmute(data,
                       id=paste(rw,iomode,access,block,odirect,sep='-'),
