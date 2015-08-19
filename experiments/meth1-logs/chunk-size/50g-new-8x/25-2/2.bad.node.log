@@ -1,0 +1,45 @@
+# Wed Aug 19 07:21:52 UTC 2015
+linear_scan, 1, 2179, start
+read_file, 1, 2180, start
+read, 1, 112721
+read (blocked), 1, 175120
+total, 176749
+sort , 21866
+merge, 115778
+last , 756
+do-read, 1, 177687
+
+
+linear_scan, 2, 236101, start
+read_file, 2, 236101, start
+read, 2, 105316
+read (blocked), 2, 173619
+total, 176973
+sort , 20304
+merge, 100565
+last , 965
+do-read, 2, 178478
+
+
+linear_scan, 3, 486622, start
+read_file, 3, 486622, start
+read, 3, 105294
+read (blocked), 3, 144940
+total, 147169
+sort , 17254
+merge, 77386
+last , 762
+do-read, 3, 148158
+
+
+linear_scan, 4, 691031, start
+read_file, 4, 691031, start
+read, 4, 105353
+read (blocked), 4, 109683
+total, 112138
+sort , 11262
+merge, 34419
+last , 739
+do-read, 4, 112914
+
+

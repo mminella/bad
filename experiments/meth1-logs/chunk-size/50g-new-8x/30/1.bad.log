@@ -1,0 +1,20 @@
+# 1, 50, 15, true, read
+recv-size, 0, 524288000
+size, 0, 0
+start-read, 0, 0, 157286400
+read, 0, 254517
+recv-read, 0, 0, 157286400
+network, 0, 93193
+start-read, 1, 157286400, 157286400
+read, 1, 275044
+recv-read, 1, 157286400, 157286400
+network, 1, 83428
+start-read, 2, 314572800, 157286400
+read, 2, 179226
+recv-read, 2, 314572800, 157286400
+network, 2, 81482
+start-read, 3, 471859200, 157286400
+read, 3, 123653
+recv-read, 3, 471859200, 52428800
+network, 3, 26790
+cmd-read, 0, 1118209
