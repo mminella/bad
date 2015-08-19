@@ -13,12 +13,13 @@ CHUNK=$4
 MACHINE=$5
 N=$6
 ODIR=$7
+CMDD=$8
 SIZE_B=$( calc "$SIZE * 1024 * 1024 * 1000 / 100" )
 CHUNK_B=$( calc "$CHUNK * 1024 * 1024 * 1000 / 100" )
 
 # Args
-if [ $# != 7 ]; then
-  echo "runBad.sh <cluster file> <log path> <size> <chunk> <machine> <nodes> <o_direct>"
+if [ $# != 8 ]; then
+  echo "runBad.sh <cluster file> <log path> <size> <chunk> <machine> <nodes> <o_direct> <cmd>"
   exit 1
 fi
 
@@ -75,7 +76,7 @@ experiment() {
 # Run experiment
 all "setup_all_fs"
 backends "gensort -t16 ${SIZE_B},buf ${MNT}/recs"
-experiment ${ODIR} read
+experiment ${ODIR} ${CMD}
 
 # Create log directory
 mkdir -p $SAVE
