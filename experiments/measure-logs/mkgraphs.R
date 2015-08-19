@@ -2,13 +2,14 @@
 library(ggplot2)
 library(dplyr)
 library(ggthemr)
+library(reshape2)
 
 # for color scheme list -- https://github.com/cttobin/ggthemr
 ggthemr('fresh')
 
 # We specify number of data lines, not starting offset as that can vary.
 DATA_LINES <- 96
-OUT_FOLDER <- "graphs/"
+OUT_FOLDER <- "graphs"
 
 loadFile <- function(f) {
   if (!file.exists(f)) {
@@ -36,7 +37,7 @@ loadFile <- function(f) {
 
 mkGraph <- function(file, data, title) {
   dir.create(OUT_FOLDER, showWarnings=F)
-  pdf(paste(OUT_FOLDER, file))
+  pdf(paste(OUT_FOLDER, file, sep='/'))
   g <- ggplot(data)
   g <- g + geom_histogram(aes(x=mbs), binwidth=5)
   g <- g + geom_vline(aes(xintercept=mean(mbs)), color="red", linetype="dashed", size=1)
@@ -112,7 +113,6 @@ mkGraph('write-ran-block-4kb-o.pdf', seq_r, 'Write: random, blocking, 4KB, O_DIR
 seq_r <- filter( df, rw == 'w', iomode == 's', access == 'r', block == 1048576, odirect == 1 )
 mkGraph('write-ran-block-1mb-o.pdf', seq_r, 'Write: random, blocking, 1MB, O_DIRECT')
 
-
 # ===========================================
 # Graphs -- read, async
 
@@ -149,4 +149,59 @@ seq_r <- filter( df, rw == 'r', iomode == 'a', access == 'r', block == 4096, odi
 asyncGraph('read-ran-async-4kb-q%d-o.pdf', seq_r, 'Read: random, async, 4KB, Q%d, O_DIRECT')
 seq_r <- filter( df, rw == 'r', iomode == 'a', access == 'r', block == 1048576, odirect == 1 )
 asyncGraph('read-ran-async-1mb-q%d-o.pdf', seq_r, 'Read: random, async, 1MB, Q%d, O_DIRECT')
+
+
+# ===========================================
+# Graphs -- box-blot compares
+
+boxplot <- function(file, data, title, inc_q) {
+  # transform column values to human readable
+  rw_t=c(r='read', w='write')
+  io_t=c(s='block', a='async')
+  a_t=c(s='seq', r='rand')
+  b_t=c('4096'='4KB', '1048576'='1MB')
+  o_t=c('0'='BUF', '1'='OD')
+  q_t=c('1'='Q01', '15'='Q15', '31'='Q31', '62'='Q62', ordered=T)
+  data <- mutate(data, rw=rw_t[as.character(rw)],
+                  iomode=io_t[as.character(iomode)],
+                  access=a_t[as.character(access)],
+                  block=b_t[as.character(block)],
+                  odirect=o_t[as.character(odirect)],
+                  queue=q_t[as.character(queue)])
+
+  if (inc_q) {
+    data <- transmute(data,
+                      id=paste(rw,iomode,access,block,queue,odirect,sep='-'),
+                      mbs=mbs)
+    print(data)
+  } else {
+    data <- transmute(data,
+                      id=paste(rw,iomode,access,block,odirect,sep='-'),
+                      mbs=mbs)
+  }
+
+  pdf(paste(OUT_FOLDER, file, sep='/'))
+  g <- ggplot(data)
+  g <- g + geom_boxplot(aes(x=id,y=mbs))
+  g <- g + coord_flip()
+  g <- g + ggtitle(title)
+  print(g)
+  dev.off()
+}
+
+# read, blocking
+data <- filter( df, rw == 'r', iomode == 's' )
+boxplot('bp-read-block.pdf', data, 'Read: blocking', F)
+
+# write, blocking
+data <- filter( df, rw == 'w', iomode == 's' )
+boxplot('bp-write-block.pdf', data, 'Write: blocking', F)
+
+# read, async
+data <- filter( df, rw == 'r', iomode == 'a', odirect == 0 )
+boxplot('bp-read-async.pdf', data, 'Read: async, !O_DIRECT', T)
+
+# read, async + odirect
+data <- filter( df, rw == 'r', iomode == 'a', odirect == 1 )
+boxplot('bp-read-async-o.pdf', data, 'Read: async, O_DIRECT', T)
 
