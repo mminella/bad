@@ -1,0 +1,129 @@
+# Wed Aug 19 20:59:04 UTC 2015
+linear_scan, 1, 2170, start
+read_file, 1, 2170, start
+read, 1, 109029
+read (blocked), 1, 233834
+insert, 1, 236093
+sort, 1, 9343
+linear scan, 1, 245437
+
+recs, 1, 524288000
+cmps, 1, 975175680
+pushes, 1, 217698986
+pops, 1, 144298666
+size, 1, 73400320
+do-read, 1, 245437
+
+
+linear_scan, 2, 336870, start
+read_file, 2, 336870, start
+read, 2, 106150
+read (blocked), 2, 219386
+insert, 2, 221630
+sort, 2, 9481
+linear scan, 2, 231111
+
+recs, 2, 524288000
+cmps, 2, 901775360
+pushes, 2, 206626074
+pops, 2, 133225754
+size, 2, 73400320
+do-read, 2, 231111
+
+
+linear_scan, 3, 657249, start
+read_file, 3, 657249, start
+read, 3, 106034
+read (blocked), 3, 200295
+insert, 3, 202520
+sort, 3, 9472
+linear scan, 3, 211992
+
+recs, 3, 524288000
+cmps, 3, 828375040
+pushes, 3, 193607465
+pops, 3, 120207145
+size, 3, 73400320
+do-read, 3, 211992
+
+
+linear_scan, 4, 958321, start
+read_file, 4, 958321, start
+read, 4, 105777
+read (blocked), 4, 181439
+insert, 4, 183661
+sort, 4, 9471
+linear scan, 4, 193133
+
+recs, 4, 524288000
+cmps, 4, 754974720
+pushes, 4, 177733701
+pops, 4, 104333381
+size, 4, 73400320
+do-read, 4, 193133
+
+
+linear_scan, 5, 1240339, start
+read_file, 5, 1240339, start
+read, 5, 105956
+read (blocked), 5, 159855
+insert, 5, 162076
+sort, 5, 9432
+linear scan, 5, 171508
+
+recs, 5, 524288000
+cmps, 5, 681574400
+pushes, 5, 157453337
+pops, 5, 84053017
+size, 5, 73400320
+do-read, 5, 171509
+
+
+linear_scan, 6, 1500760, start
+read_file, 6, 1500760, start
+read, 6, 105693
+read (blocked), 6, 133630
+insert, 6, 135855
+sort, 6, 9400
+linear scan, 6, 145256
+
+recs, 6, 524288000
+cmps, 6, 608174080
+pushes, 6, 129340014
+pops, 6, 55939694
+size, 6, 73400320
+do-read, 6, 145256
+
+
+linear_scan, 7, 1734682, start
+read_file, 7, 1734682, start
+read, 7, 105111
+read (blocked), 7, 107730
+insert, 7, 109464
+sort, 7, 9344
+linear scan, 7, 118808
+
+recs, 7, 524288000
+cmps, 7, 534773760
+pushes, 7, 83201290
+pops, 7, 9800970
+size, 7, 73400320
+do-read, 7, 118808
+
+
+linear_scan, 8, 1942172, start
+read_file, 8, 1942172, start
+read, 8, 105199
+read (blocked), 8, 107876
+insert, 8, 107877
+sort, 8, 946
+linear scan, 8, 108823
+
+recs, 8, 524288000
+cmps, 8, 524288000
+pushes, 8, 10485760
+pops, 8, 0
+size, 8, 73400320
+do-read, 8, 108823
+
+

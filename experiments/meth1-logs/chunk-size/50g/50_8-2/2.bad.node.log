@@ -1,0 +1,113 @@
+# Wed Aug 19 20:59:24 UTC 2015
+linear_scan, 1, 2270, start
+read_file, 1, 2270, start
+read, 1, 108069
+read (blocked), 1, 270867
+insert, 1, 273558
+sort, 1, 11193
+linear scan, 1, 284752
+
+recs, 1, 524288000
+cmps, 1, 964689920
+pushes, 1, 237600381
+pops, 1, 153714301
+size, 1, 83886080
+do-read, 1, 284752
+
+
+linear_scan, 2, 390216, start
+read_file, 2, 390216, start
+read, 2, 105194
+read (blocked), 2, 255661
+insert, 2, 258347
+sort, 2, 11226
+linear scan, 2, 269574
+
+recs, 2, 524288000
+cmps, 2, 880803840
+pushes, 2, 222977743
+pops, 2, 139091663
+size, 2, 83886080
+do-read, 2, 269574
+
+
+linear_scan, 3, 763198, start
+read_file, 3, 763198, start
+read, 3, 105215
+read (blocked), 3, 228644
+insert, 3, 231327
+sort, 3, 11276
+linear scan, 3, 242604
+
+recs, 3, 524288000
+cmps, 3, 796917760
+pushes, 3, 205264483
+pops, 3, 121378403
+size, 3, 83886080
+do-read, 3, 242604
+
+
+linear_scan, 4, 1108809, start
+read_file, 4, 1108809, start
+read, 4, 105208
+read (blocked), 4, 197114
+insert, 4, 199792
+sort, 4, 11224
+linear scan, 4, 211017
+
+recs, 4, 524288000
+cmps, 4, 713031680
+pushes, 4, 182761833
+pops, 4, 98875753
+size, 4, 83886080
+do-read, 4, 211017
+
+
+linear_scan, 5, 1422717, start
+read_file, 5, 1422717, start
+read, 5, 105148
+read (blocked), 5, 160693
+insert, 5, 163349
+sort, 5, 11259
+linear scan, 5, 174608
+
+recs, 5, 524288000
+cmps, 5, 629145600
+pushes, 5, 151911508
+pops, 5, 68025428
+size, 5, 83886080
+do-read, 5, 174608
+
+
+linear_scan, 6, 1700200, start
+read_file, 6, 1700200, start
+read, 6, 105201
+read (blocked), 6, 116540
+insert, 6, 119181
+sort, 6, 11249
+linear scan, 6, 130431
+
+recs, 6, 524288000
+cmps, 6, 545259520
+pushes, 6, 102602537
+pops, 6, 18716457
+size, 6, 83886080
+do-read, 6, 130431
+
+
+linear_scan, 7, 1933414, start
+read_file, 7, 1933414, start
+read, 7, 105142
+read (blocked), 7, 108142
+insert, 7, 108144
+sort, 7, 1931
+linear scan, 7, 110075
+
+recs, 7, 524288000
+cmps, 7, 524288000
+pushes, 7, 20971520
+pops, 7, 0
+size, 7, 83886080
+do-read, 7, 110075
+
+

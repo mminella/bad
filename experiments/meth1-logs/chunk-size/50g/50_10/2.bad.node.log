@@ -1,0 +1,81 @@
+# Wed Aug 19 20:59:19 UTC 2015
+linear_scan, 1, 2260, start
+read_file, 1, 2260, start
+read, 1, 108458
+read (blocked), 1, 342687
+insert, 1, 346492
+sort, 1, 14818
+linear scan, 1, 361310
+
+recs, 1, 524288000
+cmps, 1, 943718400
+pushes, 1, 273604753
+pops, 1, 168747153
+size, 1, 104857600
+do-read, 1, 361310
+
+
+linear_scan, 2, 495825, start
+read_file, 2, 495825, start
+read, 2, 105231
+read (blocked), 2, 302321
+insert, 2, 306152
+sort, 2, 15188
+linear scan, 2, 321340
+
+recs, 2, 524288000
+cmps, 2, 838860800
+pushes, 2, 250219602
+pops, 2, 145362002
+size, 2, 104857600
+do-read, 2, 321340
+
+
+linear_scan, 3, 948698, start
+read_file, 3, 948698, start
+read, 3, 105162
+read (blocked), 3, 246178
+insert, 3, 250045
+sort, 3, 15093
+linear scan, 3, 265138
+
+recs, 3, 524288000
+cmps, 3, 734003200
+pushes, 3, 220059645
+pops, 3, 115202045
+size, 3, 104857600
+do-read, 3, 265138
+
+
+linear_scan, 4, 1344887, start
+read_file, 4, 1344887, start
+read, 4, 105234
+read (blocked), 4, 187592
+insert, 4, 191365
+sort, 4, 14881
+linear scan, 4, 206246
+
+recs, 4, 524288000
+cmps, 4, 629145600
+pushes, 4, 177540882
+pops, 4, 72683282
+size, 4, 104857600
+do-read, 4, 206246
+
+
+linear_scan, 5, 1682639, start
+read_file, 5, 1682639, start
+read, 5, 105174
+read (blocked), 5, 108105
+insert, 5, 108112
+sort, 5, 14938
+linear scan, 5, 123051
+
+recs, 5, 524288000
+cmps, 5, 524288000
+pushes, 5, 104857600
+pops, 5, 0
+size, 5, 104857600
+do-read, 5, 123051
+
+
