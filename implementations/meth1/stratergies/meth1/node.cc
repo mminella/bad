@@ -20,6 +20,7 @@
 #include "priority_queue.hh"
 
 #define USE_PQ 0
+#define USE_CHUNK 0
 #define USE_NEW_CHUNK 1
 #define USE_MOVE 0
 
@@ -122,13 +123,6 @@ uint64_t Node::DoSize( void )
   return data_.size() / Rec::SIZE;
 }
 
-uint64_t Node::rec_sort( vector<RR> & recs ) const
-{
-  auto t0 = time_now();
-  ::rec_sort( recs.begin(), recs.end() );
-  return time_diff<ms>( t0 );
-}
-
 /* Return the record that corresponds to the specified position. */
 Record Node::seek( uint64_t pos )
 {
@@ -159,12 +153,12 @@ Node::RecV Node::linear_scan( const Record & after, uint64_t size )
   if ( size == 1 ) {
     return linear_scan_one( after );
   } else {
-#if USE_PQ == 1
-    return linear_scan_pq( after, size );
+#if USE_CHUNK == 1
+    return linear_scan_chunk( after, size );
 #elif USE_NEW_CHUNK == 1
     return linear_scan_chunk2( after, size );
 #else
-    return linear_scan_chunk( after, size );
+    return linear_scan_pq( after, size );
 #endif
   }
 }
@@ -227,8 +221,10 @@ Node::RecV Node::linear_scan_pq( const Record & after, uint64_t size )
   }
   tplace += time_diff<ms>( t0 );
 
+  auto t1 = time_now();
   vector<RR> vrecs = move( pq.container() );
-  tsort += rec_sort( vrecs );
+  rec_sort( vrecs.begin(), vrecs.end() );
+  tsort += time_diff<ms>( t1 );
 
   auto tt = time_diff<ms>( t0 );
   cout << "insert, "      << lpass_ << ", " << tplace << endl;
@@ -275,7 +271,9 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
     tplace += time_diff<ms>( tp0 );
 
     if ( vin.size() > 0 ) {
-      tsort += rec_sort( vin );
+      auto ts0 = time_now();
+      rec_sort( vin.begin(), vin.end() );
+      tsort += time_diff<ms>( ts0 );
       if ( vpast.size() == 0 ) {
         swap( vpast, vin );
       } else {
@@ -330,11 +328,8 @@ Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size )
     
     if ( r1s > 0 ) {
       auto ts1 = time_now();
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
-      string_sort( r1, r1 + r1s );
-#else
+      rec_sort( r1, r1 + r1s );
       sort( r1, r1 + r1s );
-#endif
       ts += time_diff<ms>( ts1 );
 #if USE_MOVE == 1
       tm += move_merge( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
