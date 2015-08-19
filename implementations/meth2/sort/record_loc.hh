@@ -52,7 +52,7 @@ public:
   /* methods for boost::sort */
   const char * data( void ) const noexcept { return (char *) key_; }
   unsigned char operator[]( size_t i ) const noexcept { return key_[i]; }
-  size_t size( void ) const noexcept { return 10; }
+  size_t size( void ) const noexcept { return Rec::KEY_LEN; }
 
   /* comparison */
   comp_op( <, RecordLoc )
