@@ -5,10 +5,11 @@
 # 1GB = 1000*1MB
 
 ITERS="A B"
-BLOCKS="4096 1048576"
+SYNC_BLOCKS="1048576 10485760" # 1MB, 10MB
+ASYNC_BLOCKS="1048576 10485760" # 1MB, 10MB
 QUEUES="1 15 31 62"
 READ_SIZE=524288000 # 500MB
-WRITE_SIZE=104857600 # 100MB
+WRITE_SIZE=1048576000 # 1000MB
 DISK_PATH=/dev/xvd
 
 # What disks to test?
@@ -22,7 +23,7 @@ for d in ${DISKS}; do
 done
 
 # DD
-for b in ${BLOCKS}; do
+for b in ${SYNC_BLOCKS}; do
   COUNT=$(( $WRITE_SIZE / $b ))
   test_dd.py --count ${COUNT} --block $b ${DISKS}
 done
@@ -52,11 +53,11 @@ test_sync() {
   done
 }
 
-for b in ${BLOCKS}; do
+for b in ${SYNC_BLOCKS}; do
   test_sync $b
 done
 
-for b in ${BLOCKS}; do
+for b in ${SYNC_BLOCKS}; do
   test_sync $b "--odirect"
 done
 
@@ -79,13 +80,13 @@ test_async() {
   done
 }
 
-for b in ${BLOCKS}; do
+for b in ${ASYNC_BLOCKS}; do
   for q in ${QUEUES}; do
     test_async $b $q
   done
 done
 
-for b in ${BLOCKS}; do
+for b in ${ASYNC_BLOCKS}; do
   for q in ${QUEUES}; do
     test_async $b $q "--odirect"
   done
