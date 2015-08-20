@@ -12,7 +12,6 @@
 #include "timestamp.hh" 
 #include "util.hh"
 
-#include "r.hh"
 #include "record.hh"
 
 /* We can use a move or copy strategy -- the copy is actaully a little better

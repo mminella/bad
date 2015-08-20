@@ -10,9 +10,9 @@
 #include "util.hh"
 #include "record.hh"
 
-#include "r.hh"
-
 using namespace std;
+
+using R = Record;
 
 vector<R> scan( char * buf, size_t nrecs, size_t size, const R & after )
 {
