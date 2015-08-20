@@ -10,27 +10,41 @@
 class RecordPtr
 {
 private:
+#if WITHLOC == 1
   uint64_t loc_;
+#endif
   const uint8_t * r_;
 
 public:
   RecordPtr( const uint8_t * r, uint64_t loc )
-    : loc_{loc} , r_{r}
+#if WITHLOC == 1
+    : loc_{loc}
+    , r_{r}
   {}
+#else
+    : r_{r}
+  { (void) loc; }
+#endif
 
   RecordPtr( const char * r, uint64_t loc )
     : RecordPtr( (const uint8_t *) r, loc )
   {}
 
   RecordPtr( const RecordPtr & rptr )
+#if WITHLOC == 1
     : loc_{ rptr.loc_ }
     , r_{ rptr.r_ }
+#else
+    : r_{ rptr.r_ }
+#endif
   {}
 
   RecordPtr & operator=( const RecordPtr & rptr )
   {
     if ( this != &rptr ) {
+#if WITHLOC == 1
       loc_ = rptr.loc_;
+#endif
       r_ = rptr.r_;
     }
     return *this;
@@ -39,7 +53,11 @@ public:
   /* Accessors */
   const uint8_t * key( void ) const noexcept { return r_; }
   const uint8_t * val( void ) const noexcept { return r_ + Rec::KEY_LEN; }
+#if WITHLOC == 1
   uint64_t loc( void ) const noexcept { return loc_; }
+#else
+  uint64_t loc( void ) const noexcept { return 0; }
+#endif
 
   /* comparison */
   comp_op( <, Record )

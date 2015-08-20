@@ -35,12 +35,16 @@ compare( const uint8_t * k1, uint64_t loc1,
       return k1[i] - k2[i];
     }
   }
+#if WITHLOC == 1
   if ( loc1 < loc2 ) {
     return -1;
   }
   if ( loc1 > loc2 ) {
     return 1;
   }
+#else
+  (void) loc1; (void) loc2;
+#endif
   return 0;
 }
 

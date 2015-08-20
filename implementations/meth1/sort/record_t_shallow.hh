@@ -23,13 +23,19 @@
 class RecordS
 {
 public:
+#if WITHLOC == 1
   uint64_t loc_ = 0;
+#endif
   uint8_t * val_ = nullptr;
   uint8_t key_[Rec::KEY_LEN];
 
   void copy( const uint8_t* r, uint64_t i ) noexcept
   {
+#if WITHLOC == 1
     loc_ = i;
+#else
+    (void) i;
+#endif
     if ( val_ == nullptr ) { val_ = Rec::alloc_val(); }
     memcpy( val_, r + Rec::KEY_LEN, Rec::VAL_LEN );
     memcpy( key_, r, Rec::KEY_LEN );
@@ -37,7 +43,9 @@ public:
 
   void copy( const RecordS & r ) noexcept
   {
+#if WITHLOC == 1
     loc_ = r.loc_;
+#endif
     if ( val_ == nullptr ) { val_ = Rec::alloc_val(); }
     memcpy( val_, r.val_, Rec::VAL_LEN );
     memcpy( key_, r.key_, Rec::KEY_LEN );
@@ -45,7 +53,9 @@ public:
 
   void copy( RecordS && r ) noexcept
   {
+#if WITHLOC == 1
     loc_ = r.loc_;
+#endif
     val_ = r.val_;
     memcpy( key_, r.key_, Rec::KEY_LEN );
   }
@@ -68,16 +78,22 @@ public:
   RecordS( const char * s, uint64_t loc = 0 ) { copy( (uint8_t *) s, loc ); }
 
   RecordS( const RecordS & other )
+#if WITHLOC == 1
     : loc_{other.loc_}
+    , val_{other.val_}
+#else
+    : val_{other.val_}
+#endif
   {
-    val_ = other.val_;
     memcpy( key_, other.key_, Rec::KEY_LEN );
   }
 
   RecordS & operator=( const RecordS & other )
   {
     if ( this != &other ) {
+#if WITHLOC == 1
       loc_ = other.loc_;
+#endif
       val_ = other.val_;
       memcpy( key_, other.key_, Rec::KEY_LEN );
     }
@@ -85,17 +101,25 @@ public:
   }
 
   RecordS( RecordS && other )
+#if WITHLOC == 1
     : loc_{other.loc_}
+#endif
   {
-    std::swap( val_, other.val_ );
+    uint8_t * v = val_;
+    val_ = other.val_;
+    other.val_ = v;
     memcpy( key_, other.key_, Rec::KEY_LEN );
   }
 
   RecordS & operator=( RecordS && other )
   {
     if ( this != &other ) {
+#if WITHLOC == 1
       loc_ = other.loc_;
-      std::swap( val_, other.val_ );
+#endif
+      uint8_t * v = val_;
+      val_ = other.val_;
+      other.val_ = v;
       memcpy( key_, other.key_, Rec::KEY_LEN );
     }
     return *this;
@@ -106,7 +130,11 @@ public:
   /* Accessors */
   const uint8_t * key( void ) const noexcept { return key_; }
   const uint8_t * val( void ) const noexcept { return val_; }
+#if WITHLOC == 1
   uint64_t loc( void ) const noexcept { return loc_; }
+#else
+  uint64_t loc( void ) const noexcept { return 0; }
+#endif
 
   /* methods for boost::sort */
   const char * data( void ) const noexcept { return (char *) key_; }
@@ -134,12 +162,17 @@ public:
   {
     io.write_all( (char *) key_, Rec::KEY_LEN );
     io.write_all( (char *) val_, Rec::VAL_LEN );
+    uint64_t l = loc();
     if ( locinfo == Rec::WITH_LOC ) {
-      io.write_all( reinterpret_cast<const char *>( &loc_ ),
+      io.write_all( reinterpret_cast<const char *>( &l ),
                     sizeof( uint64_t ) );
     }
   }
+#if PACKED == 1
+} __attribute__((packed));
+#else
 };
+#endif
 
 std::ostream & operator<<( std::ostream & o, const RecordS & r );
 
