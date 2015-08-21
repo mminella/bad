@@ -16,6 +16,7 @@ using namespace meth1;
 
 static constexpr size_t MAX_MEM = 2097152; // 200MB
 
+using RR = Node::RR;
 using Recs = Node::RecV;
 
 tdiff_t ttr, ttw;
@@ -33,8 +34,18 @@ void reader( Node * node, size_t block_size,
     }
     auto tr = time_now();
     auto recs = node->Read( pos, block_size );
+
+#if REUSE_MEM == 1
+    RR * rec_copy = new RR[recs.size()];
+    for ( size_t i = 0; i < recs.size(); i++ ) {
+      rec_copy[i].copy( recs[i] );
+    }
+    ttr += time_diff<ms>( tr );
+    resp.send({ rec_copy, recs.size() });
+#else
     ttr += time_diff<ms>( tr );
     resp.send( move( recs ) );
+#endif
   }
 }
 

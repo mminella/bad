@@ -61,6 +61,8 @@ private:
   RecV linear_scan_one( const Record & after );
   RecV linear_scan_pq( const Record & after, uint64_t size );
   RecV linear_scan_chunk( const Record & after, uint64_t size );
+  RecV linear_scan_chunk2( const Record & after, uint64_t size,
+                           RR * r1, RR * r2, RR *r3, uint64_t r1x );
   RecV linear_scan_chunk2( const Record & after, uint64_t size );
 
   void RPC_Read( BufferedIO_O<TCPSocket> & client );

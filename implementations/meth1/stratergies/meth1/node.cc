@@ -14,15 +14,31 @@
 #include "timestamp.hh"
 #include "util.hh"
 
+/* Optimize Record size */
+#define PACKED 1
+#define WITHLOC 0
+
 #include "record.hh"
 
 #include "node.hh"
 #include "priority_queue.hh"
 
+/* Sorting strategy to use? Ordered slowest to fastest. */
 #define USE_PQ 0
 #define USE_CHUNK 0
 #define USE_NEW_CHUNK 1
-#define USE_MOVE 0
+
+/* We can use a move or copy strategy -- the copy is actaully a little better
+ * as we play some tricks to ensure we reuse allocations as much as possible.
+ * With copy we use `size + r1x` value memory, but with move, we use up to
+ * `2.size + r1x`.
+ */
+#define USE_COPY 1
+
+/* We can reuse our sort+merge buffers for a big win! Be careful though, as the
+ * results returned by scan are invalidate when you next call scan.
+ */
+#define REUSE_MEM 1
 
 using namespace std;
 using namespace meth1;
@@ -296,20 +312,15 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
 }
 
 /* Linear scan using a chunked sorting + merge strategy. */
-Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size )
+Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size,
+    RR * r1, RR * r2, RR *r3, uint64_t r1x )
 {
   auto t0 = time_now();
   tdiff_t tm = 0, ts = 0, tl = 0;
 
   recio_.rewind();
+  uint64_t r1s = 0, r2s = 0, i = 0;
 
-  uint64_t r1s = 0, r2s = 0;
-  uint64_t r1x = max( min( (uint64_t) 1572864, size / 6 ), (uint64_t) 1 );
-  RR * r1 = new RR[r1x];
-  RR * r2 = new RR[size];
-  RR * r3 = new RR[size];
-
-  uint64_t i = 0;
   for ( bool run = true; run; ) {
     for ( r1s = 0; r1s < r1x; i++ ) {
       const uint8_t * r = (const uint8_t *) recio_.next_record();
@@ -317,7 +328,8 @@ Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size )
         run = false;
         break;
       }
-      if ( after.compare( r, i ) < 0 ) {
+      RecordPtr next( r, i );
+      if ( after < next ) {
         if ( r2s < size ) {
           r1[r1s++].copy( r, i );
         } else if ( r2[size - 1].compare( r, i ) > 0 ) {
@@ -331,10 +343,10 @@ Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size )
       rec_sort( r1, r1 + r1s );
       sort( r1, r1 + r1s );
       ts += time_diff<ms>( ts1 );
-#if USE_MOVE == 1
-      tm += move_merge( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
-#else
+#if USE_COPY == 1
       tm += copy_merge( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size, true );
+#else
+      tm += move_merge( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
 #endif
       swap( r2, r3 );
       r2s = min( size, r1s + r2s );
@@ -344,16 +356,6 @@ Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size )
   }
   auto t1 = time_now();
 
-#if USE_MOVE == 0
-  // r3 and r2 share storage cells, so clear to nullptr first.
-  // TODO: arena or other stratergy may be better here.
-  for ( uint64_t i = 0; i < size; i++ ) {
-    r3[i].val_ = nullptr;
-  }
-#endif
-  delete[] r3;
-  delete[] r1;
-
   cout << "total, " << time_diff<ms>( t1, t0 ) << endl;
   cout << "sort , " << ts << endl;
   cout << "merge, " << tm << endl;
@@ -361,3 +363,61 @@ Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size )
   
   return {r2, r2s};
 }
+
+void free_buffers( Node::RR * r1, Node::RR * r3, size_t size )
+{
+#if USE_COPY == 1
+  // r3 and r2 share storage cells, so clear to nullptr first.
+  for ( uint64_t i = 0; i < size; i++ ) {
+    r3[i].val_ = nullptr;
+  }
+#endif
+  delete[] r3;
+  delete[] r1;
+}
+
+Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size )
+{
+  if ( size == 0 ) {
+    return {nullptr, 0};
+  }
+
+#if REUSE_MEM == 1
+  // our globals
+  static size_t r1x = 0, r2x = 0;
+  static RR *r1 = nullptr, *r2 = nullptr, *r3 = nullptr;
+
+  // (re-)setup global buffers if size isn't correct
+  if ( r2x != size ) {
+    if ( r2x > 0 ) {
+      free_buffers( r1, r3, r2x );
+      delete[] r2;
+    }
+    r1x = max( min( (uint64_t) 1572864, size / 6 ), (uint64_t) 1 );
+    r2x = size;
+    r1 = new RR[r1x];
+    r2 = new RR[r2x];
+    r3 = new RR[r2x];
+  }
+#else /* !REUSE_MEM */
+  uint64_t r1x = max( min( (uint64_t) 1572864, size / 6 ), (uint64_t) 1 );
+  RR * r1 = new RR[r1x];
+  RR * r2 = new RR[size];
+  RR * r3 = new RR[size];
+#endif
+
+  auto rr = linear_scan_chunk2( after, size, r1, r2, r3, r1x );
+  if ( rr.data() == r3 ) {
+    swap( r2, r3 );
+  }
+  
+#if REUSE_MEM == 0
+  free_buffers( r1, r3, size );
+#else
+  /* we don't want r2 being freed later! */
+  rr.own() = false;
+#endif
+
+  return rr;
+}
+
