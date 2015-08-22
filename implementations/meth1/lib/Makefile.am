@@ -11,6 +11,7 @@ libbasicrts_la_SOURCES = \
 	io_device.hh io_device.cc \
 	linux_compat.hh \
 	memory_io.hh overlapped_io.hh overlapped_rec_io.hh \
+	merge.hh \
 	pipe.hh pipe.cc \
 	poller.hh poller.cc \
 	privs.hh privs.cc \
@@ -19,3 +20,6 @@ libbasicrts_la_SOURCES = \
 	timestamp.hh timestamp.cc \
 	threadpool.hh \
 	util.hh util.cc
+
+libbasicrts_la_CPPFLAGS = \
+	-I$(srcdir)/..

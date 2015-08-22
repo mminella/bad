@@ -14,12 +14,9 @@
 #include "timestamp.hh"
 #include "util.hh"
 
-/* Optimize Record size */
-#define PACKED 1
-#define WITHLOC 0
-
 #include "record.hh"
 
+#include "meth1_merge.hh"
 #include "node.hh"
 #include "priority_queue.hh"
 
@@ -31,14 +28,15 @@
 /* We can use a move or copy strategy -- the copy is actaully a little better
  * as we play some tricks to ensure we reuse allocations as much as possible.
  * With copy we use `size + r1x` value memory, but with move, we use up to
- * `2.size + r1x`.
- */
+ * `2.size + r1x`. */
 #define USE_COPY 1
 
 /* We can reuse our sort+merge buffers for a big win! Be careful though, as the
- * results returned by scan are invalidate when you next call scan.
- */
+ * results returned by scan are invalidate when you next call scan. */
 #define REUSE_MEM 1
+
+/* Use a parallel merge implementation? */
+#define TBB_PARALLEL_MERGE 1
 
 using namespace std;
 using namespace meth1;
@@ -173,7 +171,7 @@ Node::RecV Node::linear_scan( const Record & after, uint64_t size )
     return linear_scan_chunk( after, size );
 #elif USE_NEW_CHUNK == 1
     return linear_scan_chunk2( after, size );
-#else
+#else /* USE_PQ == 1 */
     return linear_scan_pq( after, size );
 #endif
   }
@@ -294,7 +292,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
         swap( vpast, vin );
       } else {
         vnext.resize( min( (size_t) size, vin.size() + vpast.size() ) );
-        tmerge += move_merge( vin, vpast, vnext );
+        tmerge += meth1_merge_move( vin, vpast, vnext );
         swap( vnext, vpast );
         vin.clear();
       }
@@ -339,15 +337,24 @@ Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size,
     }
     
     if ( r1s > 0 ) {
+      // SORT
       auto ts1 = time_now();
       rec_sort( r1, r1 + r1s );
       sort( r1, r1 + r1s );
       ts += time_diff<ms>( ts1 );
-#if USE_COPY == 1
-      tm += copy_merge( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size, true );
+
+      // MERGE
+#if TBB_PARALLEL_MERGE == 1 && USE_COPY == 1
+      tm += meth1_pmerge_copy( r1, r1+r1s, r2, r2+r2s, r3, r3+size );
+#elif TBB_PARALLEL_MERGE == 1
+      tm += meth1_pmerge_move( r1, r1+r1s, r2, r2+r2s, r3, r3+size );
+#elif USE_COPY == 1
+      tm += meth1_merge_copy( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
 #else
-      tm += move_merge( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
+      tm += meth1_merge_move( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
 #endif
+
+      // PREP
       swap( r2, r3 );
       r2s = min( size, r1s + r2s );
       r1s = 0;
@@ -371,6 +378,8 @@ void free_buffers( Node::RR * r1, Node::RR * r3, size_t size )
   for ( uint64_t i = 0; i < size; i++ ) {
     r3[i].val_ = nullptr;
   }
+#else
+  (void) size;
 #endif
   delete[] r3;
   delete[] r1;

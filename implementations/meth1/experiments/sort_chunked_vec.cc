@@ -6,9 +6,11 @@
 #include <iostream>
 #include <vector>
 
+#include "record.hh"
 #include "timestamp.hh" 
 #include "util.hh"
-#include "record.hh"
+
+#include "merge_wrapper.hh"
 
 using namespace std;
 
@@ -44,7 +46,7 @@ vector<R> scan( char * buf, size_t nrecs, size_t size, const R & after )
       rec_sort( r1.begin(), r1.end() );
       ts += time_diff<ms>( ts1 );
       r3.resize( min( size, r1.size() + r2.size() ) );
-      tm += move_merge( r1, r2, r3 );
+      tm += meth1_merge_move( r1, r2, r3 );
       swap( r2, r3 );
       r1.clear();
       tl = time_diff<ms>( ts1 );

@@ -12,8 +12,8 @@
  * - new                     -- 285ms
  * - boost::pool (mutex)     -- 540ms
  */
-#define USE_MPOOL 1
-#define USE_NEW   0
+#define USE_MPOOL 0
+#define USE_NEW   1
 
 #include "record_common.hh"
 

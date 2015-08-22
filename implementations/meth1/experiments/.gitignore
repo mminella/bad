@@ -13,3 +13,4 @@ sort_overlap_channel
 sort_overlap_io
 sort_pq
 sort_pq_overlap
+sort_pq_parallel

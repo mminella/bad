@@ -19,7 +19,7 @@
 
 #include "config.h"
 
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
+#ifdef HAVE_BOOST_HEAP_D_ARY_HEAP_HPP
 #include <boost/heap/binomial_heap.hpp>
 #include <boost/heap/d_ary_heap.hpp>
 #include <boost/heap/priority_queue.hpp>
@@ -54,7 +54,7 @@ int run( char * fin )
   auto t2 = chrono::high_resolution_clock::now();
 
   // priority_queue choice
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
+#ifdef HAVE_BOOST_HEAP_D_ARY_HEAP_HPP
   // boost::heap::priority_queue<Rec> pq;
   boost::heap::d_ary_heap<Rec, boost::heap::arity<6>> pq;
   // boost::heap::binomial_heap<Rec> pq;

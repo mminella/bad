@@ -32,6 +32,9 @@ LT_INIT([disable-shared])
 # Checks for header files.
 AC_CHECK_HEADERS([boost/sort/spreadsort/string_sort.hpp])
 AC_CHECK_HEADERS([boost/heap/d_ary_heap.hpp])
+AC_CHECK_HEADERS([tbb/parallel_invoke.h], [TBB_LIBS="-ltbb"])
+AC_CHECK_HEADERS([tbb/parallel_sort.h])
+AC_SUBST(TBB_LIBS)
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_UINT16_T

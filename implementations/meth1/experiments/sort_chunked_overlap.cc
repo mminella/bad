@@ -8,9 +8,11 @@
 #include "file.hh"
 #include "linux_compat.hh"
 #include "overlapped_rec_io.hh"
+#include "record.hh"
 #include "timestamp.hh" 
 #include "util.hh"
-#include "record.hh"
+
+#include "merge_wrapper.hh"
 
 /* We can use a move or copy strategy -- the copy is actaully a little better
  * as we play some tricks to ensure we reuse allocations as much as possible.
@@ -57,9 +59,9 @@ RR * scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size, const RR & after )
       rec_sort( r1, r1 + r1s );
       ts += time_diff<ms>( ts1 );
 #if USE_MOVE == 1
-      tm += move_merge( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
+      tm += meth1_merge_move( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
 #else
-      tm += copy_merge( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size, true );
+      tm += meth1_merge_copy( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
 #endif
       swap( r2, r3 );
       r2s = min( size, r1s + r2s );

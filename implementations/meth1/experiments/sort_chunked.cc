@@ -5,29 +5,37 @@
 #include <sys/stat.h>
 #include <iostream>
 
+#include "record.hh"
 #include "timestamp.hh" 
 #include "util.hh"
 
-/* Optimize Record size */
-#define PACKED 1
-#define WITHLOC 0
-#include "record.hh"
+#include "config.h"
+#include "merge_wrapper.hh"
 
 /* We can use a move or copy strategy -- the copy is actaully a little better
  * as we play some tricks to ensure we reuse allocations as much as possible.
  * With copy we use `size + r1x` value memory, but with move, we use up to
- * `2.size + r1x`.
- */
+ * `2.size + r1x`. */
 #define USE_COPY 1
 
 /* We can reuse our sort+merge buffers for a big win! Be careful though, as the
- * results returned by scan are invalidate when you next call scan.
- */
+ * results returned by scan are invalidate when you next call scan. */
 #define REUSE_MEM 1
 
-using namespace std;
+/* Use the Intel TBB parallel sort?  */
+#ifdef HAVE_TBB_PARALLEL_SORT_H
+#define TBB_PARALLEL_SORT 1
+#define TBB_PARALLEL_MERGE 1
+#endif
 
+#if TBB_PARALLEL_SORT == 1
+#include "tbb/parallel_sort.h"
+#endif
+
+using namespace std;
 using RR = RecordS;
+
+tdiff_t tmm = 0, tss = 0;
 
 RR * scan( char * buf, size_t nrecs, size_t size, const RR & after,
            RR * r1, RR * r2, RR * r3, size_t r1x )
@@ -50,14 +58,25 @@ RR * scan( char * buf, size_t nrecs, size_t size, const RR & after,
     }
     
     if ( r1s > 0 ) {
+      // SORT
       auto ts1 = time_now();
-      rec_sort( r1, r1 + r1s );
-      ts += time_diff<ms>( ts1 );
-#if USE_COPY == 1
-      tm += copy_merge( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size, true );
+#if TBB_PARALLEL_SORT == 1
+      tbb::parallel_sort( r1, r1 + r1s );
 #else
-      tm += move_merge( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
+      rec_sort( r1, r1 + r1s );
 #endif
+      ts += time_diff<ms>( ts1 );
+
+      // MERGE
+#if TBB_PARALLEL_MERGE == 1
+      tm += meth1_pmerge_copy( r1, r1+r1s, r2, r2+r2s, r3, r3+size );
+#elif USE_COPY == 1
+      tm += meth1_merge_copy( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
+#else
+      tm += meth1_merge_move( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
+#endif
+
+      // PREP
       swap( r2, r3 );
       r2s = min( size, r1s + r2s );
       r1s = 0;
@@ -70,6 +89,9 @@ RR * scan( char * buf, size_t nrecs, size_t size, const RR & after,
   cout << "sort , " << ts << endl;
   cout << "merge, " << tm << endl;
   cout << "last , " << tl << endl;
+
+  tss += ts;
+  tmm += tm;
   
   return r2;
 }
@@ -95,8 +117,8 @@ RR * scan( char * buf, size_t nrecs, size_t size, const RR & after )
     r1x = max( size / 4, (size_t) 1 );
     r2x = size;
     r1 = new RR[r1x];
-    r2 = new RR[r2x];
-    r3 = new RR[r2x];
+    r2 = new RR[size];
+    r3 = new RR[size];
   }
 #else /* !REUSE_MEM */
   size_t r1x = max( size / 4, (size_t) 1 );
@@ -167,6 +189,8 @@ void run( char * fin )
 #endif
   }
   cout << endl << "total: " << time_diff<ms>( t1 ) << endl;
+  cout << "sort : " << tss << endl;
+  cout << "merge: " << tmm << endl;
 }
 
 void check_usage( const int argc, const char * const argv[] )

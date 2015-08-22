@@ -7,12 +7,14 @@
 
 #include "file.hh"
 #include "linux_compat.hh"
+#include "merge.hh"
 #include "overlapped_rec_io.hh"
 #include "raw_vector.hh"
+#include "record.hh"
 #include "timestamp.hh" 
 #include "util.hh"
 
-#include "record.hh"
+#include "merge_wrapper.hh"
 
 /* We can use a move or copy strategy -- the copy is actaully a little better
  * as we play some tricks to ensure we reuse allocations as much as possible.
@@ -90,14 +92,14 @@ RR * scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size, const RR & after )
     if ( i_rrs > 0 ) {
       // merge sort buffers
       auto t0 = time_now();
-      r1s = move_merge_n( rr1x, i_rrs, r1, r1 + size );
+      r1s = merge_move_n( rr1x, i_rrs, r1, r1 + size );
       tm1 += time_diff<ms>( t0 );
 
       // merge sort buffers with main buffer
 #if USE_MOVE == 1
-      tm2 += move_merge( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
+      tm2 += meth1_merge_move( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
 #else
-      tm2 += copy_merge( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size, true );
+      tm2 += meth1_merge_copy( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
 #endif
       swap( r2, r3 );
       r2s = min( size, r1s + r2s );

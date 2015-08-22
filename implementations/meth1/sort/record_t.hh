@@ -36,6 +36,16 @@ public:
     memcpy( key_, r, Rec::KEY_LEN );
   }
 
+  void copy( const Record & r ) noexcept
+  {
+#if WITHLOC == 1
+    loc_ = r.loc();
+#endif
+    if ( val_ == nullptr ) { val_ = Rec::alloc_val(); }
+    memcpy( val_, r.val_, Rec::VAL_LEN );
+    memcpy( key_, r.key_, Rec::KEY_LEN );
+  }
+
   void copy( const RecordS & r ) noexcept
   {
 #if WITHLOC == 1

@@ -19,7 +19,8 @@ LDADD = \
 	../lib/libbasicrts.la \
 	../sort/libsort.la \
 	../stratergies/meth1/libmeth1.la \
-	-lpthread
+	-lpthread \
+	$(TBB_LIBS)
 
 # # need `whole-archive nonsense to work around bug with C++11 condition
 # # variables and static linking, and need to be careful to us `-Wl,-lpthread`

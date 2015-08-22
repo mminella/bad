@@ -10,6 +10,7 @@ bin_PROGRAMS = \
 	sort_overlap_io \
 	sort_pq \
 	sort_pq_overlap \
+	sort_pq_parallel \
 	sort_chunked \
 	sort_chunked_multi \
 	sort_chunked_overlap \
@@ -25,7 +26,8 @@ AM_CPPFLAGS = \
 LDADD = \
 	../lib/libbasicrts.la \
 	../sort/libsort.la \
-	-lpthread
+	-lpthread \
+	$(TBB_LIBS)
 
 # # need `whole-archive nonsense to work around bug with C++11 condition
 # # variables and static linking, and need to be careful to us `-Wl,-lpthread`
@@ -46,6 +48,7 @@ sort_overlap_channel_SOURCES = sort_overlap_channel.cc
 sort_overlap_io_SOURCES = sort_overlap_io.cc
 sort_pq_SOURCES = sort_pq.cc
 sort_pq_overlap_SOURCES = sort_pq_overlap.cc
+sort_pq_parallel_SOURCES = sort_pq_parallel.cc
 sort_chunked_SOURCES = sort_chunked.cc
 sort_chunked_multi_SOURCES = sort_chunked_multi.cc
 sort_chunked_overlap_SOURCES = sort_chunked_overlap.cc
