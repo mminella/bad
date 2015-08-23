@@ -23,14 +23,7 @@
 #define REUSE_MEM 1
 
 /* Use the Intel TBB parallel sort?  */
-#ifdef HAVE_TBB_PARALLEL_SORT_H
-#define TBB_PARALLEL_SORT 1
 #define TBB_PARALLEL_MERGE 1
-#endif
-
-#if TBB_PARALLEL_SORT == 1
-#include "tbb/parallel_sort.h"
-#endif
 
 using namespace std;
 using RR = RecordS;
@@ -60,16 +53,14 @@ RR * scan( char * buf, size_t nrecs, size_t size, const RR & after,
     if ( r1s > 0 ) {
       // SORT
       auto ts1 = time_now();
-#if TBB_PARALLEL_SORT == 1
-      tbb::parallel_sort( r1, r1 + r1s );
-#else
       rec_sort( r1, r1 + r1s );
-#endif
       ts += time_diff<ms>( ts1 );
 
       // MERGE
-#if TBB_PARALLEL_MERGE == 1
+#if TBB_PARALLEL_MERGE == 1 && USE_COPY == 1
       tm += meth1_pmerge_copy( r1, r1+r1s, r2, r2+r2s, r3, r3+size );
+#elif TBB_PARALLEL_MERGE == 1
+      tm += meth1_pmerge_move( r1, r1+r1s, r2, r2+r2s, r3, r3+size );
 #elif USE_COPY == 1
       tm += meth1_merge_copy( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
 #else
