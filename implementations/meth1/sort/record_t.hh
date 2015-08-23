@@ -10,6 +10,7 @@
 
 #include "alloc.hh"
 #include "record_common.hh"
+#include "record_ptr.hh"
 #include "record_t_shallow.hh"
 
 /**
@@ -17,13 +18,14 @@
  */
 class Record
 {
-public:
+private:
 #if WITHLOC == 1
   uint64_t loc_ = 0;
 #endif
   uint8_t * val_ = nullptr;
   uint8_t key_[Rec::KEY_LEN];
 
+public:
   void copy( const uint8_t* r, uint64_t i ) noexcept
   {
 #if WITHLOC == 1
@@ -52,8 +54,18 @@ public:
     loc_ = r.loc();
 #endif
     if ( val_ == nullptr ) { val_ = Rec::alloc_val(); }
-    memcpy( val_, r.val_, Rec::VAL_LEN );
-    memcpy( key_, r.key_, Rec::KEY_LEN );
+    memcpy( val_, r.val(), Rec::VAL_LEN );
+    memcpy( key_, r.key(), Rec::KEY_LEN );
+  }
+
+  void copy( const RecordPtr & r ) noexcept
+  {
+#if WITHLOC == 1
+    loc_ = r.loc();
+#endif
+    if ( val_ == nullptr ) { val_ = Rec::alloc_val(); }
+    memcpy( val_, r.key(), Rec::VAL_LEN );
+    memcpy( key_, r.val(), Rec::KEY_LEN );
   }
 
   Record( void ) noexcept {}

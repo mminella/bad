@@ -253,9 +253,9 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
       RecordPtr next( r, i );
       if ( after < next ) {
         if ( r2s < size ) {
-          r1[r1s++].copy( r, i );
+          r1[r1s++].copy( next );
         } else if ( r2[size - 1].compare( r, i ) > 0 ) {
-          r1[r1s++].copy( r, i );
+          r1[r1s++].copy( next );
         }
       }
     }
@@ -299,7 +299,7 @@ void free_buffers( Node::RR * r1, Node::RR * r3, size_t size )
 #if USE_COPY == 1
   // r3 and r2 share storage cells, so clear to nullptr first.
   for ( uint64_t i = 0; i < size; i++ ) {
-    r3[i].val_ = nullptr;
+    r3[i].set_val( nullptr );
   }
 #else
   (void) size;

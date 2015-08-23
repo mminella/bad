@@ -75,7 +75,7 @@ RR * scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size, const RR & after )
   // r3 and r2 share storage cells, so clear to nullptr first.
   // TODO: arena or other stratergy may be better here.
   for ( uint64_t i = 0; i < size; i++ ) {
-    r3[i].val_ = nullptr;
+    r3[i].set_val( nullptr );
   }
 #endif
   delete[] r3;
@@ -112,7 +112,7 @@ void run( char * fin )
   for ( uint64_t i = 0; i < rounds; i++ ) {
     auto r = scan( rio, chunk, after );
     after = move( r[chunk - 1] );
-    cout << "last: " << str_to_hex( after.key_, Rec::KEY_LEN ) << endl;
+    cout << "last: " << after << endl;
     delete[] r;
   }
   cout << endl << "total: " << time_diff<ms>( t1 ) << endl;

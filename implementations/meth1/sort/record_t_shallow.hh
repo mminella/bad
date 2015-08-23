@@ -10,6 +10,7 @@
 
 #include "alloc.hh"
 #include "record_common.hh"
+#include "record_ptr.hh"
 
 /**
  * Version of Record that only performs a shallow copy on copy construction or
@@ -22,13 +23,14 @@
  */
 class RecordS
 {
-public:
+private:
 #if WITHLOC == 1
   uint64_t loc_ = 0;
 #endif
   uint8_t * val_ = nullptr;
   uint8_t key_[Rec::KEY_LEN];
 
+public:
   void copy( const uint8_t* r, uint64_t i ) noexcept
   {
 #if WITHLOC == 1
@@ -60,6 +62,16 @@ public:
     memcpy( key_, r.key_, Rec::KEY_LEN );
   }
 
+  void copy( const RecordPtr & r ) noexcept
+  {
+#if WITHLOC == 1
+    loc_ = r.loc();
+#endif
+    if ( val_ == nullptr ) { val_ = Rec::alloc_val(); }
+    memcpy( val_, r.key(), Rec::VAL_LEN );
+    memcpy( key_, r.val(), Rec::KEY_LEN );
+  }
+
   RecordS( void ) noexcept {}
 
   /* Construct a min or max record. */
@@ -77,6 +89,7 @@ public:
   RecordS( const uint8_t * s, uint64_t loc = 0 ) { copy( s, loc ); }
   RecordS( const char * s, uint64_t loc = 0 ) { copy( (uint8_t *) s, loc ); }
 
+  /* Copy constructor. WARNING: This only does a shallow copy! */
   RecordS( const RecordS & other )
 #if WITHLOC == 1
     : loc_{other.loc_}
@@ -88,6 +101,7 @@ public:
     memcpy( key_, other.key_, Rec::KEY_LEN );
   }
 
+  /* Copy assignment. WARNING: This only does a shallow copy! */
   RecordS & operator=( const RecordS & other )
   {
     if ( this != &other ) {
@@ -135,6 +149,9 @@ public:
 #else
   uint64_t loc( void ) const noexcept { return 0; }
 #endif
+
+  /* Setters */
+  void set_val( uint8_t * v ) noexcept { val_ = v; }
 
   /* methods for boost::sort */
   const char * data( void ) const noexcept { return (char *) key_; }

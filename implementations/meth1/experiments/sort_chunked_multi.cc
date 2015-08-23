@@ -150,7 +150,7 @@ void run( char * fin )
   for ( uint64_t i = 0; i < rounds; i++ ) {
     auto r = scan( rio, chunk, after );
     after = move( r[chunk - 1] );
-    cout << "last: " << str_to_hex( after.key_, Rec::KEY_LEN ) << endl;
+    cout << "last: " << after << endl;
     delete[] r;
   }
   cout << endl << "total: " << time_diff<ms>( t1 ) << endl;

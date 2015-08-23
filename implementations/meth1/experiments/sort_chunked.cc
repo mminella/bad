@@ -166,15 +166,14 @@ void run( char * fin )
   cout << endl;
 
   // starting record
-  RR after;
-  memset( after.key_, 0x00, Rec::KEY_LEN );
+  RR after( Rec::MIN );
 
   // scan file
   auto t1 = time_now();
   for ( uint64_t i = 0; i < split; i++ ) {
     auto r = scan( buf, nrecs, chunk, after );
     after.copy( r[chunk - 1] );
-    cout << "last: " << str_to_hex( after.key_, Rec::KEY_LEN ) << endl;
+    cout << "last: " << after << endl;
 #if REUSE_MEM == 0
     delete[] r;
 #endif
