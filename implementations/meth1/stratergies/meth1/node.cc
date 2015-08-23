@@ -330,6 +330,10 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
     r1 = new RR[r1x];
     r2 = new RR[r2x];
     r3 = new RR[r2x];
+  } else {
+    for ( uint64_t i = 0; i < size; i++ ) {
+      r3[i].set_val( nullptr );
+    }
   }
 #else /* !REUSE_MEM */
   uint64_t r1x = max( min( (uint64_t) 3145728, size / 4 ), (uint64_t) 1 );
