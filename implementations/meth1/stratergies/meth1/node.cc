@@ -20,24 +20,6 @@
 #include "node.hh"
 #include "priority_queue.hh"
 
-/* Sorting strategy to use? Ordered slowest to fastest. */
-#define USE_PQ 0
-#define USE_CHUNK 0
-#define USE_NEW_CHUNK 1
-
-/* We can use a move or copy strategy -- the copy is actaully a little better
- * as we play some tricks to ensure we reuse allocations as much as possible.
- * With copy we use `size + r1x` value memory, but with move, we use up to
- * `2.size + r1x`. */
-#define USE_COPY 1
-
-/* We can reuse our sort+merge buffers for a big win! Be careful though, as the
- * results returned by scan are invalidate when you next call scan. */
-#define REUSE_MEM 1
-
-/* Use a parallel merge implementation? */
-#define TBB_PARALLEL_MERGE 1
-
 using namespace std;
 using namespace meth1;
 
@@ -111,7 +93,8 @@ void Node::RPC_Read( BufferedIO_O<TCPSocket> & client )
 void Node::RPC_Size( BufferedIO_O<TCPSocket> & client )
 {
   uint64_t siz = Size();
-  client.write_all( reinterpret_cast<const char *>( &siz ), sizeof( uint64_t ) );
+  client.write_all( reinterpret_cast<const char *>( &siz ),
+                    sizeof( uint64_t ) );
   client.flush( true );
 }
 
@@ -125,9 +108,7 @@ Node::RecV Node::DoRead( uint64_t pos, uint64_t size )
     last_.copy( recs.back() );
     fpos_ = pos + recs.size();
   }
-  cout << "do-read, " << ++pass << ", " << time_diff<ms>( t0 ) << endl;
-  cout << endl;
-  cout << endl;
+  cout << "do-read, " << ++pass << ", " << time_diff<ms>( t0 ) << endl << endl;
 
   return recs;
 }
@@ -169,8 +150,6 @@ Node::RecV Node::linear_scan( const Record & after, uint64_t size )
   } else {
 #if USE_CHUNK == 1
     return linear_scan_chunk( after, size );
-#elif USE_NEW_CHUNK == 1
-    return linear_scan_chunk2( after, size );
 #else /* USE_PQ == 1 */
     return linear_scan_pq( after, size );
 #endif
@@ -255,62 +234,7 @@ Node::RecV Node::linear_scan_pq( const Record & after, uint64_t size )
 }
 
 /* Linear scan using a chunked sorting + merge strategy. */
-Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
-{
-  auto t0 = time_now();
-  tdiff_t tsort = 0, tplace = 0, tmerge = 0;
-
-  recio_.rewind();
-
-  // TWEAK: sort + merge block size...
-  uint64_t blk_size = max( uint64_t(1), size / 4 );
-  vector<RR> vnext, vpast, vin;
-  vnext.reserve( size );
-  vin.reserve( blk_size );
-
-  uint64_t i = 0;
-  for ( bool run = true; run; ) {
-    auto tp0 = time_now();
-    for ( ; vin.size() < blk_size; i++ ) {
-      const char * r = recio_.next_record();
-      if ( r == nullptr ) {
-        run = false;
-        break;
-      }
-      RecordPtr next{r, i};
-      if ( next > after ) {
-        vin.emplace_back( r, i );
-      }
-    }
-    tplace += time_diff<ms>( tp0 );
-
-    if ( vin.size() > 0 ) {
-      auto ts0 = time_now();
-      rec_sort( vin.begin(), vin.end() );
-      tsort += time_diff<ms>( ts0 );
-      if ( vpast.size() == 0 ) {
-        swap( vpast, vin );
-      } else {
-        vnext.resize( min( (size_t) size, vin.size() + vpast.size() ) );
-        tmerge += meth1_merge_move( vin, vpast, vnext );
-        swap( vnext, vpast );
-        vin.clear();
-      }
-    }
-  }
-
-  auto tt = time_diff<ms>( t0 );
-  cout << "insert, "      << lpass_ << ", " << tplace << endl;
-  cout << "sort, "        << lpass_ << ", " << tsort  << endl;
-  cout << "merge, "       << lpass_ << ", " << tmerge << endl;
-  cout << "linear scan, " << lpass_ << ", " << tt     << endl;
-  cout << endl;
-
-  return {move( vpast )};
-}
-
-/* Linear scan using a chunked sorting + merge strategy. */
-Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size,
+Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
     RR * r1, RR * r2, RR *r3, uint64_t r1x )
 {
   auto t0 = time_now();
@@ -340,7 +264,6 @@ Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size,
       // SORT
       auto ts1 = time_now();
       rec_sort( r1, r1 + r1s );
-      sort( r1, r1 + r1s );
       ts += time_diff<ms>( ts1 );
 
       // MERGE
@@ -385,7 +308,7 @@ void free_buffers( Node::RR * r1, Node::RR * r3, size_t size )
   delete[] r1;
 }
 
-Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size )
+Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
 {
   if ( size == 0 ) {
     return {nullptr, 0};
@@ -402,20 +325,20 @@ Node::RecV Node::linear_scan_chunk2( const Record & after, uint64_t size )
       free_buffers( r1, r3, r2x );
       delete[] r2;
     }
-    r1x = max( min( (uint64_t) 1572864, size / 6 ), (uint64_t) 1 );
+    r1x = max( min( (uint64_t) 3145728, size / 4 ), (uint64_t) 1 );
     r2x = size;
     r1 = new RR[r1x];
     r2 = new RR[r2x];
     r3 = new RR[r2x];
   }
 #else /* !REUSE_MEM */
-  uint64_t r1x = max( min( (uint64_t) 1572864, size / 6 ), (uint64_t) 1 );
+  uint64_t r1x = max( min( (uint64_t) 3145728, size / 4 ), (uint64_t) 1 );
   RR * r1 = new RR[r1x];
   RR * r2 = new RR[size];
   RR * r3 = new RR[size];
 #endif
 
-  auto rr = linear_scan_chunk2( after, size, r1, r2, r3, r1x );
+  auto rr = linear_scan_chunk( after, size, r1, r2, r3, r1x );
   if ( rr.data() == r3 ) {
     swap( r2, r3 );
   }

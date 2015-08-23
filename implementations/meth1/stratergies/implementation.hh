@@ -14,7 +14,8 @@
  */
 class Implementation
 {
-public: using RR = Record;
+public:
+  using RR = Record;
   using RecV = std::vector<Record>;
 
 private:

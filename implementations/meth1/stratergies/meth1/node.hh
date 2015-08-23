@@ -15,6 +15,23 @@
 #include "implementation.hh"
 #include "record.hh"
 
+/* Sorting strategy to use? Ordered slowest to fastest. */
+#define USE_PQ 0
+#define USE_CHUNK 1
+
+/* We can use a move or copy strategy -- the copy is actaully a little better
+ * as we play some tricks to ensure we reuse allocations as much as possible.
+ * With copy we use `size + r1x` value memory, but with move, we use up to
+ * `2.size + r1x`. */
+#define USE_COPY 1
+
+/* We can reuse our sort+merge buffers for a big win! Be careful though, as the
+ * results returned by scan are invalidate when you next call scan. */
+#define REUSE_MEM 1
+
+/* Use a parallel merge implementation? */
+#define TBB_PARALLEL_MERGE 1
+
 /**
  * Stratergy 1.
  * - No upfront work.
@@ -60,10 +77,9 @@ private:
   RecV linear_scan( const Record & after, uint64_t size = 1 );
   RecV linear_scan_one( const Record & after );
   RecV linear_scan_pq( const Record & after, uint64_t size );
+  RecV linear_scan_chunk( const Record & after, uint64_t size,
+                          RR * r1, RR * r2, RR *r3, uint64_t r1x );
   RecV linear_scan_chunk( const Record & after, uint64_t size );
-  RecV linear_scan_chunk2( const Record & after, uint64_t size,
-                           RR * r1, RR * r2, RR *r3, uint64_t r1x );
-  RecV linear_scan_chunk2( const Record & after, uint64_t size );
 
   void RPC_Read( BufferedIO_O<TCPSocket> & client );
   void RPC_Size( BufferedIO_O<TCPSocket> & client );
