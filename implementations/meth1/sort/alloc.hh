@@ -33,7 +33,9 @@ namespace Rec {
 
   inline void dealloc_val( uint8_t * v )
   {
-    Rec::rec_pool.deallocate( (val_type *) v );
+    if ( v != nullptr ) {
+      Rec::rec_pool.deallocate( (val_type *) v );
+    }
   }
 }
 
@@ -46,7 +48,9 @@ namespace Rec {
 
   inline void dealloc_val( uint8_t * v )
   {
-    if ( v != nullptr ) { delete v; }
+    if ( v != nullptr ) {
+      delete v;
+    }
   }
 }
 #endif
