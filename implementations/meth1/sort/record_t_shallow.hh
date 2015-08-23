@@ -31,7 +31,7 @@ private:
   uint8_t key_[Rec::KEY_LEN];
 
 public:
-  void copy( const uint8_t* r, uint64_t i ) noexcept
+  void copy( const uint8_t * k, const uint8_t * v, uint64_t i ) noexcept
   {
 #if WITHLOC == 1
     loc_ = i;
@@ -39,18 +39,18 @@ public:
     (void) i;
 #endif
     if ( val_ == nullptr ) { val_ = Rec::alloc_val(); }
-    memcpy( val_, r + Rec::KEY_LEN, Rec::VAL_LEN );
-    memcpy( key_, r, Rec::KEY_LEN );
+    memcpy( val_, v, Rec::VAL_LEN );
+    memcpy( key_, k, Rec::KEY_LEN );
+  }
+
+  void copy( const uint8_t* r, uint64_t i ) noexcept
+  {
+    copy( r, r + Rec::KEY_LEN, i );
   }
 
   void copy( const RecordS & r ) noexcept
   {
-#if WITHLOC == 1
-    loc_ = r.loc_;
-#endif
-    if ( val_ == nullptr ) { val_ = Rec::alloc_val(); }
-    memcpy( val_, r.val_, Rec::VAL_LEN );
-    memcpy( key_, r.key_, Rec::KEY_LEN );
+    copy( r.key(), r.val(), r.loc() );
   }
 
   void copy( RecordS && r ) noexcept
@@ -64,12 +64,7 @@ public:
 
   void copy( const RecordPtr & r ) noexcept
   {
-#if WITHLOC == 1
-    loc_ = r.loc();
-#endif
-    if ( val_ == nullptr ) { val_ = Rec::alloc_val(); }
-    memcpy( val_, r.key(), Rec::VAL_LEN );
-    memcpy( key_, r.val(), Rec::KEY_LEN );
+    copy( r.key(), r.val(), r.loc() );
   }
 
   RecordS( void ) noexcept {}
