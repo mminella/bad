@@ -73,7 +73,6 @@ RR * scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size, const RR & after )
 
 #if USE_MOVE == 0
   // r3 and r2 share storage cells, so clear to nullptr first.
-  // TODO: arena or other stratergy may be better here.
   for ( uint64_t i = 0; i < size; i++ ) {
     r3[i].set_val( nullptr );
   }
