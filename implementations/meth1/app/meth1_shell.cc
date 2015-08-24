@@ -8,8 +8,6 @@
 
 #include "exception.hh"
 
-#include "implementation.hh"
-
 #include "cluster.hh"
 
 using namespace std;

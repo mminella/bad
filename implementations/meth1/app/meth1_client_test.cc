@@ -8,7 +8,6 @@
 #include "util.hh"
 
 #include "record.hh"
-#include "implementation.hh"
 
 #include "cluster.hh"
 
@@ -61,3 +60,4 @@ int run( int argc, char * argv[] )
 
   return EXIT_SUCCESS;
 }
+

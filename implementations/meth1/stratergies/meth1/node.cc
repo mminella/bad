@@ -35,7 +35,7 @@ Node::Node( string file, string port, uint64_t max_mem, bool odirect )
 {
 }
 
-void Node::DoInitialize( void ) { return; }
+void Node::Initialize( void ) { return; }
 
 /* Run the node - list and respond to RPCs */
 void Node::Run( void )
@@ -98,7 +98,7 @@ void Node::RPC_Size( BufferedIO_O<TCPSocket> & client )
   client.flush( true );
 }
 
-Node::RecV Node::DoRead( uint64_t pos, uint64_t size )
+Node::RecV Node::Read( uint64_t pos, uint64_t size )
 {
   static size_t pass = 0;
 
@@ -113,7 +113,7 @@ Node::RecV Node::DoRead( uint64_t pos, uint64_t size )
   return recs;
 }
 
-uint64_t Node::DoSize( void )
+uint64_t Node::Size( void )
 {
   return data_.size() / Rec::SIZE;
 }

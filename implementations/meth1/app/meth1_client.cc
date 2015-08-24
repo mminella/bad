@@ -9,8 +9,6 @@
 
 #include "exception.hh"
 
-#include "implementation.hh"
-
 #include "cluster.hh"
 
 using namespace std;
@@ -105,5 +103,4 @@ int main( int argc, char * argv[] )
   }
   return EXIT_SUCCESS;
 }
-
 

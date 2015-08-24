@@ -1,10 +1,6 @@
 #ifndef METH1_NODE_HH
 #define METH1_NODE_HH
 
-#include <mutex>
-#include <condition_variable>
-#include <utility>
-
 #include "buffered_io.hh"
 #include "file.hh"
 #include "overlapped_rec_io.hh"
@@ -12,7 +8,6 @@
 #include "socket.hh"
 #include "timestamp.hh"
 
-#include "implementation.hh"
 #include "record.hh"
 
 /* Sorting strategy to use? Ordered slowest to fastest. */
@@ -43,8 +38,12 @@ namespace meth1
 /**
  * Node defines the backend running on each node with a subset of the data.
  */
-class Node : public Implementation2
+class Node
 {
+public:
+  using RR = RecordS;
+  using RecV = RawVector<RR>;
+
 private:
   File data_;
   OverlappedRecordIO<Rec::SIZE> recio_;
@@ -67,11 +66,12 @@ public:
   /* Run the node - list and respond to RPCs */
   void Run( void );
 
-private:
-  void DoInitialize( void );
-  RecV DoRead( uint64_t pos, uint64_t size );
-  uint64_t DoSize( void );
+  /* API */
+  void Initialize( void );
+  RecV Read( uint64_t pos, uint64_t size );
+  uint64_t Size( void );
 
+private:
   Record seek( uint64_t pos );
 
   RecV linear_scan( const Record & after, uint64_t size = 1 );
