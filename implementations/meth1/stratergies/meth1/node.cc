@@ -160,7 +160,7 @@ Node::RecV Node::linear_scan( const Record & after, uint64_t size )
 Node::RecV Node::linear_scan_one( const Record & after )
 {
   auto t0 = time_now();
-  auto min = RR( Rec::MAX );
+  RR min( Rec::MAX );
 
   recio_.rewind();
 
@@ -171,13 +171,16 @@ Node::RecV Node::linear_scan_one( const Record & after )
     }
     RecordPtr next{r, i};
     if ( next > after and min > next ) {
-      min = RR( r, i );
+      min.copy( next );
     }
   }
 
   auto tt = time_diff<ms>( t0 );
   cout << "linear scan, " << lpass_ << ", " << tt << endl;
-  return {{min}};
+
+  RR * rr = new RR[1];
+  rr[0].copy( min );
+  return {rr, 1};
 }
 
 /* Linear scan using a priority queue for sorting. */
