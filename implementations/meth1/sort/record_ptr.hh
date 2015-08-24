@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include "io_device.hh"
+
 #include "record_common.hh"
 
 /* Wrapper around a string (and location) to enable comparison. Doens't manage
@@ -16,7 +18,7 @@ private:
   const uint8_t * r_;
 
 public:
-  RecordPtr( const uint8_t * r, uint64_t loc )
+  RecordPtr( const uint8_t * r, uint64_t loc = 0 )
 #if WITHLOC == 1
     : loc_{loc}
     , r_{r}
@@ -26,7 +28,7 @@ public:
   { (void) loc; }
 #endif
 
-  RecordPtr( const char * r, uint64_t loc )
+  RecordPtr( const char * r, uint64_t loc = 0 )
     : RecordPtr( (const uint8_t *) r, loc )
   {}
 
@@ -74,6 +76,18 @@ public:
   int compare( const Record & b ) const noexcept;
   int compare( const RecordS & b ) const noexcept;
   int compare( const RecordPtr & b ) const noexcept;
+
+  /* Write to IO device */
+  void write( IODevice & io, Rec::loc_t locinfo = Rec::NO_LOC ) const
+  {
+    io.write_all( (char *) key(), Rec::KEY_LEN );
+    io.write_all( (char *) val(), Rec::VAL_LEN );
+    if ( locinfo == Rec::WITH_LOC ) {
+      uint64_t l = loc();
+      io.write_all( reinterpret_cast<const char *>( &l ),
+                    sizeof( uint64_t ) );
+    }
+  }
 };
 
 #endif /* RECORD_PTR_HH */

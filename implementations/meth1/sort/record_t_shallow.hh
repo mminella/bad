@@ -174,8 +174,8 @@ public:
   {
     io.write_all( (char *) key_, Rec::KEY_LEN );
     io.write_all( (char *) val_, Rec::VAL_LEN );
-    uint64_t l = loc();
     if ( locinfo == Rec::WITH_LOC ) {
+      uint64_t l = loc();
       io.write_all( reinterpret_cast<const char *>( &l ),
                     sizeof( uint64_t ) );
     }

@@ -21,20 +21,20 @@ public:
   RecordLoc( const uint8_t * s, uint64_t loc = 0 )
     : loc_{loc}
   {
-    memcpy( key_, s, 10 );
+    memcpy( key_, s, Rec::KEY_LEN );
   }
 
   RecordLoc( const RecordLoc & other )
     : loc_{other.loc_}
   {
-    memcpy( key_, other.key_, 10 );
+    memcpy( key_, other.key(), Rec::KEY_LEN );
   }
 
   RecordLoc & operator=( const RecordLoc & other )
   {
     if ( this != &other ) {
-      loc_ = other.loc_;
-      memcpy( key_, other.key_, Rec::KEY_LEN );
+      loc_ = other.loc();
+      memcpy( key_, other.key(), Rec::KEY_LEN );
     }
     return *this;
   }
@@ -46,7 +46,7 @@ public:
   /* methods for boost::sort */
   const char * data( void ) const noexcept { return (char *) key_; }
   unsigned char operator[]( size_t i ) const noexcept { return key_[i]; }
-  size_t size( void ) const noexcept { return 10; }
+  size_t size( void ) const noexcept { return Rec::KEY_LEN; }
 
   /* comparison */
   comp_op( <, RecordLoc )
