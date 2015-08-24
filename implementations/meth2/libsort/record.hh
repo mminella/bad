@@ -11,14 +11,18 @@
 
 #include "config.h"
 
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
+#if defined(HAVE_TBB_PARALLEL_SORT_H) && PARALLEL_SORT == 1
+#include "tbb/parallel_sort.h"
+#elif defined(HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP)
 #include <boost/sort/spreadsort/string_sort.hpp>
 #endif
 
 template <typename R>
 inline void rec_sort( R first, R last )
 {
-#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
+#if defined(HAVE_TBB_PARALLEL_SORT_H) && PARALLEL_SORT == 1
+  tbb::parallel_sort( first, last );
+#elif defined(HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP)
   boost::sort::spreadsort::string_sort( first, last );
 #else
   sort( first, last, std::less<typename std::iterator_traits<R>::value_type>() );
@@ -35,12 +39,16 @@ compare( const uint8_t * k1, uint64_t loc1,
       return k1[i] - k2[i];
     }
   }
+#if WITHLOC == 1
   if ( loc1 < loc2 ) {
     return -1;
   }
   if ( loc1 > loc2 ) {
     return 1;
   }
+#else
+  (void) loc1; (void) loc2;
+#endif
   return 0;
 }
 

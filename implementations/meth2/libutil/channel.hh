@@ -63,6 +63,23 @@ namespace internal {
     Channel_( Channel_ && c ) = delete;
     Channel_ & operator=( Channel_ && c ) = delete;
 
+    void waitEmpty()
+    {
+      std::unique_lock<std::mutex> lck( mtx_ );
+      while ( used_ > 0 or send_wait_ > 0 ) {
+        if ( closed_ )  {
+          throw closed_error();
+        }
+        send_wait_++;
+        send_cv_.wait( lck );
+        send_wait_--;
+        if ( send_wait_ > 0 ) {
+          // we consumed one we don't need, so pass onwards
+          send_cv_.notify_one();
+        }
+      } 
+    }
+
     void close()
     {
       std::unique_lock<std::mutex> lck( mtx_ );
@@ -170,7 +187,8 @@ public:
 
     Channel( size_t buf = 1 ) : chn{new internal::Channel_<T>{buf}} {}
 
-    void close() { chn->close(); }
+    void close( void ) { chn->close(); }
+    void waitEmpty( void ) { chn->waitEmpty(); }
     void send( T && t ) { chn->send( std::move( t ) ); }
     void send( const T & t ) { chn->send( t ); }
     T && recv( void ) { return chn->recv(); }

@@ -4,6 +4,19 @@
 #include <cstdint>
 #include <cstring>
 
+/* Use parallel sort? */
+#define PARALLEL_SORT 1
+
+/* Use packed data structure? */
+#define PACKED 1
+
+/* Include disk offset information? Technically the algorithm could break
+ * without this, as we need a total order even when we have duplicate keys.
+ * However, it's only a problem if we have a chunk boundary fall on a duplicate
+ * key. Given we'll generally have < 100 chunk boundaries, and duplicate keys
+ * aren't common, it's generally fine to not include location information. */
+#define WITHLOC 0
+
 #define comp_op( op, t ) \
   bool operator op( const t & b ) const noexcept \
   { \

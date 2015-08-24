@@ -16,12 +16,6 @@ public:
   uint64_t loc_;
   uint8_t key_[Rec::KEY_LEN];
 
-  void copy( const uint8_t * s, uint64_t loc = 0 )
-  {
-    loc_ = loc;
-    memcpy( key_, s, Rec::KEY_LEN );
-  }
-
   RecordLoc( void ) noexcept : loc_{0} {}
 
   RecordLoc( const uint8_t * s, uint64_t loc = 0 )
@@ -33,19 +27,24 @@ public:
   RecordLoc( const RecordLoc & other )
     : loc_{other.loc_}
   {
-    memcpy( key_, other.key_, Rec::KEY_LEN );
+    memcpy( key_, other.key(), Rec::KEY_LEN );
   }
 
   RecordLoc & operator=( const RecordLoc & other )
   {
     if ( this != &other ) {
-      loc_ = other.loc_;
-      memcpy( key_, other.key_, Rec::KEY_LEN );
+      loc_ = other.loc();
+      memcpy( key_, other.key(), Rec::KEY_LEN );
     }
     return *this;
   }
 
   /* Accessors */
+  void copy( const uint8_t * s, uint64_t loc = 0 )
+  {
+    loc_ = loc;
+    memcpy( key_, s, Rec::KEY_LEN );
+  }
   const uint8_t * key( void ) const noexcept { return key_; }
   uint64_t loc( void ) const noexcept { return loc_; }
 
