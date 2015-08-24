@@ -47,8 +47,8 @@ public:
   void recvSize( void ) { size_ = c_->recvSize(); }
 
   RecordPtr curRecord( void ) const noexcept { return head_; }
-  void nextRecord( void );
-  void nextChunk();
+  void nextRecord( uint64_t remaining = 0 );
+  void nextChunk( uint64_t chunkN = 0 );
   bool eof( void ) const noexcept;
 
   bool operator>( const RemoteFile & b ) const noexcept

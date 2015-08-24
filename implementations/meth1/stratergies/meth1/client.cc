@@ -1,28 +1,16 @@
-#include <algorithm>
-#include <chrono>
-#include <condition_variable>
 #include <iostream>
-#include <list>
-#include <memory>
-#include <mutex>
-#include <tuple>
-#include <vector>
 
 #include "buffered_io.hh"
 #include "exception.hh"
-#include "poller.hh"
 #include "socket.hh"
 #include "timestamp.hh"
 
 #include "record.hh"
 
-#include "implementation.hh"
-
 #include "client.hh"
 
 using namespace std;
 using namespace meth1;
-using namespace PollerShortNames;
 
 Client::Client( Address node )
   : sock_{{(IPVersion)(node.domain())}}

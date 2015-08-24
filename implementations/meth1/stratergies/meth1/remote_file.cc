@@ -6,11 +6,15 @@
 using namespace std;
 using namespace meth1;
 
-void RemoteFile::nextChunk()
+void RemoteFile::nextChunk( uint64_t chunkN )
 {
+
   if ( offset_ < size_ ) {
-    c_->sendRead( offset_, chunkSize_ );
-    offset_ += chunkSize_;
+    if ( chunkN == 0 or chunkN > chunkSize_ ) {
+      chunkN = chunkSize_;
+    }
+    c_->sendRead( offset_, chunkN );
+    offset_ += chunkN;
     readRPC_ = true;
   }
 }
@@ -37,11 +41,11 @@ void RemoteFile::copyWire( void )
   }
 }
 
-void RemoteFile::nextRecord( void )
+void RemoteFile::nextRecord( uint64_t remaining )
 {
   if ( onWire_ == 0 and inBuf_ == 0 ) {
     if ( !readRPC_ ) {
-      nextChunk();
+      nextChunk( remaining );
     }
     onWire_ = c_->recvRead();
     readRPC_ = false;
@@ -50,7 +54,7 @@ void RemoteFile::nextRecord( void )
   if ( onWire_ > 0 ) {
     if ( onWire_ <= LOW_LIMIT ) {
       copyWire();
-      nextChunk();
+      nextChunk( remaining );
     } else {
       onWire_--;
       head_ = c_->readRecord();

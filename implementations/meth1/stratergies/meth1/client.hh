@@ -1,21 +1,12 @@
 #ifndef METH1_CLIENT2_HH
 #define METH1_CLIENT2_HH
 
-#include <list>
-#include <memory>
-#include <mutex>
-#include <vector>
-
 #include "address.hh"
 #include "buffered_io.hh"
-#include "file.hh"
-#include "poller.hh"
 #include "socket.hh"
 #include "timestamp.hh"
 
 #include "record.hh"
-
-#include "implementation.hh"
 
 /**
  * Strategy 1.

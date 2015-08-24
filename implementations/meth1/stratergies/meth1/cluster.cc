@@ -1,16 +1,14 @@
-#include <thread>
 #include <vector>
 
 #include "buffered_io.hh"
+#include "channel.hh"
 #include "file.hh"
-#include "poller.hh"
 
 #include "record.hh"
 
-#include "implementation.hh"
-
 #include "client.hh"
 #include "cluster.hh"
+#include "exception.hh"
 #include "priority_queue.hh"
 #include "remote_file.hh"
 
@@ -78,7 +76,40 @@ void Cluster::Read( uint64_t pos, uint64_t size )
       }
     }
   } else {
-    // TODO: multi-node Read
+    // general n node case
+    vector<RemoteFile> files;
+    mystl::priority_queue_min<RemoteFile> pq{clients_.size()};
+    uint64_t totalSize = Size();
+    uint64_t end = min( totalSize, pos + size );
+
+    // prep -- size
+    for ( auto & c : clients_ ) {
+      RemoteFile f( c, chunkSize_ );
+      f.sendSize();
+      files.push_back( f );
+    }
+
+    // prep -- 1st chunk
+    for ( auto & f : files ) {
+      f.recvSize();
+      f.nextChunk( size );
+    }
+
+    // prep -- 1st record
+    for ( auto & f : files ) {
+      f.nextRecord( size );
+      pq.push( f );
+    }
+
+    // read to end records
+    for ( uint64_t i = 0; i < end; i++ ) {
+      RemoteFile f = pq.top();
+      pq.pop();
+      if ( !f.eof() ) {
+        f.nextRecord( size - i );
+        pq.push( f );
+      }
+    }
   }
 }
 
@@ -132,7 +163,34 @@ void Cluster::ReadAll( void )
   }
 }
 
-// TODO: Overlap write + read better
+static void writer( File out, Channel<vector<Record>> chn )
+{
+  static int pass = 0;
+  BufferedIO bio( out );
+  vector<Record> recs;
+  while ( true ) {
+    try {
+      cout << "wait write!" << endl;
+      recs = move( chn.recv() );
+      cout << "got write!" << endl;
+    } catch ( const std::exception & e ) {
+      print_exception( e );
+      break;
+    }
+    auto t0 = time_now();
+    for ( auto const & r : recs ) {
+      r.write( bio );
+    }
+    bio.flush( true );
+    out.fsync();
+    auto twrite = time_diff<ms>( t0 );
+    cout << "write, " << pass++ << ", " << twrite << endl;
+  }
+}
+
+static const size_t WRITE_BUF = 1048576; // 100MB * 2
+static const size_t WRITE_BUF_N = 2;
+
 void Cluster::WriteAll( File out )
 {
   if ( clients_.size() == 1 ) {
@@ -152,6 +210,9 @@ void Cluster::WriteAll( File out )
     vector<RemoteFile> files;
     mystl::priority_queue_min<RemoteFile> pq{clients_.size()};
     uint64_t size = Size();
+
+    Channel<vector<Record>> chn( WRITE_BUF_N - 1 );
+    thread twriter( writer, move( out ), chn );
 
     // prep -- size
     for ( auto & c : clients_ ) {
@@ -173,15 +234,29 @@ void Cluster::WriteAll( File out )
     }
 
     // read all records
+    vector<Record> recs;
+    recs.reserve( WRITE_BUF );
     for ( uint64_t i = 0; i < size and pq.size() > 0; i++ ) {
       RemoteFile f = pq.top();
       pq.pop();
-      f.curRecord().write( out );
+      recs.emplace_back( f.curRecord() );
       if ( !f.eof() ) {
         f.nextRecord();
         pq.push( f );
       }
+      if ( recs.size() >= WRITE_BUF ) {
+        chn.send( move( recs ) );
+        recs = vector<Record>();
+      }
     }
+
+    // wait for write to finish
+    if ( recs.size() > 0 ) {
+      chn.send( move( recs ) );
+    }
+    chn.waitEmpty();
+    chn.close();
+    twriter.join();
   }
 }
 
