@@ -59,11 +59,6 @@ Record Cluster2::ReadFirst( void )
   return min;
 }
 
-void Cluster2::ReadChunk( uint64_t size )
-{
-  // TODO: implement
-}
-
 // TODO: dynamically adjust low limit based on number of backends and available memory
 static const size_t LOW_LIMIT = 1048576; // 100MB
 
@@ -168,6 +163,28 @@ public:
     return head_ > b.head_;
   }
 };
+
+void Cluster2::Read( uint64_t pos, uint64_t size )
+{
+  if ( clients_.size() == 1 ) {
+    // optimize for 1 node
+    auto & c = clients_.front();
+    uint64_t totalSize = Size();
+    if ( pos >= totalSize ) {
+      size = min( totalSize - pos, size );
+      for ( uint64_t i = pos; i < pos + size; i += chunkSize_ ) {
+        uint64_t n = min( chunkSize_, pos + size - i );
+        c.sendRead( i, n );
+        auto nrecs = c.recvRead();
+        for ( uint64_t j = 0; j < nrecs; j++ ) {
+          c.readRecord();
+        }
+      }
+    }
+  } else {
+    // TODO: multi-node Read
+  }
+}
 
 void Cluster2::ReadAll( void )
 {

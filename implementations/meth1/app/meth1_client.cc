@@ -22,7 +22,7 @@ File query_file( string out_dir, unsigned int query, string type )
   return {out, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR};
 }
 
-void run_cmd( Cluster2 & c, string out_dir, string cmd )
+void run_cmd( Cluster2 & c, string out_dir, string cmd, uint64_t read_ahead )
 {
   if ( cmd == "first" ) {
     auto start = chrono::high_resolution_clock::now();
@@ -39,12 +39,19 @@ void run_cmd( Cluster2 & c, string out_dir, string cmd )
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
     cout << "cmd-read, 0, " << dur << endl;
 
+  } else if ( cmd == "chunk" ) {
+    auto start = chrono::high_resolution_clock::now();
+    c.Read( 0, read_ahead );
+    auto end = chrono::high_resolution_clock::now();
+    auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
+    cout << "cmd-chunk, 0, " << dur << endl;
+
   } else if ( cmd.find_first_of( "chunk-" ) == 0 ) {
     size_t i = cmd.find_last_of( '-' );
     auto siz = atol( cmd.substr( i + 1 ).c_str() );
 
     auto start = chrono::high_resolution_clock::now();
-    c.ReadChunk( siz );
+    c.Read( 0, siz );
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
     cout << "cmd-chunk, 0, " << dur << endl;
@@ -75,7 +82,7 @@ void run( int argc, char * argv[] )
   Cluster2 client{addrs, read_ahead};
 
   // run cmd
-  run_cmd( client, out_dir, cmd );
+  run_cmd( client, out_dir, cmd, read_ahead );
 }
 
 void check_usage( const int argc, const char * const argv[] )

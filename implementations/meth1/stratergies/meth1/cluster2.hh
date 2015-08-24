@@ -31,7 +31,7 @@ public:
 
   uint64_t Size( void );
   Record ReadFirst( void );
-  void ReadChunk( uint64_t size );
+  void Read( uint64_t pos, uint64_t size );
   void ReadAll( void );
   void WriteAll( File out );
 };
