@@ -1,0 +1,4 @@
+ping.sh
+iperf_*.sh
+*.log
+*.pyc
