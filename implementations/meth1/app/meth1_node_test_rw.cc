@@ -14,8 +14,6 @@
 using namespace std;
 using namespace meth1;
 
-static constexpr size_t MAX_MEM = 2097152; // 200MB
-
 using RR = Node::RR;
 using Recs = Node::RecV;
 
@@ -56,7 +54,7 @@ void run( char * fin, char * fout, double block )
   auto t0 = time_now();
 
   // start node
-  Node node{fin, "0", MAX_MEM};
+  Node node{fin, "0", true };
   node.Initialize();
   auto t1 = time_now();
 

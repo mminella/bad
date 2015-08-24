@@ -13,9 +13,6 @@
 namespace meth1
 {
 
-// TODO: dynamically adjust low limit based on number of backends and available memory
-static const size_t LOW_LIMIT = 1048576; // 100MB
-
 /**
  * RemoteFile is a helper wrapper around a Client presents a stateful File
  * interface and performs read-ahead.
@@ -25,6 +22,8 @@ class RemoteFile
 private:
   Client * c_;
   uint64_t chunkSize_;
+  uint64_t  bufSize_;
+
   uint64_t size_ = 0;
   uint64_t offset_ = 0;
 
@@ -39,8 +38,11 @@ private:
   void copyWire( void );
 
 public:
-  RemoteFile( Client & c, uint64_t chunkSize )
-    : c_{&c}, chunkSize_{chunkSize}, head_{(const char *) nullptr}
+  RemoteFile( Client & c, uint64_t chunkSize, uint64_t bufSize )
+    : c_{&c}
+    , chunkSize_{chunkSize}
+    , bufSize_{bufSize}
+    , head_{(const char *) nullptr}
   {};
 
   void sendSize( void ) { c_->sendSize(); }

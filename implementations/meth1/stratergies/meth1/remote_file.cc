@@ -30,9 +30,9 @@ bool RemoteFile::eof( void ) const noexcept
 
 void RemoteFile::copyWire( void )
 {
-  if ( onWire_ > 0 and onWire_ <= LOW_LIMIT ) {
+  if ( onWire_ > 0 and onWire_ <= bufSize_ ) {
     if ( buf_ == nullptr ) {
-      buf_ = new uint8_t[LOW_LIMIT * Rec::SIZE];
+      buf_ = new uint8_t[bufSize_ * Rec::SIZE];
     }
     c_->sock_.read_all( (char *) buf_, onWire_ * Rec::SIZE );
     inBuf_ = onWire_;
@@ -52,7 +52,7 @@ void RemoteFile::nextRecord( uint64_t remaining )
   }
 
   if ( onWire_ > 0 ) {
-    if ( onWire_ <= LOW_LIMIT ) {
+    if ( onWire_ <= bufSize_ ) {
       copyWire();
       nextChunk( remaining );
     } else {

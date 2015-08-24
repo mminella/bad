@@ -24,15 +24,16 @@ using namespace std;
 using namespace meth1;
 
 /* Construct Node */
-Node::Node( string file, string port, uint64_t max_mem, bool odirect )
+Node::Node( string file, string port, bool odirect )
   : data_{file.c_str(), odirect ? O_RDONLY | O_DIRECT : O_RDONLY}
   , recio_{data_}
   , port_{port}
   , last_{Rec::MIN}
   , fpos_{0}
-  , max_mem_{max_mem}
+  , seek_chunk_{( memory_free() - MEM_RESERVE ) / Rec::SIZE}
   , lpass_{0}
 {
+  cout << "seek-chunk, " << seek_chunk_ << endl;
 }
 
 void Node::Initialize( void ) { return; }
@@ -128,8 +129,8 @@ Record Node::seek( uint64_t pos )
     last_ = Rec::MAX;
   } else if ( fpos_ != pos ) {
     // remember, retrieving the record just before `pos`
-    for ( uint64_t i = 0; i < pos; i += max_mem_ ) {
-      auto recs = linear_scan( Record{Rec::MIN}, min( pos - i, max_mem_ ) );
+    for ( uint64_t i = 0; i < pos; i += seek_chunk_ ) {
+      auto recs = linear_scan( Record{Rec::MIN}, min( pos - i, seek_chunk_ ) );
       if ( recs.size() == 0 ) {
         break;
       }

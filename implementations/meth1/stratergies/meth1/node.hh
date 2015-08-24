@@ -27,6 +27,9 @@
 /* Use a parallel merge implementation? */
 #define TBB_PARALLEL_MERGE 1
 
+/* Amount of memory to reserve for OS and other tasks */
+#define MEMRESERVE 1024 * 1024 * 1000
+
 /**
  * Stratergy 1.
  * - No upfront work.
@@ -41,6 +44,8 @@ namespace meth1
 class Node
 {
 public:
+  static uint64_t constexpr MEM_RESERVE = MEMRESERVE;
+
   using RR = RecordS;
   using RecV = RawVector<RR>;
 
@@ -50,12 +55,11 @@ private:
   std::string port_;
   Record last_;
   uint64_t fpos_;
-  uint64_t max_mem_;
+  uint64_t seek_chunk_;
   uint64_t lpass_;
 
 public:
-  Node( std::string file, std::string port, uint64_t max_memory,
-        bool odirect = false );
+  Node( std::string file, std::string port, bool odirect = false );
 
   /* No copy or move */
   Node( const Node & n ) = delete;

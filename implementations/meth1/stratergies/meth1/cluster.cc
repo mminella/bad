@@ -3,6 +3,7 @@
 #include "buffered_io.hh"
 #include "channel.hh"
 #include "file.hh"
+#include "util.hh"
 
 #include "record.hh"
 
@@ -18,7 +19,17 @@ using namespace meth1;
 Cluster::Cluster( vector<Address> nodes, uint64_t chunkSize )
   : clients_{}
   , chunkSize_{chunkSize}
+  , bufSize_{0}
+  , memFree_{memory_free() - MEM_RESERVE}
 {
+  // figure out max buffer if using all memory
+  if ( chunkSize_ == 0 ) {
+    chunkSize_ = memFree_ / Rec::SIZE;
+  } 
+  auto bufLimit = MAX_BUF_SIZE;
+  bufSize_ = min( bufLimit, chunkSize_ / ( nodes.size() + WRITE_BUF_N ) );
+  cout << "chunk-size, " << chunkSize_ << ", " << bufSize_ << endl;
+
   for ( auto & n : nodes ) {
     clients_.push_back( n );
   }
@@ -84,7 +95,7 @@ void Cluster::Read( uint64_t pos, uint64_t size )
 
     // prep -- size
     for ( auto & c : clients_ ) {
-      RemoteFile f( c, chunkSize_ );
+      RemoteFile f( c, chunkSize_, bufSize_ );
       f.sendSize();
       files.push_back( f );
     }
@@ -134,7 +145,7 @@ void Cluster::ReadAll( void )
 
     // prep -- size
     for ( auto & c : clients_ ) {
-      RemoteFile f( c, chunkSize_ );
+      RemoteFile f( c, chunkSize_, bufSize_ );
       f.sendSize();
       files.push_back( f );
     }
@@ -188,9 +199,6 @@ static void writer( File out, Channel<vector<Record>> chn )
   }
 }
 
-static const size_t WRITE_BUF = 1048576; // 100MB * 2
-static const size_t WRITE_BUF_N = 2;
-
 void Cluster::WriteAll( File out )
 {
   if ( clients_.size() == 1 ) {
@@ -216,7 +224,7 @@ void Cluster::WriteAll( File out )
 
     // prep -- size
     for ( auto & c : clients_ ) {
-      RemoteFile f( c, chunkSize_ );
+      RemoteFile f( c, chunkSize_, bufSize_ );
       f.sendSize();
       files.push_back( f );
     }
@@ -235,7 +243,7 @@ void Cluster::WriteAll( File out )
 
     // read all records
     vector<Record> recs;
-    recs.reserve( WRITE_BUF );
+    recs.reserve( bufSize_ );
     for ( uint64_t i = 0; i < size and pq.size() > 0; i++ ) {
       RemoteFile f = pq.top();
       pq.pop();
@@ -244,7 +252,7 @@ void Cluster::WriteAll( File out )
         f.nextRecord();
         pq.push( f );
       }
-      if ( recs.size() >= WRITE_BUF ) {
+      if ( recs.size() >= bufSize_ ) {
         chn.send( move( recs ) );
         recs = vector<Record>();
       }
