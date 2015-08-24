@@ -32,6 +32,7 @@ Node::Node( string file, string port, bool odirect )
   , fpos_{0}
   , seek_chunk_{( memory_free() - MEM_RESERVE ) / Rec::SIZE}
   , lpass_{0}
+  , size_{0}
 {
   cout << "seek-chunk, " << seek_chunk_ << endl;
 }
@@ -103,6 +104,10 @@ Node::RecV Node::Read( uint64_t pos, uint64_t size )
 {
   static size_t pass = 0;
 
+  if ( pos + size > Size() ) {
+    size = Size() - pos;    
+  }
+
   auto t0 = time_now();
   auto recs = linear_scan( seek( pos ), size );
   if ( recs.size() > 0 ) {
@@ -116,7 +121,10 @@ Node::RecV Node::Read( uint64_t pos, uint64_t size )
 
 uint64_t Node::Size( void )
 {
-  return data_.size() / Rec::SIZE;
+  if ( size_ == 0 ) {
+    size_ = data_.size() / Rec::SIZE;
+  }
+  return size_;
 }
 
 /* Return the record that corresponds to the specified position. */

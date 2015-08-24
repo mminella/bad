@@ -57,6 +57,7 @@ private:
   uint64_t fpos_;
   uint64_t seek_chunk_;
   uint64_t lpass_;
+  uint64_t size_;
 
 public:
   Node( std::string file, std::string port, bool odirect = false );
