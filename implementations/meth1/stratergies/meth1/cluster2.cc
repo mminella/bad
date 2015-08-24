@@ -170,7 +170,7 @@ void Cluster2::Read( uint64_t pos, uint64_t size )
     // optimize for 1 node
     auto & c = clients_.front();
     uint64_t totalSize = Size();
-    if ( pos >= totalSize ) {
+    if ( pos < totalSize ) {
       size = min( totalSize - pos, size );
       for ( uint64_t i = pos; i < pos + size; i += chunkSize_ ) {
         uint64_t n = min( chunkSize_, pos + size - i );
