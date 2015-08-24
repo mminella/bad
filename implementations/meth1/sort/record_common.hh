@@ -15,7 +15,7 @@
  * However, it's only a problem if we have a chunk boundary fall on a duplicate
  * key. Given we'll generally have < 100 chunk boundaries, and duplicate keys
  * aren't common, it's generally fine to not include location information. */
-#define WITHLOC 1
+#define WITHLOC 0
 
 #define comp_op( op, t ) \
   bool operator op( const t & b ) const noexcept \
