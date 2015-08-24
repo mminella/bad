@@ -20,8 +20,8 @@ Cluster::Cluster( vector<Address> nodes, uint64_t chunkSize )
   : clients_{}
   , chunkSize_{chunkSize}
   , bufSize_{0}
-  , memFree_{memory_free() - MEM_RESERVE}
 {
+  auto memFree_ = memory_free() - MEM_RESERVE;
   // figure out max buffer if using all memory
   if ( chunkSize_ == 0 ) {
     chunkSize_ = memFree_ / Rec::SIZE;
