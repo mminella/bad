@@ -66,7 +66,8 @@ class Setup
       end
 
       # install mosh
-      ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq apt-get install mosh binutils"
+      ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq install \
+        mosh binutils libtbb2 libtbb-dev libjemalloc-dev"
       ssh.root! "DEBIAN_FRONTEND=noninteractive add-apt-repository -y ppa:ubuntu-toolchain-r/test"
       ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get update"
       ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrade"
