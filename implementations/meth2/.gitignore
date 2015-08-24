@@ -14,11 +14,11 @@ m4/lt~obsolete.m4
 
 # build files
 .deps
+.libs
 .test-tmp/
 Makefile
 Makefile.in
 aclocal.m4
-app/Makefile
 ar-lib
 autom4te.cache/
 compile
@@ -33,7 +33,6 @@ configure
 configure.ac~
 depcomp
 install-sh
-lib/Makefile
 libtool
 ltmain.sh
 missing
