@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = lib sort experiments
+SUBDIRS = libutil libsort libmeth2 app experiments
 
 .PHONY: format check-all bin-dist recs-1gb recs-10gb recs-30gb
 

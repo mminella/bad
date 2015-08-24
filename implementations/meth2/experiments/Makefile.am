@@ -3,13 +3,13 @@ bin_PROGRAMS = index1 index2 index3 index4 index5 index6 index7
 AM_CPPFLAGS = \
 	-D_REENTRANT \
 	-I$(srcdir)/.. \
-	-I$(srcdir)/../lib \
-	-I$(srcdir)/../sort \
+	-I$(srcdir)/../libutil \
+	-I$(srcdir)/../libsort \
 	-I$(srcdir)/../contrib
 
 LDADD = \
-	../lib/libbasicrts.la \
-	../sort/libsort.la \
+	../libutil/libutil.la \
+	../libsort/libsort.la \
 	-lpthread
 
 # # need `whole-archive nonsense to work around bug with C++11 condition

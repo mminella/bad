@@ -1,6 +1,6 @@
-noinst_LTLIBRARIES = libbasicrts.la
+noinst_LTLIBRARIES = libutil.la
 
-libbasicrts_la_SOURCES = \
+libutil_la_SOURCES = \
 	address.hh address.cc \
 	bench.hh \
 	buffered_io.hh buffered_io.cc \
