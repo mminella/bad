@@ -1,8 +1,3 @@
-#include <vector>
-
-#include "address.hh"
-#include "poller.hh"
-
 #include "record.hh"
 
 #include "client.hh"
@@ -11,128 +6,63 @@
 using namespace std;
 using namespace meth1;
 
-RemoteFile::RemoteFile( Client c, uint64_t readahead, uint64_t low_cache )
-  : client_{move( c )}
-  , data_{}
-  , dpos_{0}
-  , fpos_{0}
-  , cached_{0}
-  , readahead_{readahead}
-  // TWEAK: read-ahead amount
-  , low_cache_{readahead / 2}
-  , eof_{false}
+void RemoteFile::nextChunk()
 {
-  if ( low_cache != 0 ) {
-    low_cache_ = low_cache;
-  }
-  if ( low_cache >= readahead ) {
-    throw runtime_error( "low-cache mark must be less than read-ahead" );
+  if ( offset_ < size_ ) {
+    c_->sendRead( offset_, chunkSize_ );
+    offset_ += chunkSize_;
+    readRPC_ = true;
   }
 }
 
-Poller::Action RemoteFile::RPCRunner( void )
+bool RemoteFile::eof( void ) const noexcept
 {
-  return client_.RPCRunner();
-}
-
-void RemoteFile::open( void )
-{
-  client_.Initialize();
-}
-
-void RemoteFile::seek( uint64_t offset )
-{
-  if ( offset != fpos_ ) {
-    fpos_ = offset;
-    data_ = {};
-    dpos_ = 0; 
-    cached_ = 0;
-    eof_ = false;
-    client_.clearCache();
-  }
-}
-
-void RemoteFile::prefetch()
-{
-  client_.prepareRead( fpos_ + cached_, readahead_ );
-  cached_ += readahead_;
-}
-
-void RemoteFile::read_ahead( void )
-{
-  if ( cached_ <= low_cache_ ) {
-    prefetch();
-  }
-}
-
-void RemoteFile::next( void )
-{
-  if ( !eof_ ) {
-    cached_--;
-    fpos_++;
-    read_ahead();
-  }
-}
-
-Record * RemoteFile::peek( void )
-{
-  if ( eof_ ) {
-    return nullptr;
-  }
-
-  if ( data_.size() == 0 or fpos_ - dpos_ >= data_.size() ) {
-    data_ = client_.Read( fpos_, readahead_ );
-    dpos_ = fpos_;
-    if ( data_.size() == 0 ) {
-      eof_ = true;
-      return nullptr;
-    }
-  }
-
-  return &data_[fpos_ - dpos_];
-}
-
-Record * RemoteFile::read( void )
-{
-  if ( eof_ ) {
-    return nullptr;
-  }
-  read_ahead();
-  auto r = peek();
-  if ( r != nullptr ) {
-    next();
-  }
-  return r;
-}
-
-vector<Record> RemoteFile::read_chunk( void )
-{
-  if ( eof_ ) {
-    return {};
-  }
-
-  if ( data_.size() == 0 ) {
-    data_ = client_.Read( fpos_, readahead_ );
-    dpos_ = fpos_;
-    if ( data_.size() == 0 ) {
-      eof_ = true;
-      return {};
-    }
-  }
-
-  if ( dpos_ == fpos_ ) {
-    fpos_ += data_.size();
-    if ( cached_ >= data_.size() ) {
-      cached_ -= data_.size();
-    }
-    read_ahead();
-    return move( data_ );
+  if ( offset_ >= size_ and onWire_ == 0 and inBuf_ == 0 and !readRPC_ ) {
+    return true;
   } else {
-    throw runtime_error( "can't read chunk when not on bounary" );
+    return false;
   }
 }
 
-uint64_t RemoteFile::size( void )
+void RemoteFile::copyWire( void )
 {
-  return client_.Size();
+  if ( onWire_ > 0 and onWire_ <= LOW_LIMIT ) {
+    if ( buf_ == nullptr ) {
+      buf_ = new uint8_t[LOW_LIMIT * Rec::SIZE];
+    }
+    c_->sock_.read_all( (char *) buf_, onWire_ * Rec::SIZE );
+    inBuf_ = onWire_;
+    onWire_ = 0;
+    bufOffset_ = 0;
+  }
 }
+
+void RemoteFile::nextRecord( void )
+{
+  if ( onWire_ == 0 and inBuf_ == 0 ) {
+    if ( !readRPC_ ) {
+      nextChunk();
+    }
+    onWire_ = c_->recvRead();
+    readRPC_ = false;
+  }
+
+  if ( onWire_ > 0 ) {
+    if ( onWire_ <= LOW_LIMIT ) {
+      copyWire();
+      nextChunk();
+    } else {
+      onWire_--;
+      head_ = c_->readRecord();
+      return;
+    }
+  }
+
+  if ( inBuf_ > 0 ) {
+    head_ = { buf_ + bufOffset_ };
+    bufOffset_ += Rec::SIZE;
+    inBuf_--;
+    return;
+  }
+}
+

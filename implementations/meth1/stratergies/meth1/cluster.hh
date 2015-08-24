@@ -1,15 +1,12 @@
-#ifndef METH1_CLUSTER_HH
-#define METH1_CLUSTER_HH
+#ifndef METH1_CLUSTER2_HH
+#define METH1_CLUSTER2_HH
 
 #include <vector>
 
 #include "address.hh"
-#include "channel.hh"
 #include "file.hh"
-#include "poller.hh"
 
-#include "implementation.hh"
-#include "remote_file.hh"
+#include "client.hh"
 
 /**
  * Strategy 1.
@@ -26,19 +23,18 @@ namespace meth1
 class Cluster
 {
 private:
-  std::vector<RemoteFile> files_;
-  Poller poller_;
+  std::vector<Client> clients_;
+  uint64_t chunkSize_;
 
 public:
-  // TWEAK: readahead
-  Cluster( std::vector<Address> nodes, uint64_t readahead );
+  Cluster( std::vector<Address> nodes, uint64_t chunkSize );
 
   uint64_t Size( void );
   Record ReadFirst( void );
-  void ReadChunk( uint64_t size );
+  void Read( uint64_t pos, uint64_t size );
   void ReadAll( void );
   void WriteAll( File out );
 };
 }
 
-#endif /* METH1_CLUSTER_HH */
+#endif /* METH1_CLUSTER2_HH */

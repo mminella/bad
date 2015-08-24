@@ -1,14 +1,8 @@
 #ifndef REMOTE_FILE_HH
 #define REMOTE_FILE_HH
 
-#include <vector>
-
-#include "address.hh"
-#include "poller.hh"
-
 #include "record.hh"
 
-#include "implementation.hh"
 #include "client.hh"
 
 /**
@@ -19,6 +13,9 @@
 namespace meth1
 {
 
+// TODO: dynamically adjust low limit based on number of backends and available memory
+static const size_t LOW_LIMIT = 1048576; // 100MB
+
 /**
  * RemoteFile is a helper wrapper around a Client presents a stateful File
  * interface and performs read-ahead.
@@ -26,38 +23,38 @@ namespace meth1
 class RemoteFile
 {
 private:
-  Client client_;            // contained client
-  std::vector<Record> data_; // current spot in file
-  uint64_t dpos_;            // data position
-  uint64_t fpos_;            // file position
-  uint64_t cached_;          // data_.Size() + outstanding read RPCs
-  uint64_t readahead_;       // read-ahead amount
-  uint64_t low_cache_;       // low-cache amount to start read-ahead
-  bool eof_;                 // end-of-file hit?
+  Client * c_;
+  uint64_t chunkSize_;
+  uint64_t size_ = 0;
+  uint64_t offset_ = 0;
 
-  void read_ahead( void );
+  bool readRPC_ = false;
+  uint64_t onWire_ = 0;
+  uint64_t inBuf_ = 0;
+  uint8_t * buf_ = nullptr;
+  uint64_t bufOffset_ = 0;
+
+  RecordPtr head_;
+
+  void copyWire( void );
 
 public:
-  RemoteFile( Client c, uint64_t readahead, uint64_t low_cache = 0 );
+  RemoteFile( Client & c, uint64_t chunkSize )
+    : c_{&c}, chunkSize_{chunkSize}, head_{(const char *) nullptr}
+  {};
 
-  RemoteFile( Address node, uint64_t readahead, uint64_t low_cache = 0 )
-    : RemoteFile( Client{node}, readahead, low_cache )
+  void sendSize( void ) { c_->sendSize(); }
+  void recvSize( void ) { size_ = c_->recvSize(); }
+
+  RecordPtr curRecord( void ) const noexcept { return head_; }
+  void nextRecord( void );
+  void nextChunk();
+  bool eof( void ) const noexcept;
+
+  bool operator>( const RemoteFile & b ) const noexcept
   {
+    return head_ > b.head_;
   }
-
-  Poller::Action RPCRunner( void );
-  Client & client( void ) { return client_; }
-
-  bool eof( void) const noexcept { return eof_; }
-
-  void open( void );
-  void seek( uint64_t offset );
-  void prefetch();
-  void next( void );
-  Record * peek( void );
-  Record * read( void );
-  std::vector<Record> read_chunk( void );
-  uint64_t size( void );
 };
 }
 

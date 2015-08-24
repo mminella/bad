@@ -11,7 +11,7 @@
 
 #include "implementation.hh"
 
-#include "cluster2.hh"
+#include "cluster.hh"
 
 using namespace std;
 using namespace meth1;
@@ -22,7 +22,7 @@ File query_file( string out_dir, unsigned int query, string type )
   return {out, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR};
 }
 
-void run_cmd( Cluster2 & c, string out_dir, string cmd, uint64_t read_ahead )
+void run_cmd( Cluster & c, string out_dir, string cmd, uint64_t read_ahead )
 {
   if ( cmd == "first" ) {
     auto start = chrono::high_resolution_clock::now();
@@ -79,7 +79,7 @@ void run( int argc, char * argv[] )
 
   // setup cluster
   auto addrs = vector<Address>( addresses, argv + argc );
-  Cluster2 client{addrs, read_ahead};
+  Cluster client{addrs, read_ahead};
 
   // run cmd
   run_cmd( client, out_dir, cmd, read_ahead );
