@@ -2,6 +2,7 @@ channels
 echo_server
 priority_queue
 rec_memcpy
+rec_place
 sort_basicrts
 sort_boost
 sort_chunked

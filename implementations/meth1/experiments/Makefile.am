@@ -3,6 +3,7 @@ bin_PROGRAMS = \
 	echo_server \
 	priority_queue \
 	rec_memcpy \
+	rec_place \
 	sort_basicrts \
 	sort_boost \
 	sort_libc \
@@ -40,6 +41,7 @@ echo_server_SOURCES = echo_server.cc
 
 priority_queue_SOURCES = priority_queue.cc
 rec_memcpy_SOURCES = rec_memcpy.cc
+rec_place_SOURCES = rec_place.cc
 
 sort_basicrts_SOURCES = sort_basicrts.cc
 sort_boost_SOURCES = sort_boost.cc
