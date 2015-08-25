@@ -6,9 +6,17 @@ BINARIES= \
 	write \
 	random_write \
 	async_random_read \
-	async_read
+	async_read \
+	memalloc_speed \
+	memcpy_speed
 
 all: $(BINARIES)
+
+memcpy_speed: memcpy_speed.cc
+	$(CXX) -std=c++11 -o memcpy_speed -O3 -march=native memcpy_speed.cc -ltbb
+
+memalloc_speed: memalloc_speed.cc
+	$(CXX) -std=c++11 -o memalloc_speed -O3 -march=native memalloc_speed.cc -ltbb
 
 .PHONY: clean dist
 

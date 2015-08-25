@@ -4,6 +4,8 @@ random_read
 random_write
 read
 write
+memalloc_speed
+memcpy_speed
 *.o
 measure.tar.gz
 dist_root
