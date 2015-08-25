@@ -27,6 +27,7 @@ fi
 ./launchBAD.rb -f ${FILE} -k ${KEY} -c ${N} -n 'Meth1-%d' -d bad.tar.gz -i ${MACHINE}
 if [ $? -ne 0 ]; then
   echo "Launching instances failed! (${FILE})"
+  ./shutdown-cluster.sh ${FILE}
   exit 1
 fi
 
