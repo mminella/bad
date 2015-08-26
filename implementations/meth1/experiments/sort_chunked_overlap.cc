@@ -17,7 +17,7 @@
 /* We can use a move or copy strategy -- the copy is actaully a little better
  * as we play some tricks to ensure we reuse allocations as much as possible.
  */
-#define USE_MOVE 0
+#define USE_COPY 1
 
 using namespace std;
 
@@ -58,10 +58,10 @@ RR * scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size, const RR & after )
       auto ts1 = time_now();
       rec_sort( r1, r1 + r1s );
       ts += time_diff<ms>( ts1 );
-#if USE_MOVE == 1
-      tm += meth1_merge_move( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
-#else
+#if USE_COPY == 1
       tm += meth1_merge_copy( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
+#else
+      tm += meth1_merge_move( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
 #endif
       swap( r2, r3 );
       r2s = min( size, r1s + r2s );
@@ -71,7 +71,7 @@ RR * scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size, const RR & after )
   }
   auto t1 = time_now();
 
-#if USE_MOVE == 0
+#if USE_COPY == 1
   // r3 and r2 share storage cells, so clear to nullptr first.
   for ( uint64_t i = 0; i < size; i++ ) {
     r3[i].set_val( nullptr );
