@@ -87,7 +87,7 @@ void run_inmem_par( char * rbuf, uint64_t nrecs, size_t p )
 void run_inmem( char * fin )
 {
   // 1) OPEN FILE
-  FILE *fdi = fopen( fin, "r" );
+  FILE *fdi = fdopen( open( fin, O_RDONLY | O_DIRECT ), "r" );
   struct stat st;
   fstat( fileno( fdi ), &st );
   size_t nrecs = st.st_size / Rec::SIZE;
@@ -102,7 +102,9 @@ void run_inmem( char * fin )
     }
     nr += r;
   }
-  cout << "read , " << time_diff<ms>( tr ) << endl;
+  auto tt = time_diff<ms>( tr );
+  uint64_t mbs = st.st_size * 1000 / tt / 1024 / 1024;
+  cout << "read, " << tt << ", " << mbs << endl;
   cout << endl;
 
   run_inmem_seq( rbuf, nrecs );
