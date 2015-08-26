@@ -40,6 +40,17 @@ public:
     pos_ = bstart_;
   }
 
+  void load( void )
+  {
+    rewind();
+    while( true ) {
+      auto r = next_record();
+      if ( r == nullptr ) {
+        break;
+      }
+    }
+  }
+
   bool eof( void ) const noexcept { return eof_; }
 
   const char * next_record( void )
