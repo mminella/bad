@@ -95,8 +95,11 @@ done
 
 # CPU
 echo "allocator, libc" >> $CPU_LOG
+echo "# memcpy" >> $CPU_LOG
 memcpy_speed >> $CPU_LOG
+echo "# memcmp" >> $CPU_LOG
 memcmp_speed >> $CPU_LOG
+echo "# malloc" >> $CPU_LOG
 NPROC=$( nproc )
 for i in `seq 1 $NPROC`; do
   memalloc_speed $i >> $CPU_LOG
@@ -104,8 +107,11 @@ done
 
 export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so
 echo "allocator, jemalloc" >> $CPU_LOG
+echo "# memcpy" >> $CPU_LOG
 memcpy_speed >> $CPU_LOG
+echo "# memcmp" >> $CPU_LOG
 memcmp_speed >> $CPU_LOG
+echo "# malloc" >> $CPU_LOG
 NPROC=$( nproc )
 for i in `seq 1 $NPROC`; do
   memalloc_speed $i >> $CPU_LOG
@@ -113,8 +119,23 @@ done
 
 export LD_PRELOAD=/usr/lib/libtcmalloc.so
 echo "allocator, tcmalloc" >> $CPU_LOG
+echo "# memcpy" >> $CPU_LOG
 memcpy_speed >> $CPU_LOG
+echo "# memcmp" >> $CPU_LOG
 memcmp_speed >> $CPU_LOG
+echo "# malloc" >> $CPU_LOG
+NPROC=$( nproc )
+for i in `seq 1 $NPROC`; do
+  memalloc_speed $i >> $CPU_LOG
+done
+
+export LD_PRELOAD=/usr/lib/libtbbmalloc_proxy.so
+echo "allocator, tbb" >> $CPU_LOG
+echo "# memcpy" >> $CPU_LOG
+memcpy_speed >> $CPU_LOG
+echo "# memcmp" >> $CPU_LOG
+memcmp_speed >> $CPU_LOG
+echo "# malloc" >> $CPU_LOG
 NPROC=$( nproc )
 for i in `seq 1 $NPROC`; do
   memalloc_speed $i >> $CPU_LOG
