@@ -74,7 +74,7 @@ int main( int argc, char ** argv )
   }
   
   serial( rbuf, rbuf );
-  for ( size_t p = 2; p < thread::hardware_concurrency(); p++ ) {
+  for ( size_t p = 2; p <= thread::hardware_concurrency(); p++ ) {
     parallel( rbuf, rbuf, p );
   }
 

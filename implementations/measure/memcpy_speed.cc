@@ -83,13 +83,13 @@ int main( int argc, char ** argv )
 
   serial_pinned( rbuf, wbuf );
 
-  for ( size_t p = 2; p < thread::hardware_concurrency(); p++ ) {
+  for ( size_t p = 2; p <= thread::hardware_concurrency(); p++ ) {
     parallel_pinned( rbuf, wbuf, p );
   }
 
   free( wbuf );
 
-  for ( size_t p = 2; p < thread::hardware_concurrency(); p++ ) {
+  for ( size_t p = 2; p <= thread::hardware_concurrency(); p++ ) {
     parallel_pinned_n( rbuf, p );
   }
 
