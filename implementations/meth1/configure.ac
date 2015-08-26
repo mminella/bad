@@ -33,6 +33,7 @@ LT_INIT([disable-shared])
 AC_CHECK_HEADERS([boost/sort/spreadsort/string_sort.hpp])
 AC_CHECK_HEADERS([boost/heap/d_ary_heap.hpp])
 AC_CHECK_HEADERS([tbb/parallel_invoke.h], [TBB_LIBS="-ltbb"])
+AC_CHECK_HEADERS([tbb/task_group.h])
 AC_CHECK_HEADERS([tbb/parallel_sort.h])
 AC_SUBST(TBB_LIBS)
 
