@@ -4,6 +4,7 @@ dist_root
 
 # generated test files
 test/recs-1gb
+test/recs-5gb
 test/recs-10gb
 
 # generated m4 files

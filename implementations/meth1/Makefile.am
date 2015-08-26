@@ -30,6 +30,9 @@ bin-dist:
 recs-1gb:
 	../../gensort/gensort -t8 10485700 test/recs-1gb,buf
 
+recs-5gb:
+	../../gensort/gensort -t8 52428800 test/recs-5gb,buf
+
 recs-10gb:
 	../../gensort/gensort -t8 104857000 test/recs-10gb,buf
 
