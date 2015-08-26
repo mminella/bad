@@ -29,7 +29,8 @@ void finish_test( string str, size_t lt, clk::time_point t )
   auto tt = time_diff( t );
   if ( tt > 0 ) {
     size_t mbs = DATASIZE * 1000 / tt / MB;
-    cout << str << lt << ", " << mbs << endl;
+    cout << str << mbs << endl;
+    cerr << lt << endl;
   }
 }
 

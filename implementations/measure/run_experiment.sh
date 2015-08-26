@@ -11,6 +11,7 @@ QUEUES="1 15 31 62"
 READ_SIZE=524288000 # 500MB
 WRITE_SIZE=1048576000 # 1000MB
 DISK_PATH=/dev/xvd
+CPU_LOG=$HOME/log_cpu.txt
 
 # What disks to test?
 DISKS=$(ls ${DISK_PATH}[a-z] | grep -v "a$")
@@ -90,5 +91,13 @@ for b in ${ASYNC_BLOCKS}; do
   for q in ${QUEUES}; do
     test_async $b $q "--odirect"
   done
+done
+
+# CPU
+memcpy_speed >> $CPU_LOG
+memcmp_speed >> $CPU_LOG
+NPROC=$( nproc )
+for i in `seq 1 $NPROC`; do
+  memalloc_speed $i >> $CPU_LOG
 done
 

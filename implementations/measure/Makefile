@@ -24,6 +24,9 @@ clean:
 dist: $(BINARIES)
 	rm -Rf dist_root
 	mkdir -p dist_root/usr/bin
+	cp memalloc_speed dist_root/usr/bin/memalloc_speed
+	cp memcmp_speed dist_root/usr/bin/memcmp_speed
+	cp memcpy_speed  dist_root/usr/bin/memcpy_speed
 	cp read dist_root/usr/bin/measure_read
 	cp random_read dist_root/usr/bin/measure_random_read
 	cp write dist_root/usr/bin/measure_write
