@@ -42,6 +42,36 @@ public:
 
   /* constructor */
   BufferedIO( IODevice & io );
+  
+  /* no copy */
+  BufferedIO( const BufferedIO & ) = delete;
+  BufferedIO & operator=( const BufferedIO & ) = delete;
+
+  /* allow move */
+  BufferedIO( BufferedIO && other )
+    : rbuf_{std::move( other.rbuf_ )}
+    , wbuf_{std::move( other.wbuf_ )}
+    , rstart_{other.rstart_}
+    , rend_{other.rend_}
+    , wstart_{other.wstart_}
+    , wend_{other.wend_}
+    , io_{other.io_}
+  {
+  }
+
+  BufferedIO & operator=( BufferedIO && other )
+  {
+    if ( this != &other ) {
+      rbuf_ = std::move( other.rbuf_ );
+      wbuf_ = std::move( other.wbuf_ );
+      rstart_ = other.rstart_;
+      rend_ = other.rend_;
+      wstart_ = other.wstart_;
+      wend_ = other.wend_;
+      io_ = other.io_;
+    }
+    return *this;
+  }
 
   /* buffer read method */
   std::pair<const char *, size_t> read_buf( size_t limit = BUFFER_SIZE );
@@ -70,10 +100,24 @@ public:
     , io_{ std::move( io ) }
   {}
 
+  /* no copy */
+  BufferedIO_O( const BufferedIO_O & other ) = delete;
+  BufferedIO_O & operator=( BufferedIO_O & other ) = delete;
+
+  /* allow move */
   BufferedIO_O( BufferedIO_O && other )
-    : BufferedIO( io_ )
-    , io_{ std::move( other.io_ ) }
+    : BufferedIO{std::move( other )}
+    , io_{std::move( other.io_ )}
   {}
+
+  BufferedIO_O & operator=( BufferedIO_O && other )
+  {
+    if ( this != &other ) {
+      BufferedIO::operator=( std::move( other ) );
+      io_ = std::move( other.io_ );
+    }
+    return *this;
+  }
 
   IOType & io() noexcept { return io_; }
 };
