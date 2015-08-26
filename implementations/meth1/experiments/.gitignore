@@ -6,6 +6,7 @@ rec_place
 sort_basicrts
 sort_boost
 sort_chunked
+sort_chunked_files
 sort_chunked_multi
 sort_chunked_overlap
 sort_chunked_vec

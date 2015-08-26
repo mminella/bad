@@ -13,6 +13,7 @@ bin_PROGRAMS = \
 	sort_pq_overlap \
 	sort_pq_parallel \
 	sort_chunked \
+	sort_chunked_files \
 	sort_chunked_multi \
 	sort_chunked_overlap \
 	sort_chunked_vec
@@ -52,6 +53,7 @@ sort_pq_SOURCES = sort_pq.cc
 sort_pq_overlap_SOURCES = sort_pq_overlap.cc
 sort_pq_parallel_SOURCES = sort_pq_parallel.cc
 sort_chunked_SOURCES = sort_chunked.cc
+sort_chunked_files_SOURCES = sort_chunked_files.cc
 sort_chunked_multi_SOURCES = sort_chunked_multi.cc
 sort_chunked_overlap_SOURCES = sort_chunked_overlap.cc
 sort_chunked_vec_SOURCES = sort_chunked_vec.cc
