@@ -14,7 +14,7 @@ template<size_t rec_size>
 class OverlappedRecordIO
 {
 private:
-  char rec[rec_size];
+  char rec_[rec_size];
   OverlappedIO io_;
   const char * bend_;
   const char * pos_;
@@ -25,10 +25,31 @@ public:
     : io_{io}, bend_{nullptr}, pos_{nullptr}, eof_{false}
   {};
 
+  /* no copy */
   OverlappedRecordIO( const OverlappedRecordIO & r ) = delete;
-  OverlappedRecordIO( OverlappedRecordIO && r ) = delete;
   OverlappedRecordIO & operator=( const OverlappedRecordIO & r ) = delete;
-  OverlappedRecordIO & operator=( OverlappedRecordIO && r ) = delete;
+
+  /* allow move */
+  OverlappedRecordIO( OverlappedRecordIO && r )
+    : io_{std::move( r.io_ )}
+    , bend_{r.bend_}
+    , pos_{r.pos_}
+    , eof_{r.eof_}
+  {
+    memcpy( rec_, r.rec_, rec_size );
+  }
+
+  OverlappedRecordIO & operator=( OverlappedRecordIO && r )
+  {
+    if ( this != &r ) {
+      memcpy( rec_, r.rec_, rec_size );
+      io_ = std::move( r.io_ );
+      bend_ = r.bend_;
+      pos_ = r.pos_;
+      eof_ = r.eof_;
+    }
+    return *this;
+  }
 
   void rewind( void )
   {
@@ -63,7 +84,7 @@ public:
     } else {
       // record cross block boundary
       size_t partial = bend_ - pos_;
-      memcpy( rec, pos_, partial );
+      memcpy( rec_, pos_, partial );
 
       auto blk = io_.next_block();
       if ( blk.first == nullptr ) {
@@ -72,9 +93,9 @@ public:
       pos_ = blk.first;
       bend_ = blk.first + blk.second;
 
-      memcpy( rec + partial, pos_, rec_size - partial );
+      memcpy( rec_ + partial, pos_, rec_size - partial );
       pos_ += rec_size - partial;
-      return rec;
+      return rec_;
     }
   }
 };

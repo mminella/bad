@@ -19,7 +19,7 @@ private:
   size_t wstart_ = 0, wend_ = 0;
 
   /* underlying file descriptor */
-  IODevice & io_;
+  IODevice * io_;
 
   /* base buffer read method */
   std::pair<const char *, size_t> rread_buf( size_t limit, bool read_all );
@@ -31,7 +31,7 @@ private:
 
 protected:
   /* io device state */
-  bool get_eof( void ) const noexcept override { return io_.eof(); }
+  bool get_eof( void ) const noexcept override { return io_->eof(); }
   void set_eof( void ) noexcept override {}
   void reset_eof( void ) noexcept override {}
 
@@ -41,7 +41,12 @@ public:
   // static const size_t BUFFER_SIZE = 10 * 1024*1024;
 
   /* constructor */
-  BufferedIO( IODevice & io );
+  BufferedIO( IODevice & io )
+    : rbuf_{new char[BUFFER_SIZE]}
+    , wbuf_{new char[BUFFER_SIZE]}
+    , io_{&io}
+  {
+  }
   
   /* no copy */
   BufferedIO( const BufferedIO & ) = delete;

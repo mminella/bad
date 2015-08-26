@@ -15,14 +15,6 @@ using namespace std;
 /* needed as we need a definition since std::min takes references */
 const size_t BufferedIO::BUFFER_SIZE;
 
-/* constructor */
-BufferedIO::BufferedIO( IODevice & io )
-  : rbuf_{ new char[BUFFER_SIZE] }
-  , wbuf_{ new char[BUFFER_SIZE] }
-  , io_{ io }
-{
-}
-
 /* read, returning a pointer into the internal buffer */
 pair<const char *, size_t> BufferedIO::rread_buf( size_t limit, bool read_all )
 {
@@ -52,8 +44,8 @@ pair<const char *, size_t> BufferedIO::rread_buf( size_t limit, bool read_all )
 
   /* cache empty, refill */
   do {
-    rend_ += io_.read( buf + rend_, BUFFER_SIZE - rend_ );
-  } while ( read_all and rend_ < limit and !io_.eof() );
+    rend_ += io_->read( buf + rend_, BUFFER_SIZE - rend_ );
+  } while ( read_all and rend_ < limit and !io_->eof() );
 
   /* return from cache */
   limit = min( rend_, limit );
@@ -123,9 +115,9 @@ size_t BufferedIO::flush( bool flush_all )
 
   size_t n = 0;
   if ( flush_all ) {
-    n = io_.write_all( wbuf_.get() + wstart_, wend_ - wstart_ );
+    n = io_->write_all( wbuf_.get() + wstart_, wend_ - wstart_ );
   } else {
-    n = io_.write( wbuf_.get() + wstart_, wend_ - wstart_ );
+    n = io_->write( wbuf_.get() + wstart_, wend_ - wstart_ );
   }
   wstart_ += n;
 

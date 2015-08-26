@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <system_error>
 #include <thread>
 
@@ -29,8 +30,8 @@ public:
   using block_ptr = std::pair<const char *, size_t>;
 
 private:
-  File & io_;
-  char * buf_;
+  File * io_;
+  std::unique_ptr<char> buf_;
   Channel<block_ptr> blocks_;
   Channel<bool> start_;
   std::thread reader_;
@@ -46,25 +47,26 @@ private:
       }
       std::cout << "read_file, " << ++pass << ", " << timestamp<ms>()
         << ", start" << std::endl;
-      io_.rewind();
+      io_->rewind();
 
       auto ts = time_now();
       tdiff_t tt = 0;
-      char * wptr_ = buf_;
+      char * buf = buf_.get();
+      char * wptr_ = buf;
       while ( true ) {
         auto t0 = time_now();
-        size_t n = io_.read( wptr_, BLOCK );
+        size_t n = io_->read( wptr_, BLOCK );
         tt += time_diff<ms>( t0 );
 
         if ( n > 0 ) {
           blocks_.send( {wptr_, n} );
           wptr_ += BLOCK;
-          if ( wptr_ == buf_ + BUF_SIZE ) {
-            wptr_ = buf_;
+          if ( wptr_ == buf + BUF_SIZE ) {
+            wptr_ = buf;
           }
         }
 
-        if ( io_.eof() || n < BLOCK ) {
+        if ( io_->eof() || n < BLOCK ) {
           blocks_.send( { nullptr, 0} ); // indicate EOF
           break;
         }
@@ -77,25 +79,47 @@ private:
 
 public:
   OverlappedIO( File & io )
-    : io_{io}
-    , buf_{nullptr}
+    : io_{&io}
+    , buf_{}
     , blocks_{NBLOCKS-2}
     , start_{0}
     , reader_{std::thread( &OverlappedIO::read_file,  this )}
   {
-    posix_memalign( (void **) &buf_, ALIGNMENT, BUF_SIZE );
+    char * b;
+    posix_memalign( (void **) &b, ALIGNMENT, BUF_SIZE );
+    buf_.reset( b );
   };
 
+  /* no copy */
   OverlappedIO( const OverlappedIO & r ) = delete;
-  OverlappedIO( OverlappedIO && r ) = delete;
   OverlappedIO & operator=( const OverlappedIO & r ) = delete;
-  OverlappedIO & operator=( OverlappedIO && r ) = delete;
+
+  /* allow move */
+  OverlappedIO( OverlappedIO && r )
+    : io_{r.io_}
+    , buf_{std::move( r.buf_ )}
+    , blocks_{std::move( r.blocks_ )}
+    , start_{std::move( r.start_ )}
+    , reader_{std::move( r.reader_ )}
+  {
+  }
+
+  OverlappedIO & operator=( OverlappedIO && r )
+  {
+    if ( this != &r ) {
+      io_ = r.io_;
+      buf_ = std::move( r.buf_ );
+      blocks_ = std::move( r.blocks_ );
+      start_ = std::move( r.start_ );
+      reader_ = std::move( r.reader_ );
+    }
+    return *this;
+  }
 
   ~OverlappedIO( void )
   {
     start_.close();
     if ( reader_.joinable() ) { reader_.join(); }
-    free( buf_ );
   }
 
   void rewind( void )
