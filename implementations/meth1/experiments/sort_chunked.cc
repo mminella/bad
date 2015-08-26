@@ -30,25 +30,42 @@ using RR = RecordS;
 
 tdiff_t tmm = 0, tss = 0;
 
-RR * scan( char * buf, size_t nrecs, size_t size, const RR & after,
+pair<uint64_t, uint64_t>
+filter( const char * const buf, size_t nrecs, RR * r1, size_t size,
+        uint64_t loc, const RR & after, const RR * const curMin )
+{
+  bool haveMin = curMin != nullptr;
+  RR mmin;
+  if ( haveMin ) {
+    mmin = *curMin;
+  }
+ 
+  uint64_t i;
+  for ( i = 0; i < size and loc < nrecs; loc++ ) {
+    const unsigned char * r = (const unsigned char *) buf + Rec::SIZE * loc;
+    RecordPtr next( r, loc );
+    if ( after < next ) {
+      if ( !haveMin ) {
+        r1[i++].copy( next );
+      } else if ( mmin.compare( r, i ) > 0 ) {
+        r1[i++].copy( next );
+      }
+    }
+  }
+  return {i, loc};
+}
+
+RR * scan( const char * const buf, size_t nrecs, size_t size, const RR & after,
            RR * r1, RR * r2, RR * r3, size_t r1x )
 {
   auto t0 = time_now();
   tdiff_t tm = 0, ts = 0, tl = 0;
   size_t r1s = 0, r2s = 0;
+  RR * curMin = nullptr;
 
-  for ( uint64_t i = 0 ; i < nrecs; ) {
-    for ( r1s = 0; r1s < r1x and i < nrecs; i++ ) {
-      const unsigned char * r = (const unsigned char *) buf + Rec::SIZE * i;
-      RecordPtr next( r, i );
-      if ( after < next ) {
-        if ( r2s < size ) {
-          r1[r1s++].copy( r, i );
-        } else if ( r2[size - 1].compare( r, i ) > 0 ) {
-          r1[r1s++].copy( r, i );
-        }
-      }
-    }
+  for ( uint64_t loc = 0 ; loc < nrecs; ) {
+    auto ix = filter( buf, nrecs, r1, r1x, loc, after, curMin );
+    r1s = ix.first; loc = ix.second;
     
     if ( r1s > 0 ) {
       // SORT
@@ -72,6 +89,11 @@ RR * scan( char * buf, size_t nrecs, size_t size, const RR & after,
       r2s = min( size, r1s + r2s );
       r1s = 0;
       tl = time_diff<ms>( ts1 );
+
+      // NEW MIN
+      if ( r2s == size ) {
+        curMin = &r2[size - 1];
+      }
     }
   }
   auto t1 = time_now();
