@@ -37,7 +37,7 @@ void File::fsync( void )
 }
 
 /* file size */
-size_t File::size( void )
+size_t File::size( void ) const
 {
   struct stat st;
   fstat( fd_num(), &st );
