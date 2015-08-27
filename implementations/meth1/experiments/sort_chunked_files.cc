@@ -32,30 +32,58 @@ using namespace std;
 using RR = RecordS;
 using RecIO = OverlappedRecordIO<Rec::SIZE>;
 
-class RecFilter
+class RecLoader
 {
 private:
-  RecIO & rio_;
+  std::unique_ptr<File> file_;
+  std::unique_ptr<RecIO> rio_;
   bool eof_;
   uint64_t loc_;
 
 public:
-  RecFilter( RecIO & rio )
-    : rio_{rio}, eof_{false}, loc_{0}
+  RecLoader( string fileName, int flags )
+    : file_{new File( fileName, flags )}
+    , rio_{new RecIO( *file_ )}
+    , eof_{false}
+    , loc_{0}
+  {}
+  
+  /* no copy */
+  RecLoader( const RecLoader & ) = delete;
+  RecLoader & operator=( const RecLoader & ) = delete;
+
+  /* allow move */
+  RecLoader( RecLoader && other )
+    : file_{std::move( other.file_ )}
+    , rio_{std::move( other.rio_ )}
+    , eof_{other.eof_}
+    , loc_{other.loc_}
+  {}
+
+  RecLoader & operator=( RecLoader && other )
   {
-    rewind();
+    if ( this != &other ) {
+      file_ = std::move( other.file_ );
+      rio_ = std::move( other.rio_ );
+      eof_ = other.eof_;
+      loc_ = other.loc_;
+    }
+    return *this;  
   }
+
+  const File & file( void ) const noexcept { return *file_; }
 
   bool eof( void ) const noexcept { return eof_; }
 
   void rewind( void )
   {
+    loc_ = 0;
     eof_ = false;
-    rio_.rewind();
+    rio_->rewind();
   }
 
   uint64_t
-  operator()( RR * r1, uint64_t size, const RR & after, const RR * const curMin )
+  filter( RR * r1, uint64_t size, const RR & after, const RR * const curMin )
   {
     if ( eof_ ) {
       return 0;
@@ -63,7 +91,7 @@ public:
 
     if ( curMin == nullptr ) {
       for ( uint64_t i = 0; i < size; loc_++ ) {
-        const uint8_t * r = (const uint8_t *) rio_.next_record();
+        const uint8_t * r = (const uint8_t *) rio_->next_record();
         if ( r == nullptr ) {
           eof_ = true;
           return i;
@@ -74,7 +102,7 @@ public:
       }
     } else {
       for ( uint64_t i = 0; i < size; loc_++ ) {
-        const uint8_t * r = (const uint8_t *) rio_.next_record();
+        const uint8_t * r = (const uint8_t *) rio_->next_record();
         if ( r == nullptr ) {
           eof_ = true;
           return i;
@@ -89,23 +117,58 @@ public:
   }
 };
 
-RR * scan( vector<RecIO> & rios, size_t size, const RR & after )
+RR * scan( vector<RecLoader> & rios, size_t size, const RR & after )
 {
   auto t0 = time_now();
 
-  // tbb::task_group tg;
+  tbb::task_group tg;
   tdiff_t tm = 0, ts = 0, tl = 0;
-  RecFilter filter( rios[0] );
+
+  // setup loader processes
+  for ( auto & rio : rios ) {
+    rio.rewind();
+  }
+  uint64_t * r1s_i = new uint64_t[rios.size()];
 
   size_t r1s = 0, r2s = 0;
-  size_t r1x = max( min( (size_t) 1572864, size / 6 ), (size_t) 1 );
+  const size_t r1x = max( min( (size_t) 1572864, size / 6 ), (size_t) 1 );
+  const size_t r1x_i = r1x / rios.size();
+  const RR * curMin = nullptr;
   RR * r1 = new RR[r1x];
   RR * r2 = new RR[size];
   RR * r3 = new RR[size];
-  RR * curMin = nullptr;
 
   while ( true ) {
-    r1s = filter( r1, r1x, after, curMin );
+    // kick of all record loader
+    uint64_t rio_i = 0;
+    for ( auto & rio : rios ) {
+      if ( not rio.eof() ) {
+        tg.run( [&rio, rio_i, r1s_i, r1, r1x_i, &after, curMin]() {
+          r1s_i[rio_i] =
+            rio.filter( &r1[r1x_i * rio_i], r1x_i, after, curMin );
+        } );
+        rio_i++;
+      }
+    }
+    tg.wait();
+
+    // eof?
+    if ( rio_i == 0 ) {
+      break;
+    }
+
+    // move all loader results to be contiguous
+    r1s = r1s_i[0];
+    bool moving = false;
+    for ( uint64_t i = 0; i < rio_i - 1; i++ ) {
+      moving |= r1s_i[i] < r1x_i;
+      if ( moving ) {
+        uint64_t i1_start = r1x_i * (i + 1);
+        uint64_t i1_end = i1_start + r1s_i[i + 1];
+        move( &r1[i1_start], &r1[i1_end], &r1[r1s] );
+      }
+      r1s += r1s_i[i+1];
+    }
     
     if ( r1s > 0 ) {
       auto ts1 = time_now();
@@ -123,12 +186,6 @@ RR * scan( vector<RecIO> & rios, size_t size, const RR & after )
       if ( r2s == size ) {
         curMin = &r2[size - 1];
       }
-    }
-    
-    if ( filter.eof() ) {
-      break;
-    } else {
-      r1s = 0;
     }
   }
   auto t1 = time_now();
@@ -152,12 +209,12 @@ RR * scan( vector<RecIO> & rios, size_t size, const RR & after )
 
 void run( vector<string> fileNames )
 {
+  cout << "files, " << fileNames.size() << endl;
+
   // open files
-  vector<File> files;
-  vector<RecIO> rios;
+  vector<RecLoader> recio;
   for ( auto & fn : fileNames ) {
-    files.emplace_back( fn, O_RDONLY | O_DIRECT );
-    rios.emplace_back( files.back() );
+    recio.emplace_back( fn, O_RDONLY | O_DIRECT );
   }
 
   // ASSUMPTION: Files are same size
@@ -166,8 +223,10 @@ void run( vector<string> fileNames )
   size_t rounds = 10;
   size_t split = 10;
   // size_t nrecs = file.size() / Rec::SIZE;
-  size_t nrecs = accumulate( files.begin(), files.end(), 0,
-    []( size_t res, File & f ) { return res + f.size() / Rec::SIZE; } );
+  size_t nrecs = accumulate( recio.begin(), recio.end(), 0,
+    []( size_t res, RecLoader & f ) {
+      return res + f.file().size() / Rec::SIZE;
+    } );
   size_t chunk = nrecs / split;
   cout << "size, " << nrecs << endl;
   cout << "cunk, " << chunk << endl;
@@ -179,7 +238,7 @@ void run( vector<string> fileNames )
   // scan file
   auto t1 = time_now();
   for ( uint64_t i = 0; i < rounds; i++ ) {
-    auto r = scan( rios, chunk, after );
+    auto r = scan( recio, chunk, after );
     after = move( r[chunk - 1] );
     cout << "last: " << after << endl;
     delete[] r;
