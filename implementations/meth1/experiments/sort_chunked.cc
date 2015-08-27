@@ -29,6 +29,7 @@ using namespace std;
 using RR = RecordS;
 
 tdiff_t tmm = 0, tss = 0;
+size_t gconsd = 0, gsorts = 0, gmergs = 0;
 
 pair<uint64_t, uint64_t>
 filter( const char * const buf, size_t nrecs, RR * r1, size_t size,
@@ -60,7 +61,7 @@ RR * scan( const char * const buf, size_t nrecs, size_t size, const RR & after,
 {
   auto t0 = time_now();
   tdiff_t tm = 0, ts = 0, tl = 0;
-  size_t r1s = 0, r2s = 0;
+  size_t r1s = 0, r2s = 0, considered = 0, sorts = 0, merges = 0;
   RR * curMin = nullptr;
 
   for ( uint64_t loc = 0 ; loc < nrecs; ) {
@@ -68,10 +69,12 @@ RR * scan( const char * const buf, size_t nrecs, size_t size, const RR & after,
     r1s = ix.first; loc = ix.second;
     
     if ( r1s > 0 ) {
+      considered += r1s;
       // SORT
       auto ts1 = time_now();
       rec_sort( r1, r1 + r1s );
       ts += time_diff<ms>( ts1 );
+      sorts++;
 
       // MERGE
 #if TBB_PARALLEL_MERGE == 1 && USE_COPY == 1
@@ -83,11 +86,11 @@ RR * scan( const char * const buf, size_t nrecs, size_t size, const RR & after,
 #else
       tm += meth1_merge_move( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
 #endif
+      merges++;
 
       // PREP
       swap( r2, r3 );
       r2s = min( size, r1s + r2s );
-      r1s = 0;
       tl = time_diff<ms>( ts1 );
 
       // NEW MIN
@@ -103,6 +106,9 @@ RR * scan( const char * const buf, size_t nrecs, size_t size, const RR & after,
   cout << "merge, " << tm << endl;
   cout << "last , " << tl << endl;
 
+  gconsd += considered;
+  gsorts += sorts;
+  gmergs += merges;
   tss += ts;
   tmm += tm;
   
@@ -203,6 +209,10 @@ void run( char * fin )
   cout << endl << "total: " << time_diff<ms>( t1 ) << endl;
   cout << "sort : " << tss << endl;
   cout << "merge: " << tmm << endl;
+  cout << "--------------------" << endl;
+  cout << "consd, " << gconsd << endl;
+  cout << "sorts, " << gsorts << endl;
+  cout << "mergs, " << gmergs << endl;
 }
 
 void check_usage( const int argc, const char * const argv[] )
