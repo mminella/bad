@@ -18,9 +18,6 @@ private:
   size_t rstart_ = 0, rend_ = 0;
   size_t wstart_ = 0, wend_ = 0;
 
-  /* underlying file descriptor */
-  IODevice * io_;
-
   /* base buffer read method */
   std::pair<const char *, size_t> rread_buf( size_t limit, bool read_all );
 
@@ -30,6 +27,9 @@ private:
   size_t wwrite( const char * buf, size_t nbytes ) override;
 
 protected:
+  /* underlying file descriptor */
+  IODevice * io_;
+
   /* io device state */
   bool get_eof( void ) const noexcept override { return io_->eof(); }
   void set_eof( void ) noexcept override {}
@@ -97,12 +97,12 @@ class BufferedIO_O : public BufferedIO
 static_assert( std::is_base_of<IODevice, IOType>::value,
                "IOType not derived from IODevice" );
 private:
-  IOType io_;
+  IOType owned_io_;
 
 public:
   BufferedIO_O( IOType && io )
-    : BufferedIO( io_ )
-    , io_{ std::move( io ) }
+    : BufferedIO{owned_io_}
+    , owned_io_{std::move( io )}
   {}
 
   /* no copy */
@@ -112,8 +112,11 @@ public:
   /* allow move */
   BufferedIO_O( BufferedIO_O && other )
     : BufferedIO{std::move( other )}
-    , io_{std::move( other.io_ )}
-  {}
+    , owned_io_{std::move( other.owned_io_ )}
+  {
+    // need to correct the pointer since we moved the IO device.
+    io_ = &owned_io_;
+  }
 
   BufferedIO_O & operator=( BufferedIO_O && other )
   {
@@ -124,7 +127,7 @@ public:
     return *this;
   }
 
-  IOType & io() noexcept { return io_; }
+  IOType & io() noexcept { return owned_io_; }
 };
 
 #endif /* BUFFERED_IO_HH */
