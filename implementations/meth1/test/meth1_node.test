@@ -1,0 +1,21 @@
+#!/bin/sh
+
+mkdir -p ${srcdir}/.test-tmp
+rm -rf ${srcdir}/.test-tmp/out
+
+${srcdir}/app/meth1_node 9000 true \
+  ${srcdir}/test/in.s0000.e1000.recs &
+NODE_PID=$!
+
+sleep 2
+
+${srcdir}/app/meth1_client \
+  500 ${srcdir}/.test-tmp/out first "127.0.0.1:9000" \
+  | grep "first," > .test-tmp/meth1_node.out
+
+kill $NODE_PID
+
+diff \
+  ${srcdir}/test/meth1_node.out \
+  ${srcdir}/.test-tmp/meth1_node.out
+
