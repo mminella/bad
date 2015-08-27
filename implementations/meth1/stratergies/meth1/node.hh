@@ -16,6 +16,11 @@
 #include "record.hh"
 #include "rec_loader.hh"
 
+/* How much smaller ( 1 / SORT_MERGE_RATIO ) should the sort buffer be than the
+ * merge buffer?
+ */
+#define SORT_MERGE_RATIO 6
+
 /* We can use a move or copy strategy -- the copy is actaully a little better
  * as we play some tricks to ensure we reuse allocations as much as possible.
  * With copy we use `size + r1x` value memory, but with move, we use up to

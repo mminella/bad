@@ -158,7 +158,7 @@ Node::RecV Node::linear_scan_one( const Record & after )
   auto t0 = time_now();
 
   // scan all files
-  RR * rr = new RR[recios_.size()];
+  vector<RR> rr( recios_.size() );
   for ( size_t i = 0; i < recios_.size(); i++ ) {
     RecLoader & rio = recios_[i];
     RR * rr_i = &rr[i];
@@ -188,14 +188,11 @@ Node::RecV Node::linear_scan_one( const Record & after )
       min = &rr[i];
     }
   }
-  RR * rec = new RR[1];
-  rec[0].copy( *min );
-  delete[] rr;
-
+  vector<RR> rec = { move( *min ) };
   auto tt = time_diff<ms>( t0 );
   cout << "linear scan, " << lpass_ << ", " << tt << endl;
 
-  return {rec, 1};
+  return {move( rec )};
 }
 
 /* Linear scan using a chunked sorting + merge strategy. */
@@ -207,7 +204,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
 
   const RR * curMin = nullptr;
   const uint64_t r1x_i = r1x / recios_.size();
-  uint64_t * r1s_i = new uint64_t[recios_.size()];
+  vector<uint64_t> r1s_i( recios_.size() );
   uint64_t r2s = 0;
 
   // kick of all readers
@@ -220,7 +217,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
     uint64_t rio_i = 0;
     for ( auto & rio : recios_ ) {
       if ( not rio.eof() ) {
-        tg_.run( [&rio, rio_i, r1s_i, r1, r1x_i, &after, curMin]() {
+        tg_.run( [&rio, rio_i, &r1s_i, r1, r1x_i, &after, curMin]() {
           r1s_i[rio_i] =
             rio.filter( &r1[r1x_i * rio_i], r1x_i, after, curMin );
         } );
@@ -316,7 +313,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
       free_buffers( r1, r3, r2x );
       delete[] r2;
     }
-    r1x = max( size / 6, (uint64_t) 1 );
+    r1x = max( size / SORT_MERGE_RATIO, (uint64_t) 1 );
     r2x = size;
     r1 = new RR[r1x];
     r2 = new RR[r2x];
@@ -327,7 +324,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
     }
   }
 #else /* !REUSE_MEM */
-  uint64_t r1x = max( size / 6, (uint64_t) 1 );
+  uint64_t r1x = max( size / SORT_MERGE_RATIO, (uint64_t) 1 );
   RR * r1 = new RR[r1x];
   RR * r2 = new RR[size];
   RR * r3 = new RR[size];
