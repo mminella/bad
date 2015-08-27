@@ -4,8 +4,9 @@ mkdir -p ${srcdir}/.test-tmp
 rm ${srcdir}/.test-tmp/out.1000.recs
 
 ${srcdir}/app/meth1_node_test_rw \
+  0.2 \
+  ${srcdir}/.test-tmp/out.1000.recs \
   ${srcdir}/test/in.s0000.e1000.recs \
-  ${srcdir}/.test-tmp/out.1000.recs
 
 diff \
   ${srcdir}/test/out.s0000.e1000.recs \

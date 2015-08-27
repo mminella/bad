@@ -1,18 +1,20 @@
 #ifndef METH1_NODE_HH
 #define METH1_NODE_HH
 
+#include <string>
+#include <vector>
+
+#include "config.h"
+#ifdef HAVE_TBB_TASK_GROUP_H
+#include "tbb/task_group.h"
+#endif
+
 #include "buffered_io.hh"
-#include "file.hh"
-#include "overlapped_rec_io.hh"
 #include "raw_vector.hh"
 #include "socket.hh"
-#include "timestamp.hh"
 
 #include "record.hh"
-
-/* Sorting strategy to use? Ordered slowest to fastest. */
-#define USE_PQ 0
-#define USE_CHUNK 1
+#include "rec_loader.hh"
 
 /* We can use a move or copy strategy -- the copy is actaully a little better
  * as we play some tricks to ensure we reuse allocations as much as possible.
@@ -50,8 +52,8 @@ public:
   using RecV = RawVector<RR>;
 
 private:
-  File data_;
-  OverlappedRecordIO<Rec::SIZE> recio_;
+  tbb::task_group tg_;
+  std::vector<RecLoader> recios_;
   std::string port_;
   Record last_;
   uint64_t fpos_;
@@ -60,7 +62,8 @@ private:
   uint64_t size_;
 
 public:
-  Node( std::string file, std::string port, bool odirect = false );
+  Node( std::vector<std::string> files, std::string port,
+        bool odirect = false);
 
   /* No copy or move */
   Node( const Node & n ) = delete;
@@ -81,7 +84,6 @@ private:
 
   RecV linear_scan( const Record & after, uint64_t size = 1 );
   RecV linear_scan_one( const Record & after );
-  RecV linear_scan_pq( const Record & after, uint64_t size );
   RecV linear_scan_chunk( const Record & after, uint64_t size,
                           RR * r1, RR * r2, RR *r3, uint64_t r1x );
   RecV linear_scan_chunk( const Record & after, uint64_t size );

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <system_error>
 #include <thread>
+#include <vector>
 
 #include "channel.hh"
 #include "timestamp.hh"
@@ -47,14 +48,17 @@ void reader( Node * node, size_t block_size,
   }
 }
 
-void run( char * fin, char * fout, double block )
+void run( vector<string> files, string fout, double block )
 {
+  for ( auto & f : files ) {
+    cout << f << endl;
+  }
   BufferedIO_O<File> out( {fout, O_WRONLY | O_CREAT | O_TRUNC,
                                  S_IRUSR | S_IWUSR} );
   auto t0 = time_now();
 
   // start node
-  Node node{fin, "0", true };
+  Node node{files, "0", true };
   node.Initialize();
   auto t1 = time_now();
 
@@ -122,9 +126,9 @@ void run( char * fin, char * fout, double block )
 
 void check_usage( const int argc, const char * const argv[] )
 {
-  if ( argc != 3 and argc != 4 ) {
+  if ( argc < 4 ) {
     throw runtime_error( "Usage: " + string( argv[0] ) +
-                         " [file] [out file] ([block %])" );
+                         " [block %] [out file] [file...]" );
   }
 }
 
@@ -132,8 +136,7 @@ int main( int argc, char * argv[] )
 {
   try {
     check_usage( argc, argv );
-    double block = argc == 4 ? stod( argv[3] ) : 1;
-    run( argv[1], argv[2], block );
+    run( {argv+3, argv+argc}, argv[2], stod( argv[1] ) );
   } catch ( const exception & e ) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;

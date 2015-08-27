@@ -45,8 +45,8 @@ private:
       } catch ( const std::exception & e ) {
           return;
       }
-      std::cout << "read_file, " << ++pass << ", " << timestamp<ms>()
-        << ", start" << std::endl;
+      std::cout << "read_file, " << io_->fd_num() << ", " << ++pass << ", "
+        << timestamp<ms>() << ", start" << std::endl;
       io_->rewind();
 
       auto ts = time_now();
@@ -72,8 +72,10 @@ private:
         }
       }
       auto te = time_diff<ms>( ts );
-      std::cout << "read, " << pass << ", " << tt << std::endl;
-      std::cout << "read (blocked), " << pass << ", " << te << std::endl;
+      std::cout << "read, " << io_->fd_num() << ", " << pass
+        << ", " << tt << std::endl;
+      std::cout << "read (blocked), " << io_->fd_num() << ", " << pass
+        << ", " << te << std::endl;
     }
   }
 

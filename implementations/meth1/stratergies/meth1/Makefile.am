@@ -6,6 +6,7 @@ libmeth1_la_SOURCES = \
 	meth1_merge.hh \
 	node.hh node.cc \
 	priority_queue.hh \
+	rec_loader.hh rec_loader.cc \
 	remote_file.hh remote_file.cc
 
 libmeth1_la_CPPFLAGS = \

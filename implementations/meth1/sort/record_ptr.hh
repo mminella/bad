@@ -53,6 +53,7 @@ public:
   }
 
   /* Accessors */
+  bool isNull( void ) const noexcept { return r_ == nullptr; }
   const uint8_t * key( void ) const noexcept { return r_; }
   const uint8_t * val( void ) const noexcept { return r_ + Rec::KEY_LEN; }
 #if WITHLOC == 1

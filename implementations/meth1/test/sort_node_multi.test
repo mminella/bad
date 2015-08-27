@@ -1,0 +1,15 @@
+#!/bin/sh
+
+mkdir -p ${srcdir}/.test-tmp
+rm -f ${srcdir}/.test-tmp/out.2000.recs
+
+${srcdir}/app/meth1_node_test_rw \
+  0.2 \
+  ${srcdir}/.test-tmp/out.2000.recs \
+  ${srcdir}/test/in.s0000.e1000.recs \
+  ${srcdir}/test/in.s1000.e2000.recs \
+
+diff \
+  ${srcdir}/test/out.s0000.e2000.recs \
+  ${srcdir}/.test-tmp/out.2000.recs
+

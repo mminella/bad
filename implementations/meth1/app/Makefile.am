@@ -2,6 +2,7 @@ bin_PROGRAMS = \
 	meth1_client \
 	meth1_client_test \
 	meth1_node \
+	meth1_node_test_first \
 	meth1_node_test_r \
 	meth1_node_test_rw \
 	meth1_shell
@@ -28,6 +29,7 @@ LDADD = \
 # AM_LDFLAGS = -static -static-libstdc++ -all-static \
 # 	-Wl,--whole-archive -Wl,-lpthread -Wl,--no-whole-archive
 
+meth1_node_test_first_SOURCES = meth1_node_test_first.cc
 meth1_node_test_r_SOURCES = meth1_node_test_r.cc
 meth1_node_test_rw_SOURCES = meth1_node_test_rw.cc
 meth1_client_test_SOURCES = meth1_client_test.cc

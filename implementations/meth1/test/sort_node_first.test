@@ -1,0 +1,14 @@
+#!/bin/sh
+
+mkdir -p ${srcdir}/.test-tmp
+rm -f ${srcdir}/.test-tmp/sort_node_first.out
+
+${srcdir}/app/meth1_node_test_first \
+  ${srcdir}/test/in.s0000.e2000.recs \
+  | grep "first:" \
+  > ${srcdir}/.test-tmp/sort_node_first.out
+
+diff \
+  ${srcdir}/test/sort_node_first.out \
+  ${srcdir}/.test-tmp/sort_node_first.out
+

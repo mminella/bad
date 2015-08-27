@@ -1,0 +1,15 @@
+#!/bin/sh
+
+mkdir -p ${srcdir}/.test-tmp
+rm -f ${srcdir}/.test-tmp/sort_node_r.out
+
+${srcdir}/app/meth1_node_test_r \
+  0.1 \
+  ${srcdir}/test/in.s0000.e2000.recs \
+  | grep "last:" \
+  > ${srcdir}/.test-tmp/sort_node_r.out
+
+diff \
+  ${srcdir}/test/sort_node_r.out \
+  ${srcdir}/.test-tmp/sort_node_r.out
+

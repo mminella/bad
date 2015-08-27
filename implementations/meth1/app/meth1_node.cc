@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <system_error>
+#include <vector>
 
 #include "exception.hh"
 #include "util.hh"
@@ -17,9 +18,9 @@
 using namespace std;
 using namespace meth1;
 
-int run( const char * port, const char * odirect, const char * file)
+int run( vector<string> files, string port, string odirect )
 {
-  Node node{file, port, to_bool( odirect )};
+  Node node{files, port, to_bool( odirect )};
   node.Initialize();
   node.Run();
 
@@ -28,9 +29,9 @@ int run( const char * port, const char * odirect, const char * file)
 
 void check_usage( const int argc, const char * const argv[] )
 {
-  if ( argc != 4 ) {
+  if ( argc < 4 ) {
     throw runtime_error( "Usage: " + string( argv[0] ) +
-                         " [port] [odirect] [file]" );
+                         " [port] [odirect] [file...]" );
   }
 }
 
@@ -38,7 +39,7 @@ int main( int argc, char * argv[] )
 {
   try {
     check_usage( argc, argv );
-    run( argv[1], argv[2], argv[3] );
+    run( {argv+3, argv+argc}, argv[1], argv[2] );
   } catch ( const exception & e ) {
     print_exception( e );
     return EXIT_FAILURE;

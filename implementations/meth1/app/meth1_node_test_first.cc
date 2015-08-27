@@ -1,5 +1,5 @@
 /**
- * Do a local machine sort using the method1::Node backend.
+ * Print out the first record using method1::Node backend.
  */
 #include <iostream>
 #include <system_error>
@@ -12,7 +12,7 @@
 using namespace std;
 using namespace meth1;
 
-void run( vector<string> files, double block )
+void run( vector<string> files )
 {
   for ( auto & f : files ) {
     cout << f << endl;
@@ -29,10 +29,11 @@ void run( vector<string> files, double block )
   auto t2 = time_now();
 
   // read + write
-  auto block_size = block * siz;
-  for ( size_t i = 0; i < siz; i += block_size ) {
-    auto recs = node.Read( i, block_size );
-    cout << "last: " << recs[recs.size()-1] << endl;
+  auto recs = node.Read( 0, 1 );
+  if ( recs.size() == 1 ) {
+    cout << "first: " << recs[0] << endl;
+  } else {
+    cerr << "error, got " << recs.size() << " records back" << endl;
   }
   auto t3 = time_now();
 
@@ -53,9 +54,8 @@ void run( vector<string> files, double block )
 
 void check_usage( const int argc, const char * const argv[] )
 {
-  if ( argc < 3 ) {
-    throw runtime_error( "Usage: " + string( argv[0] ) +
-                         " [block %] [file...]" );
+  if ( argc < 2 ) {
+    throw runtime_error( "Usage: " + string( argv[0] ) + " [file..]" );
   }
 }
 
@@ -63,7 +63,7 @@ int main( int argc, char * argv[] )
 {
   try {
     check_usage( argc, argv );
-    run( {argv+2, argv+argc}, stod( argv[1] ) );
+    run( {argv+1, argv+argc} );
   } catch ( const exception & e ) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;

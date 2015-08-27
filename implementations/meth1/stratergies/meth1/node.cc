@@ -1,32 +1,15 @@
-#include <algorithm>
-#include <cassert>
-#include <system_error>
-#include <vector>
-#include <utility>
-
-#include "address.hh"
-#include "buffered_io.hh"
-#include "exception.hh"
-#include "file.hh"
-#include "linux_compat.hh"
-#include "overlapped_rec_io.hh"
-#include "socket.hh"
-#include "timestamp.hh"
 #include "util.hh"
-
-#include "record.hh"
 
 #include "meth1_merge.hh"
 #include "node.hh"
-#include "priority_queue.hh"
 
 using namespace std;
 using namespace meth1;
 
 /* Construct Node */
-Node::Node( string file, string port, bool odirect )
-  : data_{file.c_str(), odirect ? O_RDONLY | O_DIRECT : O_RDONLY}
-  , recio_{data_}
+Node::Node( vector<string> files, string port, bool odirect )
+  : tg_{}
+  , recios_{}
   , port_{port}
   , last_{Rec::MIN}
   , fpos_{0}
@@ -34,7 +17,14 @@ Node::Node( string file, string port, bool odirect )
   , lpass_{0}
   , size_{0}
 {
+  if ( files.size() <= 0 ) {
+    throw runtime_error( "No files to read from" );
+  }
+
   cout << "seek-chunk, " << seek_chunk_ << endl;
+  for ( auto & f : files ) {
+    recios_.emplace_back( f, odirect ? O_RDONLY | O_DIRECT : O_RDONLY );
+  }
 }
 
 void Node::Initialize( void ) { return; }
@@ -122,7 +112,8 @@ Node::RecV Node::Read( uint64_t pos, uint64_t size )
 uint64_t Node::Size( void )
 {
   if ( size_ == 0 ) {
-    size_ = data_.size() / Rec::SIZE;
+    size_ = accumulate( recios_.begin(), recios_.end(), 0,
+      []( size_t res, RecLoader & r ) { return res + r.records(); } );
   }
   return size_;
 }
@@ -157,11 +148,7 @@ Node::RecV Node::linear_scan( const Record & after, uint64_t size )
   if ( size == 1 ) {
     return linear_scan_one( after );
   } else {
-#if USE_CHUNK == 1
     return linear_scan_chunk( after, size );
-#else /* USE_PQ == 1 */
-    return linear_scan_pq( after, size );
-#endif
   }
 }
 
@@ -169,80 +156,46 @@ Node::RecV Node::linear_scan( const Record & after, uint64_t size )
 Node::RecV Node::linear_scan_one( const Record & after )
 {
   auto t0 = time_now();
-  RR min( Rec::MAX );
 
-  recio_.rewind();
+  // scan all files
+  RR * rr = new RR[recios_.size()];
+  for ( size_t i = 0; i < recios_.size(); i++ ) {
+    RecLoader & rio = recios_[i];
+    RR * rr_i = &rr[i];
 
-  for ( uint64_t i = 0;; i++ ) {
-    const char * r = recio_.next_record();
-    if ( r == nullptr ) {
-      break;
-    }
-    RecordPtr next{r, i};
-    if ( next > after and min > next ) {
-      min.copy( next );
+    rio.rewind();
+    tg_.run( [&rio, &after, rr_i]() {
+
+      RR min( Rec::MAX );
+      while ( true ) {
+        RecordPtr next = rio.next_record();
+        if ( rio.eof() ) {
+          break;
+        }
+        if ( next > after and min > next ) {
+          min.copy( next );
+        }
+      }
+      rr_i->copy( min );
+    } );
+  }
+  tg_.wait();
+
+  // find min of all files
+  RR * min = &rr[0];
+  for ( size_t i = 1; i < recios_.size(); i++ ) {
+    if ( rr[i] < *min ) {
+      min = &rr[i];
     }
   }
+  RR * rec = new RR[1];
+  rec[0].copy( *min );
+  delete[] rr;
 
   auto tt = time_diff<ms>( t0 );
   cout << "linear scan, " << lpass_ << ", " << tt << endl;
 
-  RR * rr = new RR[1];
-  rr[0].copy( min );
-  return {rr, 1};
-}
-
-/* Linear scan using a priority queue for sorting. */
-Node::RecV Node::linear_scan_pq( const Record & after, uint64_t size )
-{
-  auto t0 = time_now();
-  tdiff_t tsort = 0, tplace = 0;
-  size_t rrs = 0, cmps = 0, pushes = 0, pops = 0;
-
-  recio_.rewind();
-  mystl::priority_queue<RR> pq{size+1};
-  uint64_t i = 0;
-
-  while ( true ) {
-    const char * r = recio_.next_record();
-    if ( r == nullptr ) {
-      break;
-    }
-    RecordPtr next{r, i++};
-    rrs++;
-    cmps++;
-    if ( next > after ) {
-      if ( pq.size() < size ) {
-        pushes++;
-        pq.emplace( r, i );
-      } else if ( next < pq.top() ) {
-        cmps++; pushes++; pops++;
-        pq.emplace( r, i );
-        pq.pop();
-      } else {
-        cmps++;
-      }
-    }
-  }
-  tplace += time_diff<ms>( t0 );
-
-  auto t1 = time_now();
-  vector<RR> vrecs = move( pq.container() );
-  rec_sort( vrecs.begin(), vrecs.end() );
-  tsort += time_diff<ms>( t1 );
-
-  auto tt = time_diff<ms>( t0 );
-  cout << "insert, "      << lpass_ << ", " << tplace << endl;
-  cout << "sort, "        << lpass_ << ", " << tsort  << endl;
-  cout << "linear scan, " << lpass_ << ", " << tt     << endl;
-  cout << endl;
-  cout << "recs, "        << lpass_ << ", " << rrs    << endl;
-  cout << "cmps, "        << lpass_ << ", " << cmps   << endl;
-  cout << "pushes, "      << lpass_ << ", " << pushes << endl;
-  cout << "pops, "        << lpass_ << ", " << pops   << endl;
-  cout << "size, "        << lpass_ << ", " << size   << endl;
-
-  return {move( vrecs )};
+  return {rec, 1};
 }
 
 /* Linear scan using a chunked sorting + merge strategy. */
@@ -252,26 +205,49 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
   auto t0 = time_now();
   tdiff_t tm = 0, ts = 0, tl = 0;
 
-  recio_.rewind();
-  uint64_t r1s = 0, r2s = 0, i = 0;
+  const RR * curMin = nullptr;
+  const uint64_t r1x_i = r1x / recios_.size();
+  uint64_t * r1s_i = new uint64_t[recios_.size()];
+  uint64_t r2s = 0;
 
-  for ( bool run = true; run; ) {
-    for ( r1s = 0; r1s < r1x; i++ ) {
-      const uint8_t * r = (const uint8_t *) recio_.next_record();
-      if ( r == nullptr ) {
-        run = false;
-        break;
-      }
-      RecordPtr next( r, i );
-      if ( after < next ) {
-        if ( r2s < size ) {
-          r1[r1s++].copy( next );
-        } else if ( r2[size - 1].compare( r, i ) > 0 ) {
-          r1[r1s++].copy( next );
-        }
+  // kick of all readers
+  for ( auto & rio : recios_ ) {
+    rio.rewind();
+  }
+
+  while ( true ) {
+    // FILTER - DiskIO
+    uint64_t rio_i = 0;
+    for ( auto & rio : recios_ ) {
+      if ( not rio.eof() ) {
+        tg_.run( [&rio, rio_i, r1s_i, r1, r1x_i, &after, curMin]() {
+          r1s_i[rio_i] =
+            rio.filter( &r1[r1x_i * rio_i], r1x_i, after, curMin );
+        } );
+        rio_i++;
       }
     }
-    
+    tg_.wait();
+
+    // EOF?
+    if ( rio_i == 0 ) {
+      break;
+    }
+
+    // CREATE CONTIGUOUS SORT BUFFER
+    uint64_t r1s = r1s_i[0];
+    bool moving = false;
+    for ( uint64_t i = 0; i < rio_i - 1; i++ ) {
+      moving |= r1s_i[i] < r1x_i;
+      if ( moving ) {
+        uint64_t i1_start = r1x_i * (i + 1);
+        uint64_t i1_end = i1_start + r1s_i[i + 1];
+        move( &r1[i1_start], &r1[i1_end], &r1[r1s] );
+      }
+      r1s += r1s_i[i+1];
+    }
+
+    // SORT + MERGE
     if ( r1s > 0 ) {
       // SORT
       auto ts1 = time_now();
@@ -292,7 +268,9 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
       // PREP
       swap( r2, r3 );
       r2s = min( size, r1s + r2s );
-      r1s = 0;
+      if ( r2s == size ) {
+        curMin = &r2[size - 1];
+      }
       tl = time_diff<ms>( ts1 );
     }
   }
@@ -320,6 +298,7 @@ void free_buffers( Node::RR * r1, Node::RR * r3, size_t size )
   delete[] r1;
 }
 
+/* Memory management for linear_scan_chunk */
 Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
 {
   if ( size == 0 ) {
@@ -337,7 +316,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
       free_buffers( r1, r3, r2x );
       delete[] r2;
     }
-    r1x = max( min( (uint64_t) 3145728, size / 4 ), (uint64_t) 1 );
+    r1x = max( size / 6, (uint64_t) 1 );
     r2x = size;
     r1 = new RR[r1x];
     r2 = new RR[r2x];
@@ -348,7 +327,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
     }
   }
 #else /* !REUSE_MEM */
-  uint64_t r1x = max( min( (uint64_t) 3145728, size / 4 ), (uint64_t) 1 );
+  uint64_t r1x = max( size / 6, (uint64_t) 1 );
   RR * r1 = new RR[r1x];
   RR * r2 = new RR[size];
   RR * r3 = new RR[size];
@@ -368,4 +347,3 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
 
   return rr;
 }
-

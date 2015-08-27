@@ -83,6 +83,10 @@ public:
   /* Construct from c string read from disk */
   RecordS( const uint8_t * s, uint64_t loc = 0 ) { copy( s, loc ); }
   RecordS( const char * s, uint64_t loc = 0 ) { copy( (uint8_t *) s, loc ); }
+  RecordS( const RecordPtr & rptr )
+  {
+    copy( rptr.key(), rptr.val(), rptr.loc() );
+  }
 
   /* Copy constructor. WARNING: This only does a shallow copy! */
   RecordS( const RecordS & other )

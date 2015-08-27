@@ -45,5 +45,8 @@ TESTS = \
 	test/sort_basicrts.test \
 	test/sort_boost.test \
 	test/sort_node.test \
+	test/sort_node_first.test \
+	test/sort_node_multi.test \
+	test/sort_node_r.test \
 	test/sort_overlap_channel.test \
 	test/sort_overlap_io.test
