@@ -31,10 +31,10 @@ bool RemoteFile::eof( void ) const noexcept
 void RemoteFile::copyWire( void )
 {
   if ( onWire_ > 0 and onWire_ <= bufSize_ ) {
-    if ( buf_ == nullptr ) {
-      buf_ = new uint8_t[bufSize_ * Rec::SIZE];
+    if ( not buf_ ) {
+      buf_.reset( new uint8_t[bufSize_ * Rec::SIZE] );
     }
-    c_->sock_.read_all( (char *) buf_, onWire_ * Rec::SIZE );
+    c_->sock_.read_all( (char *) buf_.get(), onWire_ * Rec::SIZE );
     inBuf_ = onWire_;
     onWire_ = 0;
     bufOffset_ = 0;
@@ -63,7 +63,7 @@ void RemoteFile::nextRecord( uint64_t remaining )
   }
 
   if ( inBuf_ > 0 ) {
-    head_ = { buf_ + bufOffset_ };
+    head_ = { buf_.get() + bufOffset_ };
     bufOffset_ += Rec::SIZE;
     inBuf_--;
     return;

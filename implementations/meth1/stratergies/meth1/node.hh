@@ -19,7 +19,7 @@
 /* How much smaller ( 1 / SORT_MERGE_RATIO ) should the sort buffer be than the
  * merge buffer?
  */
-#define SORT_MERGE_RATIO 6
+#define SORT_MERGE_RATIO 2
 
 /* We can use a move or copy strategy -- the copy is actaully a little better
  * as we play some tricks to ensure we reuse allocations as much as possible.

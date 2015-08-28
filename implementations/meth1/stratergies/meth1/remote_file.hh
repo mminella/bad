@@ -1,6 +1,8 @@
 #ifndef REMOTE_FILE_HH
 #define REMOTE_FILE_HH
 
+#include <memory>
+
 #include "record.hh"
 
 #include "client.hh"
@@ -30,7 +32,7 @@ private:
   bool readRPC_ = false;
   uint64_t onWire_ = 0;
   uint64_t inBuf_ = 0;
-  uint8_t * buf_ = nullptr;
+  std::unique_ptr<uint8_t> buf_{};
   uint64_t bufOffset_ = 0;
 
   RecordPtr head_;
@@ -45,6 +47,43 @@ public:
     , head_{(const char *) nullptr}
   {};
 
+  /* no copy */
+  RemoteFile( const RemoteFile & other ) = delete;
+  RemoteFile & operator=( RemoteFile & other ) = delete;
+
+  /* allow move */
+  RemoteFile( RemoteFile && other )
+    : c_{other.c_}
+    , chunkSize_{other.chunkSize_}
+    , bufSize_{other.bufSize_}
+    , size_{other.size_}
+    , offset_{other.offset_}
+    , readRPC_{other.readRPC_}
+    , onWire_{other.onWire_}
+    , inBuf_{other.inBuf_}
+    , buf_{std::move( other.buf_ )}
+    , bufOffset_{other.bufOffset_}
+    , head_{other.head_}
+  {}
+
+  RemoteFile & operator=( RemoteFile && other )
+  {
+    if ( this != &other ) {
+      c_ = other.c_;
+      chunkSize_ = other.chunkSize_;
+      bufSize_ = other.bufSize_;
+      size_ = other.size_;
+      offset_ = other.offset_;
+      readRPC_ = other.readRPC_;
+      onWire_ = other.onWire_;
+      inBuf_ = other.inBuf_;
+      buf_ = std::move( other.buf_ );
+      bufOffset_ = other.bufOffset_;
+      head_ = other.head_;
+    }
+    return *this;
+  }
+
   void sendSize( void ) { c_->sendSize(); }
   void recvSize( void ) { size_ = c_->recvSize(); }
 
@@ -56,6 +95,32 @@ public:
   bool operator>( const RemoteFile & b ) const noexcept
   {
     return head_ > b.head_;
+  }
+};
+
+/* Pointer wrapper around a RemoteFile. */
+class RemoteFilePtr
+{
+private:
+  RemoteFile * rf_;
+
+public:
+  RemoteFilePtr( RemoteFile & rf )
+    : rf_{&rf}
+  {}
+
+  RemoteFile & rf( void ) const noexcept { return *rf_; }
+
+  bool eof( void ) const noexcept { return rf_->eof(); }
+  RecordPtr curRecord( void ) const noexcept { return rf_->curRecord(); }
+  void nextRecord( uint64_t remaining = 0 )
+  {
+    return rf_->nextRecord( remaining );
+  }
+
+  bool operator>( const RemoteFilePtr & b ) const noexcept
+  {
+    return rf_ > b.rf_;
   }
 };
 }
