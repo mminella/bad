@@ -36,9 +36,7 @@ protected:
   void reset_eof( void ) noexcept override {}
 
 public:
-  // static constexpr size_t BUFFER_SIZE = 4096;
-  static constexpr size_t BUFFER_SIZE = 1024*1024;
-  // static constexpr size_t BUFFER_SIZE = 10 * 1024*1024;
+  static constexpr size_t BUFFER_SIZE = 1024*1024; // 1MB
 
   /* constructor */
   BufferedIO( IODevice & io )
