@@ -204,6 +204,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
 {
   auto t0 = time_now();
   tdiff_t tm = 0, ts = 0, tl = 0;
+  size_t merges = 0, sorts = 0;
 
   const RR * curMin = nullptr;
   const uint64_t r1x_i = r1x / recios_.size();
@@ -253,6 +254,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
       auto ts1 = time_now();
       rec_sort( r1, r1 + r1s );
       ts += time_diff<ms>( ts1 );
+      sorts++;
 
       // MERGE
       if ( Knobs::PARALLEL_MERGE and Knobs::USE_COPY ) {
@@ -264,6 +266,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
       } else {
         tm += meth1_merge_move( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
       }
+      merges++;
 
       // PREP
       swap( r2, r3 );
@@ -277,8 +280,8 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
   auto t1 = time_now();
 
   cout << "total, " << time_diff<ms>( t1, t0 ) << endl;
-  cout << "sort , " << ts << endl;
-  cout << "merge, " << tm << endl;
+  cout << "sort , " << ts << ", " << sorts << endl;
+  cout << "merge, " << tm << ", " << merges << endl;
   cout << "last , " << tl << endl;
   
   return {r2, r2s};
