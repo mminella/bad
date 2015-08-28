@@ -20,7 +20,7 @@ class OverlappedIO
 public:
   static constexpr size_t BLOCK = 4096 * 256 * 10; // 10MB
   static constexpr size_t NBLOCKS = 100;           // 1GB
-  static constexpr size_t BUF_SIZE = NBLOCKS * BLOCK;
+  static constexpr size_t BUFFER_SIZE = NBLOCKS * BLOCK;
   static constexpr size_t ALIGNMENT = 4096;
 
   // Need at least three blocks, one for queue, one for reader and one for
@@ -61,7 +61,7 @@ private:
         if ( n > 0 ) {
           blocks_.send( {wptr_, n} );
           wptr_ += BLOCK;
-          if ( wptr_ == buf + BUF_SIZE ) {
+          if ( wptr_ == buf + BUFFER_SIZE ) {
             wptr_ = buf;
           }
         }
@@ -88,7 +88,7 @@ public:
     , reader_{std::thread( &OverlappedIO::read_file,  this )}
   {
     char * b;
-    posix_memalign( (void **) &b, ALIGNMENT, BUF_SIZE );
+    posix_memalign( (void **) &b, ALIGNMENT, BUFFER_SIZE );
     buf_.reset( b );
   };
 

@@ -1,34 +1,37 @@
-#include <vector>
-
 #include "buffered_io.hh"
-#include "channel.hh"
-#include "file.hh"
+#include "exception.hh"
 #include "util.hh"
 
-#include "record.hh"
-
-#include "client.hh"
 #include "cluster.hh"
-#include "exception.hh"
+#include "meth1_memory.hh"
 #include "priority_queue.hh"
 #include "remote_file.hh"
 
 using namespace std;
 using namespace meth1;
 
+uint64_t calc_client_buffer( size_t nodes )
+{
+  uint64_t memFree = memory_free() - MEMRESERVE;
+  // We have a max buffer as there is a trade-off between more copying with
+  // larger buffers vs. more change of overlapping reads at backend nodes.
+  uint64_t bufLimit = Cluster::MAX_BUF_SIZE;
+  uint64_t perClient = memFree / Rec::SIZE / ( nodes + Cluster::WRITE_BUF_N );
+  return min( bufLimit, perClient );
+}
+
 Cluster::Cluster( vector<Address> nodes, uint64_t chunkSize )
   : clients_{}
   , chunkSize_{chunkSize}
   , bufSize_{0}
 {
-  auto memFree_ = memory_free() - MEM_RESERVE;
-  // figure out max buffer if using all memory
   if ( chunkSize_ == 0 ) {
-    chunkSize_ = memFree_ / Rec::SIZE;
+    chunkSize_ = calc_record_space();
   } 
-  auto bufLimit = MAX_BUF_SIZE;
-  bufSize_ = min( bufLimit, chunkSize_ / ( nodes.size() + WRITE_BUF_N ) );
+  bufSize_ = calc_client_buffer( nodes.size() );
+
   cout << "chunk-size, " << chunkSize_ << ", " << bufSize_ << endl;
+  cout << "disks, " << num_of_disks() << endl;
 
   for ( auto & n : nodes ) {
     clients_.push_back( n );

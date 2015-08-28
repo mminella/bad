@@ -19,7 +19,7 @@
 /* How much smaller ( 1 / SORT_MERGE_RATIO ) should the sort buffer be than the
  * merge buffer?
  */
-#define SORT_MERGE_RATIO 2
+#define SORT_MERGE_RATIO 12
 
 /* We can use a move or copy strategy -- the copy is actaully a little better
  * as we play some tricks to ensure we reuse allocations as much as possible.
@@ -33,9 +33,6 @@
 
 /* Use a parallel merge implementation? */
 #define TBB_PARALLEL_MERGE 1
-
-/* Amount of memory to reserve for OS and other tasks */
-#define MEMRESERVE 1024 * 1024 * 1000
 
 /**
  * Stratergy 1.
@@ -51,8 +48,6 @@ namespace meth1
 class Node
 {
 public:
-  static uint64_t constexpr MEM_RESERVE = MEMRESERVE;
-
   using RR = RecordS;
   using RecV = RawVector<RR>;
 

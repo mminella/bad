@@ -6,8 +6,8 @@
 #include "address.hh"
 #include "file.hh"
 
+#include "channel.hh"
 #include "client.hh"
-#include "node.hh"
 
 /**
  * Strategy 1.
@@ -24,15 +24,14 @@ namespace meth1
 class Cluster
 {
 private:
-  static uint64_t constexpr MEM_RESERVE = Node::MEM_RESERVE;
-  static uint64_t constexpr MAX_BUF_SIZE = 1024 * 1024 * 1000 * uint64_t( 5 ); // 5GB
-  static uint64_t constexpr WRITE_BUF_N = 2;
-
   std::vector<Client> clients_;
   uint64_t chunkSize_;
   uint64_t bufSize_;
 
 public:
+  static uint64_t constexpr MAX_BUF_SIZE = 1024 * 1024 * 1000 * uint64_t( 5 ); // 5GB
+  static uint64_t constexpr WRITE_BUF_N = 2;
+
   Cluster( std::vector<Address> nodes, uint64_t chunkSize = 0 );
 
   uint64_t Size( void );

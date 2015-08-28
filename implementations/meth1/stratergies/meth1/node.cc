@@ -1,5 +1,6 @@
 #include "util.hh"
 
+#include "meth1_memory.hh"
 #include "meth1_merge.hh"
 #include "node.hh"
 
@@ -13,7 +14,7 @@ Node::Node( vector<string> files, string port, bool odirect )
   , port_{port}
   , last_{Rec::MIN}
   , fpos_{0}
-  , seek_chunk_{( memory_free() - MEM_RESERVE ) / Rec::SIZE}
+  , seek_chunk_{calc_record_space()}
   , lpass_{0}
   , size_{0}
 {
@@ -143,7 +144,7 @@ Record Node::seek( uint64_t pos )
  * records that occur directly after the `after` record. */
 Node::RecV Node::linear_scan( const Record & after, uint64_t size )
 {
-  cout << "linear_scan, " << ++lpass_ << ", " << timestamp<ms>()
+  cout << "linear-scan, " << ++lpass_ << ", " << timestamp<ms>()
     << ", start" << endl;
   if ( size == 1 ) {
     return linear_scan_one( after );
@@ -190,7 +191,7 @@ Node::RecV Node::linear_scan_one( const Record & after )
   }
   vector<RR> rec = { move( *min ) };
   auto tt = time_diff<ms>( t0 );
-  cout << "linear scan, " << lpass_ << ", " << tt << endl;
+  cout << "linear-scan, " << lpass_ << ", " << tt << endl;
 
   return {move( rec )};
 }
@@ -313,6 +314,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
       free_buffers( r1, r3, r2x );
       delete[] r2;
     }
+    // r1x = max( (uint64_t) 3145728, (uint64_t) 1 );
     r1x = max( size / SORT_MERGE_RATIO, (uint64_t) 1 );
     r2x = size;
     r1 = new RR[r1x];
@@ -324,12 +326,14 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
     }
   }
 #else /* !REUSE_MEM */
+  // uint64_t r1x = max( (uint64_t) 3145728, (uint64_t) 1 );
   uint64_t r1x = max( size / SORT_MERGE_RATIO, (uint64_t) 1 );
   RR * r1 = new RR[r1x];
   RR * r2 = new RR[size];
   RR * r3 = new RR[size];
 #endif
 
+  cout << "linear-scan-chunk, " << size << ", " << r1x << endl;
   auto rr = linear_scan_chunk( after, size, r1, r2, r3, r1x );
   if ( rr.data() == r3 ) {
     swap( r2, r3 );
