@@ -142,6 +142,7 @@ void run_overlap( char * fin )
       recs[zrecs++].copy( next );
     }
   }
+  delete[] recs;
 
   auto tt = time_diff<ms>( t0 );
   uint64_t nbs = nrecs * Rec::SIZE / tt * 1000 / 1024 / 1024;

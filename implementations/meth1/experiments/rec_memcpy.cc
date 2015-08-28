@@ -31,6 +31,10 @@ int run( char * fin )
   fstat( fileno( fdi ), &st );
   size_t nrecs = st.st_size / REC_BYTES;
 
+  if ( nrecs == 0 ) {
+    throw runtime_error( "Empty file" );
+  }
+
   vector<Rec> recs( nrecs );
   setup_value_storage( nrecs );
 

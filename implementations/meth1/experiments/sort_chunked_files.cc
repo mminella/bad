@@ -189,6 +189,7 @@ RR * scan( vector<RecLoader> & rios, size_t size, const RR & after )
     }
   }
   auto t1 = time_now();
+  delete[] r1s_i;
 
 #if USE_COPY == 1
   // r3 and r2 share storage cells, so clear to nullptr first.

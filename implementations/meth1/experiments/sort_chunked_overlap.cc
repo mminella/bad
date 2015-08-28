@@ -65,7 +65,6 @@ RR * scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size, const RR & after )
 #endif
       swap( r2, r3 );
       r2s = min( size, r1s + r2s );
-      r1s = 0;
       tl = time_diff<ms>( ts1 );
     }
   }
