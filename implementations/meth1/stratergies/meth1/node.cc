@@ -1,3 +1,5 @@
+#include "tune_knobs.hh"
+
 #include "util.hh"
 
 #include "meth1_memory.hh"
@@ -253,15 +255,15 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
       ts += time_diff<ms>( ts1 );
 
       // MERGE
-#if TBB_PARALLEL_MERGE == 1 && USE_COPY == 1
-      tm += meth1_pmerge_copy( r1, r1+r1s, r2, r2+r2s, r3, r3+size );
-#elif TBB_PARALLEL_MERGE == 1
-      tm += meth1_pmerge_move( r1, r1+r1s, r2, r2+r2s, r3, r3+size );
-#elif USE_COPY == 1
-      tm += meth1_merge_copy( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
-#else
-      tm += meth1_merge_move( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
-#endif
+      if ( Knobs::PARALLEL_MERGE and Knobs::USE_COPY ) {
+        tm += meth1_pmerge_copy( r1, r1+r1s, r2, r2+r2s, r3, r3+size );
+      } else if ( Knobs::PARALLEL_MERGE ) {
+        tm += meth1_pmerge_move( r1, r1+r1s, r2, r2+r2s, r3, r3+size );
+      } else if( Knobs::USE_COPY ) {
+        tm += meth1_merge_copy( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
+      } else {
+        tm += meth1_merge_move( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
+      }
 
       // PREP
       swap( r2, r3 );
@@ -284,14 +286,12 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
 
 void free_buffers( Node::RR * r1, Node::RR * r3, size_t size )
 {
-#if USE_COPY == 1
-  // r3 and r2 share storage cells, so clear to nullptr first.
-  for ( uint64_t i = 0; i < size; i++ ) {
-    r3[i].set_val( nullptr );
+  if ( Knobs::USE_COPY ) {
+    // r3 and r2 share storage cells, so clear to nullptr first.
+    for ( uint64_t i = 0; i < size; i++ ) {
+      r3[i].set_val( nullptr );
+    }
   }
-#else
-  (void) size;
-#endif
   delete[] r3;
   delete[] r1;
 }
@@ -303,48 +303,56 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
     return {nullptr, 0};
   }
 
-#if REUSE_MEM == 1
   // our globals
-  static size_t r1x = 0, r2x = 0;
-  static RR *r1 = nullptr, *r2 = nullptr, *r3 = nullptr;
+  static size_t gr1x = 0, gr2x = 0;
+  static RR *gr1 = nullptr, *gr2 = nullptr, *gr3 = nullptr;
 
-  // (re-)setup global buffers if size isn't correct
-  if ( r2x != size ) {
-    if ( r2x > 0 ) {
-      free_buffers( r1, r3, r2x );
-      delete[] r2;
+  // local variables
+  RR *r1, *r2, *r3;
+  size_t r1x;
+
+  if ( Knobs::REUSE_MEM ) {
+    // (re-)setup global buffers if size isn't correct
+    if ( gr2x != size ) {
+      if ( gr2x > 0 ) {
+        free_buffers( gr1, gr3, gr2x );
+        delete[] gr2;
+      }
+      // r1x = max( (uint64_t) 3145728, (uint64_t) 1 );
+      gr1x = max( size / Knobs::SORT_MERGE_RATIO, (uint64_t) 1 );
+      gr2x = size;
+      gr1 = new RR[gr1x];
+      gr2 = new RR[gr2x];
+      gr3 = new RR[gr2x];
+    } else {
+      for ( uint64_t i = 0; i < size; i++ ) {
+        gr3[i].set_val( nullptr );
+      }
     }
+    r1 = gr1; r2 = gr2; r3 = gr3; r1x = gr1x;
+  } else { /* !REUSE_MEM */
     // r1x = max( (uint64_t) 3145728, (uint64_t) 1 );
-    r1x = max( size / SORT_MERGE_RATIO, (uint64_t) 1 );
-    r2x = size;
+    r1x = max( size / Knobs::SORT_MERGE_RATIO, (uint64_t) 1 );
     r1 = new RR[r1x];
-    r2 = new RR[r2x];
-    r3 = new RR[r2x];
-  } else {
-    for ( uint64_t i = 0; i < size; i++ ) {
-      r3[i].set_val( nullptr );
-    }
+    r2 = new RR[size];
+    r3 = new RR[size];
   }
-#else /* !REUSE_MEM */
-  // uint64_t r1x = max( (uint64_t) 3145728, (uint64_t) 1 );
-  uint64_t r1x = max( size / SORT_MERGE_RATIO, (uint64_t) 1 );
-  RR * r1 = new RR[r1x];
-  RR * r2 = new RR[size];
-  RR * r3 = new RR[size];
-#endif
 
   cout << "linear-scan-chunk, " << size << ", " << r1x << endl;
   auto rr = linear_scan_chunk( after, size, r1, r2, r3, r1x );
   if ( rr.data() == r3 ) {
     swap( r2, r3 );
+    if ( Knobs::REUSE_MEM ) {
+      swap( gr2, gr3 );
+    }
   }
   
-#if REUSE_MEM == 0
-  free_buffers( r1, r3, size );
-#else
-  /* we don't want r2 being freed later! */
-  rr.own() = false;
-#endif
+  if ( not Knobs::REUSE_MEM ) {
+    free_buffers( r1, r3, size );
+  } else {
+    /* we don't want r2 being freed later! */
+    rr.own() = false;
+  }
 
   return rr;
 }

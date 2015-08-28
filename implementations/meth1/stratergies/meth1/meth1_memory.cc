@@ -2,6 +2,8 @@
 #include <iostream>
 #include <system_error>
 
+#include "tune_knobs.hh"
+
 #include "overlapped_io.hh"
 #include "util.hh"
 
@@ -31,13 +33,14 @@ uint64_t calc_record_space( void )
   uint64_t memFree = memory_free();
 
   // subtract reserved mem for OS & misc
-  memFree -= MEMRESERVE;
+  memFree -= Knobs::MEM_RESERVE;
   // subtract disk read buffers
   memFree -= OverlappedIO::BUFFER_SIZE * num_of_disks();
   // divide by record size
   memFree /= ( sizeof(Node::RR) + Rec::VAL_LEN );
   // subtract the extra sort buffer
-  memFree = ( memFree * SORT_MERGE_RATIO ) / ( SORT_MERGE_RATIO + 1 );
+  memFree = ( memFree * Knobs::SORT_MERGE_RATIO )
+    / ( Knobs::SORT_MERGE_RATIO + 1 );
   
   return memFree;
 }

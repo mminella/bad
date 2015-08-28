@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include "tune_knobs.hh"
+
 #include "address.hh"
 #include "file.hh"
 
@@ -29,7 +31,7 @@ private:
   uint64_t bufSize_;
 
 public:
-  static uint64_t constexpr MAX_BUF_SIZE = 1024 * 1024 * 1000 * uint64_t( 5 ); // 5GB
+  static uint64_t constexpr MAX_BUF_SIZE = Knobs::CLIENT_MAX_BUFFER;
   static uint64_t constexpr WRITE_BUF_N = 2;
 
   Cluster( std::vector<Address> nodes, uint64_t chunkSize = 0 );

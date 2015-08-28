@@ -7,6 +7,8 @@
 #include <system_error>
 #include <thread>
 
+#include "tune_knobs.hh"
+
 #include "channel.hh"
 #include "file.hh"
 #include "timestamp.hh"
@@ -18,8 +20,8 @@
 class OverlappedIO
 {
 public:
-  static constexpr size_t BLOCK = 4096 * 256 * 10; // 10MB
-  static constexpr size_t NBLOCKS = 200;           // 2GB
+  static constexpr size_t BLOCK = Knobs::IO_BLOCK;
+  static constexpr size_t NBLOCKS = Knobs::IO_NBLOCKS;
   static constexpr size_t BUFFER_SIZE = NBLOCKS * BLOCK;
   static constexpr size_t ALIGNMENT = 4096;
 

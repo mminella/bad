@@ -3,6 +3,8 @@
 
 #include <algorithm>
 
+#include "tune_knobs.hh"
+
 #include "record_common.hh"
 #include "record_loc.hh"
 #include "record_ptr.hh"
@@ -11,18 +13,24 @@
 
 #include "config.h"
 
-#if defined(HAVE_TBB_PARALLEL_SORT_H) && PARALLEL_SORT == 1
+#ifdef HAVE_TBB_PARALLEL_SORT_H
 #include "tbb/parallel_sort.h"
-#elif defined(HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP)
+#endif
+#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
 #include <boost/sort/spreadsort/string_sort.hpp>
 #endif
 
 template <typename R>
 inline void rec_sort( R first, R last )
 {
-#if defined(HAVE_TBB_PARALLEL_SORT_H) && PARALLEL_SORT == 1
-  tbb::parallel_sort( first, last );
-#elif defined(HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP)
+#ifdef HAVE_TBB_PARALLEL_SORT_H
+  if ( Knobs::PARALLEL_SORT ) {
+    tbb::parallel_sort( first, last );
+    return;
+  }
+#endif
+
+#ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
   boost::sort::spreadsort::string_sort( first, last );
 #else
   sort( first, last, std::less<typename std::iterator_traits<R>::value_type>() );

@@ -16,24 +16,6 @@
 #include "record.hh"
 #include "rec_loader.hh"
 
-/* How much smaller ( 1 / SORT_MERGE_RATIO ) should the sort buffer be than the
- * merge buffer?
- */
-#define SORT_MERGE_RATIO 12
-
-/* We can use a move or copy strategy -- the copy is actaully a little better
- * as we play some tricks to ensure we reuse allocations as much as possible.
- * With copy we use `size + r1x` value memory, but with move, we use up to
- * `2.size + r1x`. */
-#define USE_COPY 1
-
-/* We can reuse our sort+merge buffers for a big win! Be careful though, as the
- * results returned by scan are invalidate when you next call scan. */
-#define REUSE_MEM 1
-
-/* Use a parallel merge implementation? */
-#define TBB_PARALLEL_MERGE 1
-
 /**
  * Stratergy 1.
  * - No upfront work.

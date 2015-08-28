@@ -6,6 +6,8 @@
 #include <string>
 #include <utility>
 
+#include "tune_knobs.hh"
+
 #include "io_device.hh"
 
 /* Wrapper around an IODevice to buffer reads and/or writes. */
@@ -36,7 +38,7 @@ protected:
   void reset_eof( void ) noexcept override {}
 
 public:
-  static constexpr size_t BUFFER_SIZE = 1024*1024; // 1MB
+  static constexpr size_t BUFFER_SIZE = Knobs::IO_BUFFER;
 
   /* constructor */
   BufferedIO( IODevice & io )
