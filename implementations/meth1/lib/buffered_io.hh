@@ -15,8 +15,8 @@ class BufferedIO : public IODevice
 {
 private:
   /* buffers */
-  std::unique_ptr<char> rbuf_;
-  std::unique_ptr<char> wbuf_;
+  std::unique_ptr<char[]> rbuf_;
+  std::unique_ptr<char[]> wbuf_;
   size_t rstart_ = 0, rend_ = 0;
   size_t wstart_ = 0, wend_ = 0;
 

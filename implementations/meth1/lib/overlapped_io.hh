@@ -33,7 +33,7 @@ public:
 
 private:
   File * io_;
-  std::unique_ptr<char> buf_;
+  char * buf_;
   Channel<block_ptr> blocks_;
   Channel<bool> start_;
   std::thread reader_;
@@ -53,8 +53,7 @@ private:
 
       auto ts = time_now();
       tdiff_t tt = 0;
-      char * buf = buf_.get();
-      char * wptr_ = buf;
+      char * wptr_ = buf_;
       while ( true ) {
         auto t0 = time_now();
         size_t n = io_->read( wptr_, BLOCK );
@@ -63,8 +62,8 @@ private:
         if ( n > 0 ) {
           blocks_.send( {wptr_, n} );
           wptr_ += BLOCK;
-          if ( wptr_ == buf + BUFFER_SIZE ) {
-            wptr_ = buf;
+          if ( wptr_ == buf_ + BUFFER_SIZE ) {
+            wptr_ = buf_;
           }
         }
 
@@ -84,14 +83,12 @@ private:
 public:
   OverlappedIO( File & io )
     : io_{&io}
-    , buf_{}
+    , buf_{nullptr}
     , blocks_{NBLOCKS-2}
     , start_{0}
     , reader_{std::thread( &OverlappedIO::read_file,  this )}
   {
-    char * b;
-    posix_memalign( (void **) &b, ALIGNMENT, BUFFER_SIZE );
-    buf_.reset( b );
+    posix_memalign( (void **) &buf_, ALIGNMENT, BUFFER_SIZE );
   };
 
   /* no copy */
@@ -101,27 +98,30 @@ public:
   /* allow move */
   OverlappedIO( OverlappedIO && r )
     : io_{r.io_}
-    , buf_{std::move( r.buf_ )}
+    , buf_{r.buf_}
     , blocks_{std::move( r.blocks_ )}
     , start_{std::move( r.start_ )}
     , reader_{std::move( r.reader_ )}
   {
+    r.buf_ = nullptr;
   }
 
   OverlappedIO & operator=( OverlappedIO && r )
   {
     if ( this != &r ) {
       io_ = r.io_;
-      buf_ = std::move( r.buf_ );
+      buf_ = r.buf_;
       blocks_ = std::move( r.blocks_ );
       start_ = std::move( r.start_ );
       reader_ = std::move( r.reader_ );
+      r.buf_ = nullptr;
     }
     return *this;
   }
 
   ~OverlappedIO( void )
   {
+    if ( buf_ != nullptr ) { free( buf_ ); }
     start_.close();
     if ( reader_.joinable() ) { reader_.join(); }
   }
