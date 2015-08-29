@@ -102,7 +102,7 @@ Node::RecV Node::Read( uint64_t pos, uint64_t size )
   static size_t pass = 0;
 
   if ( pos + size > Size() ) {
-    size = Size() - pos;    
+    size = Size() - pos;
   }
 
   auto t0 = time_now();
@@ -288,7 +288,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
   cout << "sort , " << ts << ", " << sorts << endl;
   cout << "merge, " << tm << ", " << merges << endl;
   cout << "last , " << tl << endl;
-  
+
   return {r2, r2s};
 }
 
@@ -317,7 +317,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
 
   if ( Knobs::REUSE_MEM ) {
     // (re-)setup global buffers if size isn't correct
-    if ( gr2x != size ) {
+    if ( gr2x < size ) {
       if ( gr2x > 0 ) {
         free_buffers( gr1, gr3, gr2x );
         delete[] gr2;
@@ -332,7 +332,8 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
         gr3[i].set_val( nullptr );
       }
     }
-    r1 = gr1; r2 = gr2; r3 = gr3; r1x = gr1x;
+    r1x = max( Knobs::SORT_MERGE_LOWER, size / Knobs::SORT_MERGE_RATIO );
+    r1 = gr1; r2 = gr2; r3 = gr3;
   } else {
     r1x = max( Knobs::SORT_MERGE_LOWER, size / Knobs::SORT_MERGE_RATIO );
     r1 = new RR[r1x];
@@ -348,7 +349,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
       swap( gr2, gr3 );
     }
   }
-  
+
   if ( not Knobs::REUSE_MEM ) {
     free_buffers( r1, r3, size );
   } else {
