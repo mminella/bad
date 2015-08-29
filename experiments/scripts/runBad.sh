@@ -14,17 +14,19 @@ MACHINE=$5
 N=$6
 ODIR=$7
 CMDD=$8
+TARF=$9
 SIZE_B=$( calc "$SIZE * 1024 * 1024 * 1000 / 100" )
 CHUNK_B=$( calc "$CHUNK * 1024 * 1024 * 1000 / 100" )
 
 # Args
-if [ $# != 8 ]; then
-  echo "runBad.sh <cluster file> <log path> <size> <chunk> <machine> <nodes> <o_direct> <cmd>"
+if [ $# != 9 ]; then
+  echo "runBad.sh <cluster file> <log path> <size> <chunk> <machine> <nodes>" \
+    "<o_direct> <cmd> <dist_tar>"
   exit 1
 fi
 
 # Launch
-./launchBAD.rb -f ${FILE} -k ${KEY} -c ${N} -n 'Meth1-%d' -d bad.tar.gz -i ${MACHINE}
+./launchBAD.rb -f ${FILE} -k ${KEY} -c ${N} -n "${SAVE}-%d" -d ${TARF} -i ${MACHINE}
 if [ $? -ne 0 ]; then
   echo "Launching instances failed! (${FILE})"
   ./shutdown-cluster.sh ${FILE}
