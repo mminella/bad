@@ -81,6 +81,7 @@ void run( int argc, char * argv[] )
 
   // run cmd
   run_cmd( client, out_dir, cmd, read_ahead );
+  client.Shutdown();
 }
 
 void check_usage( const int argc, const char * const argv[] )

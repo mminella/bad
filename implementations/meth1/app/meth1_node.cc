@@ -18,13 +18,11 @@
 using namespace std;
 using namespace meth1;
 
-int run( vector<string> files, string port, string odirect )
+void run( vector<string> files, string port, string odirect )
 {
   Node node{files, port, to_bool( odirect )};
   node.Initialize();
   node.Run();
-
-  return EXIT_SUCCESS;
 }
 
 void check_usage( const int argc, const char * const argv[] )
