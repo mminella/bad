@@ -27,7 +27,10 @@ namespace Knobs {
 
   /* How much smaller ( 1 / SORT_MERGE_RATIO ) should the sort buffer be than
    * the merge buffer? */
-  static constexpr uint64_t SORT_MERGE_RATIO = 8;
+  static constexpr uint64_t SORT_MERGE_RATIO = 14;
+
+  /* Lower bound on sort buffer size. */
+  static constexpr uint64_t SORT_MERGE_LOWER = 3145728;
 
   /* We can use a move or copy strategy -- the copy is actaully a little better
    * as we play some tricks to ensure we reuse allocations as much as possible.

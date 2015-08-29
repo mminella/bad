@@ -322,8 +322,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
         free_buffers( gr1, gr3, gr2x );
         delete[] gr2;
       }
-      // r1x = max( (uint64_t) 3145728, (uint64_t) 1 );
-      gr1x = max( size / Knobs::SORT_MERGE_RATIO, (uint64_t) 1 );
+      gr1x = max( Knobs::SORT_MERGE_LOWER, size / Knobs::SORT_MERGE_RATIO );
       gr2x = size;
       gr1 = new RR[gr1x];
       gr2 = new RR[gr2x];
@@ -335,8 +334,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
     }
     r1 = gr1; r2 = gr2; r3 = gr3; r1x = gr1x;
   } else {
-    // r1x = max( (uint64_t) 3145728, (uint64_t) 1 );
-    r1x = max( size / Knobs::SORT_MERGE_RATIO, (uint64_t) 1 );
+    r1x = max( Knobs::SORT_MERGE_LOWER, size / Knobs::SORT_MERGE_RATIO );
     r1 = new RR[r1x];
     r2 = new RR[size];
     r3 = new RR[size];
