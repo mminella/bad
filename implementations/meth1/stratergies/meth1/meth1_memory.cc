@@ -16,7 +16,7 @@ using namespace meth1;
 /* Get a count of how many disks this machine has */
 size_t num_of_disks( void )
 {
-  FILE * fin = popen("ls /dev/xvd* | wc -l", "r");
+  FILE * fin = popen("ls /dev/xvd[b-z] | wc -l", "r");
   if ( not fin ) {
     throw runtime_error( "Couldn't count number of disks" );
   }
@@ -37,11 +37,11 @@ uint64_t calc_record_space( void )
   // subtract disk read buffers
   memFree -= OverlappedIO::BUFFER_SIZE * num_of_disks();
   // divide by record size
-  memFree /= ( sizeof(Node::RR) + Rec::VAL_LEN );
+  memFree /= ( uint64_t( 2 ) * uint64_t( sizeof(Node::RR) ) + Rec::VAL_LEN );
   // subtract the extra sort buffer
   memFree = ( memFree * Knobs::SORT_MERGE_RATIO )
     / ( Knobs::SORT_MERGE_RATIO + 1 );
-  
+
   return memFree;
 }
 
