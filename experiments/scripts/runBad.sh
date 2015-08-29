@@ -31,6 +31,8 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+echo "Machines setup! (${FILE})"
+
 source ${FILE}
 
 # Backend nodes
@@ -79,8 +81,8 @@ experiment() {
 }
 
 # Run experiment
-all "setup_all_fs"
-backends "gensort -t16 ${SIZE_B},buf ${MNT}/recs"
+all "setup_all_fs 2>&1 > /dev/null"
+backends "gensort -t16 ${SIZE_B},buf ${MNT}/recs 2>&1 > /dev/null"
 experiment ${ODIR} ${CMDD}
 
 # Create log directory
