@@ -118,10 +118,8 @@ public:
     : loc_{other.loc_}
 #endif
   {
-    // swap values
-    uint8_t * v = val_;
     val_ = other.val_;
-    other.val_ = v;
+    other.val_ = nullptr;
     memcpy( key_, other.key_, Rec::KEY_LEN );
   }
 

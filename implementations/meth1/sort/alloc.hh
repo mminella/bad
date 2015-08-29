@@ -41,6 +41,7 @@ namespace Rec {
 
 #else /* USE_NEW */
 namespace Rec {
+
   inline uint8_t * alloc_val( void )
   {
     return new uint8_t[Rec::VAL_LEN];
@@ -49,7 +50,7 @@ namespace Rec {
   inline void dealloc_val( uint8_t * v )
   {
     if ( v != nullptr ) {
-      delete v;
+      delete []v;
     }
   }
 }
