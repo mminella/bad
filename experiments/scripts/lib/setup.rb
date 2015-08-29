@@ -65,9 +65,14 @@ class Setup
           >> /home/ubuntu/.ssh/authorized_keys"
       end
 
-      # install mosh
+      # install mosh, allocators and performance monitoring tools
       ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq install \
-        mosh binutils libtbb2 libtbb-dev libjemalloc-dev libgoogle-perftools-dev"
+        mosh binutils libtbb2 libtbb-dev libjemalloc-dev libgoogle-perftools-dev \
+        dstat sysbench sysstat nicstat nload"
+      # install perf
+      ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq install \
+        linux-tools-common linux-tools-generic linux-tools-3.13.0-53-generic"
+      # update libc
       ssh.root! "DEBIAN_FRONTEND=noninteractive add-apt-repository -y ppa:ubuntu-toolchain-r/test"
       ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get update"
       ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrade"
@@ -80,5 +85,5 @@ class Setup
       ssh.root! "mv 64/* /usr/bin/"
     end
   end
-  
+
 end
