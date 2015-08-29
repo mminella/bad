@@ -41,6 +41,7 @@ public:
   void Read( uint64_t pos, uint64_t size );
   void ReadAll( void );
   void WriteAll( File out );
+  void Shutdown( void );
 };
 }
 

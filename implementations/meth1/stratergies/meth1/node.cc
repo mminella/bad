@@ -55,6 +55,8 @@ void Node::Run( void )
         case 1:
           RPC_Size( client );
           break;
+        case 2:
+          goto exit;
         default:
           throw runtime_error( "Unknown RPC method: " + to_string(str[0]) );
           break;
@@ -64,6 +66,8 @@ void Node::Run( void )
       // EOF
     }
   }
+exit:
+  return;
 }
 
 void Node::RPC_Read( BufferedIO_O<TCPSocket> & client )
@@ -185,13 +189,14 @@ Node::RecV Node::linear_scan_one( const Record & after )
   tg_.wait();
 
   // find min of all files
-  RR * min = &rr[0];
+  RR & min = rr[0];
   for ( size_t i = 1; i < recios_.size(); i++ ) {
-    if ( rr[i] < *min ) {
-      min = &rr[i];
+    if ( rr[i] < min ) {
+      min = rr[i];
     }
   }
-  vector<RR> rec = { move( *min ) };
+  vector<RR> rec;
+  rec.push_back( move( min ) );
   auto tt = time_diff<ms>( t0 );
   cout << "linear-scan, " << lpass_ << ", " << tt << endl;
 
@@ -258,11 +263,11 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
 
       // MERGE
       if ( Knobs::PARALLEL_MERGE and Knobs::USE_COPY ) {
-        tm += meth1_pmerge_copy( r1, r1+r1s, r2, r2+r2s, r3, r3+size );
+        tm += meth1_pmerge_copy( r1, r1+r1s, r2, r2+r2s, r3, size );
       } else if ( Knobs::PARALLEL_MERGE ) {
         tm += meth1_pmerge_move( r1, r1+r1s, r2, r2+r2s, r3, r3+size );
       } else if( Knobs::USE_COPY ) {
-        tm += meth1_merge_copy( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
+        tm += meth1_merge_copy( r1, r1 + r1s, r2, r2 + r2s, r3, size );
       } else {
         tm += meth1_merge_move( r1, r1 + r1s, r2, r2 + r2s, r3, r3 + size );
       }
@@ -287,7 +292,7 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
   return {r2, r2s};
 }
 
-void free_buffers( Node::RR * r1, Node::RR * r3, size_t size )
+void Node::free_buffers( Node::RR * r1, Node::RR * r3, size_t size )
 {
   if ( Knobs::USE_COPY ) {
     // r3 and r2 share storage cells, so clear to nullptr first.
@@ -306,10 +311,6 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
     return {nullptr, 0};
   }
 
-  // our globals
-  static size_t gr1x = 0, gr2x = 0;
-  static RR *gr1 = nullptr, *gr2 = nullptr, *gr3 = nullptr;
-
   // local variables
   RR *r1, *r2, *r3;
   size_t r1x;
@@ -327,13 +328,13 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
       gr1 = new RR[gr1x];
       gr2 = new RR[gr2x];
       gr3 = new RR[gr2x];
-    } else {
+    } else if ( Knobs::USE_COPY ) {
       for ( uint64_t i = 0; i < size; i++ ) {
         gr3[i].set_val( nullptr );
       }
     }
     r1 = gr1; r2 = gr2; r3 = gr3; r1x = gr1x;
-  } else { /* !REUSE_MEM */
+  } else {
     // r1x = max( (uint64_t) 3145728, (uint64_t) 1 );
     r1x = max( size / Knobs::SORT_MERGE_RATIO, (uint64_t) 1 );
     r1 = new RR[r1x];

@@ -42,6 +42,9 @@ public:
   /* Return the number of records available at this server */
   void sendSize( void );
   uint64_t recvSize( void );
+
+  /* Shutdown the backend node */
+  void sendShutdown( void );
 };
 }
 

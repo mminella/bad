@@ -270,3 +270,9 @@ void Cluster::WriteAll( File out )
   }
 }
 
+void Cluster::Shutdown( void )
+{
+  for ( auto & c : clients_ ) {
+    c.sendShutdown();
+  }
+}

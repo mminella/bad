@@ -74,3 +74,8 @@ uint64_t Client::recvSize( void )
   return size;
 }
 
+void Client::sendShutdown( void )
+{
+  int8_t rpc = 2;
+  sock_.io().write_all( (char *)&rpc, 1 );
+}

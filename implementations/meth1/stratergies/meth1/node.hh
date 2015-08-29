@@ -43,6 +43,15 @@ private:
   uint64_t lpass_;
   uint64_t size_;
 
+  // for REUSE_MEM
+  size_t gr1x = 0;
+  size_t gr2x = 0;
+  RR * gr1 = nullptr;
+  RR * gr2 = nullptr;
+  RR * gr3 = nullptr;
+
+  void free_buffers( RR * r1, RR * r3, size_t size );
+
 public:
   Node( std::vector<std::string> files, std::string port,
         bool odirect = false);
@@ -52,6 +61,16 @@ public:
   Node & operator=( const Node & n ) = delete;
   Node( Node && n ) = delete;
   Node & operator=( Node && n ) = delete;
+
+  ~Node( void )
+  {
+    if ( gr1 != nullptr and gr3 != nullptr ) {
+      free_buffers( gr1, gr3, gr2x );
+    }
+    if ( gr2 != nullptr ) {
+      delete[] gr2;
+    }
+  }
 
   /* Run the node - list and respond to RPCs */
   void Run( void );
