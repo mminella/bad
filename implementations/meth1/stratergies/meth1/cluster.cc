@@ -17,7 +17,7 @@ uint64_t calc_client_buffer( size_t nodes )
   uint64_t memFree = memory_free() - Knobs::MEM_RESERVE;
   // We have a max buffer as there is a trade-off between more copying with
   // larger buffers vs. more change of overlapping reads at backend nodes.
-  uint64_t bufLimit = Cluster::MAX_BUF_SIZE;
+  uint64_t bufLimit = Cluster::MAX_BUF_SIZE / Rec::SIZE;
   uint64_t perClient = memFree / Rec::SIZE / ( nodes + Cluster::WRITE_BUF_N );
   return min( bufLimit, perClient );
 }
