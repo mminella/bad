@@ -25,55 +25,55 @@ class Launcher
     i2.4xlarge
     i2.8xlarge]
 
-  # Hash of Ubuntu 14.04.1 AMIs by availability zone.
+  # Hash of Ubuntu 15.04 AMIs by availability zone.
   # Array is in order 64-bit hvm-ssd, 64-bit ebs, 64-bit instance
   UBUNTU_AMIS = {
     :"ap-northeast-1" =>
-      %w[ami-aa7da3aa
-         ami-607da360
-         ami-c44a94c4
+      %w[ami-5a78fc5a
+         ami-4478fc44
+         ami-c470f4c4
         ],
 
     :"ap-southeast-1" =>
-      %w[ami-fae0daa8
-         ami-cae0da98
-         ami-c4edd796
+      %w[ami-0cb6b85e
+         ami-6eb6b83c
+         ami-e6bbb5b4
         ],
 
     :"ap-southeast-2" =>
-      %w[ami-cf047ff5
-         ami-e1047fdb
-         ami-37057e0d
+      %w[ami-db7133e1
+         ami-f57133cf
+         ami-6772305d
         ],
 
     :"eu-west-1" =>
-      %w[ami-85344af2
-         ami-97344ae0
-         ami-273c4250
+      %w[ami-e8de819f
+         ami-f0de8187
+         ami-3cabf44b
         ],
 
     :"sa-east-1" =>
-      %w[ami-952eae88
-         ami-652eae78
-         ami-392dad24
+      %w[ami-9176fe8c
+         ami-9d76fe80
+         ami-1775fd0a
         ],
 
     :"us-east-1" =>
-      %w[ami-3b6a8050
-         ami-5f6a8034
-         ami-1305ef78
+      %w[ami-6b50e100
+         ami-b951e0d2
+         ami-9b7ccdf0
         ],
 
     :"us-west-1" =>
-      %w[ami-fb05efbf
-         ami-e305efa7
-         ami-2107ed65
+      %w[ami-0bf60f4f
+         ami-01f60f45
+         ami-4df50c09
         ],
 
     :"us-west-2" =>
-      %w[ami-ade2da9d
-         ami-ade1d99d
-         ami-bdedd58d
+      %w[ami-efd2c6df
+         ami-e3d2c6d3
+         ami-75d5c145
         ],
   }
 
