@@ -29,10 +29,6 @@ printCluster() {
   parsePage $cluster 64-bit ebs
   echo -n "     "
   parsePage $cluster 64-bit instance
-  echo -n "     "
-  parsePage $cluster 32-bit ebs
-  echo -n "     "
-  parsePage $cluster 32-bit instance
   echo "    ],"
   echo ""
 }

@@ -26,71 +26,54 @@ class Launcher
     i2.8xlarge]
 
   # Hash of Ubuntu 14.04.1 AMIs by availability zone.
-  # Array is in order 64-bit hvm-ssd, 64-bit ebs, 64-bit instance, 32-bit ebs,
-  # 32-bit instance
+  # Array is in order 64-bit hvm-ssd, 64-bit ebs, 64-bit instance
   UBUNTU_AMIS = {
     :"ap-northeast-1" =>
       %w[ami-aa7da3aa
          ami-607da360
          ami-c44a94c4
-         ami-5e7da35e
-         ami-e0528ce0
         ],
 
     :"ap-southeast-1" =>
       %w[ami-fae0daa8
          ami-cae0da98
          ami-c4edd796
-         ami-c4e0da96
-         ami-fcefd5ae
         ],
 
     :"ap-southeast-2" =>
       %w[ami-cf047ff5
          ami-e1047fdb
          ami-37057e0d
-         ami-e3047fd9
-         ami-27077c1d
         ],
 
     :"eu-west-1" =>
       %w[ami-85344af2
          ami-97344ae0
          ami-273c4250
-         ami-a9344ade
-         ami-6fc2bd18
         ],
 
     :"sa-east-1" =>
       %w[ami-952eae88
          ami-652eae78
          ami-392dad24
-         ami-6b2eae76
-         ami-2f2cac32
         ],
 
     :"us-east-1" =>
       %w[ami-3b6a8050
          ami-5f6a8034
          ami-1305ef78
-         ami-5b6a8030
-         ami-fd0fe596
         ],
 
     :"us-west-1" =>
       %w[ami-fb05efbf
          ami-e305efa7
          ami-2107ed65
-         ami-e105efa5
-         ami-2101eb65
         ],
 
     :"us-west-2" =>
       %w[ami-ade2da9d
          ami-ade1d99d
          ami-bdedd58d
-         ami-abe1d99b
-         ami-2febd31f
         ],
   }
 
@@ -157,31 +140,16 @@ class Launcher
     print "[1-#{INSTANCE_TYPES.size}]? "
     @options[:instance_type] = INSTANCE_TYPES[gets.strip.to_i - 1]
 
-    # 32/64 bit?
-    puts ""
-    puts "Which architecture would you like?"
-    puts "[1] 64-bit"
-    puts "[2] 32-bit"
-    puts ""
-    print "[1-2]? "
-    @options[:arch] = gets.strip.to_i - 1
-
+    # Storage type
     if !(@options[:instance_type].start_with? "r3" or
          @options[:instance_type].start_with? "i2")
       puts ""
       puts "Which root storage would you like?"
-      if @options[:arch] == 0
-        puts "[1] ssd"
-        puts "[2] ebs"
-        puts "[3] instance"
-        puts ""
-        print "[1-3]? "
-      else
-        puts "[1] ebs"
-        puts "[2] instance"
-        puts ""
-        print "[1-2]? "
-      end
+      puts "[1] ssd"
+      puts "[2] ebs"
+      puts "[3] instance"
+      puts ""
+      print "[1-3]? "
       @options[:store] = gets.strip.to_i - 1
     else
       # r3 only supports ssd (hvm virtulization type)
@@ -288,7 +256,7 @@ class Launcher
     
     # configure creation
     region = @ec2.regions[@options[:zone][0..-2]]
-    ami = UBUNTU_AMIS[region.name.to_sym][@options[:arch] * 3 + @options[:store]]
+    ami = UBUNTU_AMIS[region.name.to_sym][@options[:store]]
     @ec2 = createEC2Client(region.name)
 
     config = {
