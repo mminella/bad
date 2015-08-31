@@ -14,9 +14,6 @@ using namespace meth1;
 
 void run( vector<string> files )
 {
-  for ( auto & f : files ) {
-    cout << f << endl;
-  }
   auto t0 = time_now();
 
   // start node
