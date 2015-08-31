@@ -20,6 +20,8 @@ class Setup
   IXGBEVF_DIR   = "#{HOME}/ixgbevf-2.16.1/src"
   IXGBEVF_PATCH = "ixgbevf.2.16.1.patch"
   NETTUNE_FILE  = "60-awstune.conf"
+  JEMALLOC_LOC  = "https://github.com/jemalloc/jemalloc/releases/download/4.0.0/jemalloc-4.0.0.tar.bz2"
+  JEMALLOC_FILE = JEMALLOC_LOC.split("/").last
 
   # options = { :interactive, :host, :user, :skey }
   def initialize(options)
@@ -64,6 +66,7 @@ class Setup
 
     @ssh_opts = @opts[:skey].merge({:user_known_hosts_file => '/dev/null', :paranoid => false})
 
+    # update libc and kernel
     Net::SSH.start(@opts[:host], @opts[:user], @ssh_opts) do |ssh|
       # load ssh keys
       for u in USERS
@@ -72,50 +75,55 @@ class Setup
           >> #{HOME}/.ssh/authorized_keys"
       end
 
+      # disable apt-get autoupdate
+      ssh.root! 'sed -i -e"s/1/0/g" /etc/apt/apt.conf.d/10periodic'
+
       # update libc
       ssh.root! "DEBIAN_FRONTEND=noninteractive add-apt-repository -y ppa:ubuntu-toolchain-r/test"
       ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get update"
       ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrade"
-
-      # install mosh, allocators, performance monitoring tools and schedtool
-      ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq install \
-        mosh binutils libtbb2 libtbb-dev libjemalloc-dev libgoogle-perftools-dev \
-        dstat sysbench sysstat nicstat nload schedtool"
-
-      # install perf
-      ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq install \
-        linux-tools-common linux-tools-generic linux-tools-3.13.0-53-generic"
-
-      # install build tools
-      ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq install \
-        build-essential"
-
-      # disable apt-get autoupdate
-      ssh.root! 'sed -i -e"s/1/0/g" /etc/apt/apt.conf.d/10periodic'
-
-      # setup sortgen
-      ssh.exec! "wget #{SGEN_LOC} && tar xzf #{SGEN_FILE}"
-      ssh.root! "mv 64/* /usr/bin/"
 
       # reboot for libc upgrade
       ssh.root! "reboot"
     end
     Net::SSH.wait(@opts[:host], @opts[:user], @ssh_opts)
 
-    # tune instance -- networking
+    # copy across some needed files
     Net::SCP.start(@opts[:host], @opts[:user], @ssh_opts)
       .upload!("./lib/#{NETTUNE_FILE}", HOME)
+    Net::SCP.start(@opts[:host], @opts[:user], @ssh_opts)
+      .upload!("./lib/#{IXGBEVF_PATCH}", HOME)
+
+    # install needed tools
     Net::SSH.start(@opts[:host], @opts[:user], @ssh_opts) do |ssh|
+      # install mosh, allocators, performance monitoring tools and schedtool
+      ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq install \
+        mosh binutils libtbb2 libtbb-dev libgoogle-perftools-dev dstat \
+        sysbench sysstat nicstat nload schedtool"
+
+      # install perf
+      ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq install \
+        linux-tools-common linux-tools-generic linux-tools-3.13.0-62-generic"
+
+      # setup sortgen
+      ssh.exec! "wget #{SGEN_LOC} && tar xzf #{SGEN_FILE}"
+      ssh.root! "mv 64/* /usr/bin/"
+      # tune network
       ssh.root! "mv #{HOME}/#{NETTUNE_FILE} /etc/sysctl.d/"
       ssh.root! "chown root:root /etc/sysctl.d/#{NETTUNE_FILE}"
       ssh.root! "chmod 644 /etc/sysctl.d/#{NETTUNE_FILE}"
-    end
 
-    # install ixgbevf latest version
-    Net::SCP.start(@opts[:host], @opts[:user], @ssh_opts)
-      .upload!("./lib/#{IXGBEVF_PATCH}", HOME)
-    Net::SSH.start(@opts[:host], @opts[:user], @ssh_opts) do |ssh|
-      ssh.exec! "wget #{IXGBEVF_LOC} && tar xzf #{IXGBEVF_FILE}"
+      # install build tools
+      ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq install \
+        build-essential"
+
+      # build jemalloc
+      ssh.exec! "wget #{JEMALLOC_LOC} && tar xf #{JEMALLOC_FILE}"
+      ssh.exec! "cd #{JEMALLOC_LOC.chomp(".tar.bz2")}; \
+        ./configure && make && sudo make install"
+
+      # build ixgbevf
+      ssh.exec! "wget #{IXGBEVF_LOC} && tar xf #{IXGBEVF_FILE}"
       ssh.exec! "cd #{IXGBEVF_DIR}; patch -p0 < #{HOME}/#{IXGBEVF_PATCH}"
       ssh.exec! "cd #{IXGBEVF_DIR}; make clean; make"
       ssh.exec! "cd #{IXGBEVF_DIR}; sudo make install"
