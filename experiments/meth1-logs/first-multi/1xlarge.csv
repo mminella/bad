@@ -1,0 +1,17 @@
+record-value, 96
+seek-chunk, 426484238
+linear-scan, 1, 5, start
+read_file, 4, 1, 5, start
+read, 4, 1, 210354
+read (blocked), 4, 1, 215712
+linear-scan, 1, 215713
+do-read, 1, 215713
+
+first: 0000000328deb432ba90
+-----------------------
+Records 1048576000
+-----------------------
+Start took 5ms
+Size  took 0ms
+Read  took 215713ms (read + sort)
+Total took 215719ms

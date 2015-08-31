@@ -1,0 +1,26 @@
+record-value, 112
+seek-chunk, 764415869
+linear-scan, 1, 2, start
+read_file, 4, 1, 2, start
+read_file, 5, 2, 2, start
+read_file, read_file, 6, 3, 2, start
+7, 4, 2, start
+read, 4, 4, 53523
+read (blocked), 4, 4, 55009
+read, 5, 4, 53996
+read (blocked), 5, 4, 55253
+read, 6, 4, 54368
+read (blocked), 6, 4, 55430
+read, 7, 4, 54379
+read (blocked), 7, 4, 55431
+linear-scan, 1, 55432
+do-read, 1, 55432
+
+first: 000000256730afb7ea33
+-----------------------
+Records 1048576000
+-----------------------
+Start took 2ms
+Size  took 0ms
+Read  took 55432ms (read + sort)
+Total took 55435ms
