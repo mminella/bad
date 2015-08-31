@@ -117,7 +117,7 @@ for i in `seq 1 $NPROC`; do
   memalloc_speed $i >> $CPU_LOG
 done
 
-export LD_PRELOAD=/usr/lib/libtcmalloc.so
+export LD_PRELOAD=/usr/local/lib/libtcmalloc.so
 echo "allocator, tcmalloc" >> $CPU_LOG
 echo "# memcpy" >> $CPU_LOG
 memcpy_speed >> $CPU_LOG
