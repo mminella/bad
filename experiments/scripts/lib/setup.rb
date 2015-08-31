@@ -86,7 +86,14 @@ class Setup
       # reboot for libc upgrade
       ssh.root! "reboot"
     end
-    Net::SSH.wait(@opts[:host], @opts[:user], @ssh_opts)
+
+    sleep 10
+    begin
+      wait_opts = @ssh_opts
+      Net::SSH.wait(@opts[:host], @opts[:user], wait_opts)
+    rescue
+      puts "Ignoring SSH timeout while waiting for machine restart"
+    end
 
     # copy across some needed files
     Net::SCP.start(@opts[:host], @opts[:user], @ssh_opts)
@@ -130,7 +137,14 @@ class Setup
       ssh.root! "update-initramfs -c -k all"
       ssh.root! "reboot"
     end
-    Net::SSH.wait(@opts[:host], @opts[:user], @ssh_opts)
+
+    sleep 10
+    begin
+      wait_opts = @ssh_opts
+      Net::SSH.wait(@opts[:host], @opts[:user], wait_opts)
+    rescue
+      puts "Ignoring SSH timeout while waiting for machine restart"
+    end
 
     # tune instance
     Net::SSH.start(@opts[:host], @opts[:user], @ssh_opts) do |ssh|
