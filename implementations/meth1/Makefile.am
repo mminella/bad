@@ -17,6 +17,10 @@ check-all:
 bin-dist:
 	rm -Rf dist_root
 	mkdir -p dist_root/usr/bin dist_root/etc/init
+	chmod 755 dist_root/usr
+	chmod 755 dist_root/usr/bin
+	chmod 755 dist_root/etc
+	chmod 755 dist_root/etc/init
 	cp app/meth1_node dist_root/usr/bin/meth1_node
 	cp app/meth1_shell dist_root/usr/bin/meth1_shell
 	cp app/meth1_client dist_root/usr/bin/meth1_client
@@ -28,6 +32,8 @@ bin-dist:
 	cp scripts/setup_all_fs.sh dist_root/usr/bin/setup_all_fs
 	cp upstart/meth1.conf dist_root/etc/init/
 	cp upstart/meth1_node.conf dist_root/etc/init/
+	chmod 755 dist_root/usr/bin/*
+	chmod 644 dist_root/etc/init/*
 	tar cvzf bad.tar.gz -C dist_root .
 
 recs-1gb:
