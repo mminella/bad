@@ -46,6 +46,7 @@ uint64_t calc_value_size( void )
   }
 
   uint64_t val_len = *min_element( diffs.begin(), diffs.end() );
+  cout << "record-value, " << val_len << endl;
   return min( val_len, 2 * Rec::VAL_LEN );
 }
 
@@ -60,7 +61,7 @@ uint64_t calc_record_space( void )
   // subtract reserved mem for OS & misc
   memFree -= Knobs::MEM_RESERVE;
   // subtract disk read buffers
-  memFree -= ( OverlappedIO::BUFFER_SIZE * num_of_disks() );
+  memFree -= ( OverlappedIO::BUFFER_SIZE * num_of_disks() * 1.25 );
 
   // divisor for r2 & r3 merge buffers
   uint64_t div1 = uint64_t( 2 ) * uint64_t( sizeof( Node::RR ) ) + val_len;
