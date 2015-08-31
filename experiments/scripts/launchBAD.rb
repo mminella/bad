@@ -7,6 +7,7 @@ require './lib/setup'
 require './lib/deploy'
 
 require 'optparse'
+require 'parallel'
 
 SSH_USER = 'ubuntu'
 SSH_PKEY = {} # default
@@ -122,10 +123,11 @@ Launcher.new(options).launch! do |instance|
   `echo "export M#{i}_ID=#{instance.id}" >> #{options[:file]}`
 end
 
-i = 0
 # configure instances
-instances.each do |instance|
+i = 0
+Parallel.map(instances, :in_threads => instances.size) { |instance|
   i += 1
+  j = i
   # wait for instance to be ready and SSH up
   puts "Waiting for instances to become ready..."
   timeout = 120
@@ -143,10 +145,10 @@ instances.each do |instance|
   Net::SSH.wait(instance.dns_name, SSH_USER, SSH_PKEY)
 
   # setup instance
-  puts "Setting up instance (#{i})..."
+  puts "Setting up instance (#{j})..."
   conf = Setup.new(host: instance.dns_name, user: SSH_USER, skey: SSH_PKEY)
   conf.setup!
-  puts "Instance (#{i}) setup for B.A.D!"
+  puts "Instance (#{j}) setup for B.A.D!"
 
   # deploy bad
   puts "Deploying a B.A.D distribution..."
@@ -154,5 +156,5 @@ instances.each do |instance|
                         skey: SSH_PKEY, distfile: options[:tar_file])
   deployer.deploy!
   puts "B.A.D deployed and ready!"
-end
+}
 
