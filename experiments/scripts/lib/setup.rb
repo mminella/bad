@@ -119,7 +119,7 @@ class Setup
 
       # build jemalloc
       ssh.exec! "wget #{JEMALLOC_LOC} && tar xf #{JEMALLOC_FILE}"
-      ssh.exec! "cd #{JEMALLOC_LOC.chomp(".tar.bz2")}; \
+      ssh.exec! "cd #{JEMALLOC_FILE.chomp(".tar.bz2")}; \
         ./configure && make && sudo make install"
 
       # build ixgbevf
