@@ -198,7 +198,7 @@ static void writer( File out, Channel<vector<Record>> chn )
     bio.flush( true );
     out.fsync();
     auto twrite = time_diff<ms>( t0 );
-    cout << "write, " << pass++ << ", " << twrite << endl;
+    cout << "write, " << ++pass << ", " << twrite << endl;
   }
 }
 

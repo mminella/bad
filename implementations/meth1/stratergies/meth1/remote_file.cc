@@ -8,11 +8,12 @@ using namespace meth1;
 
 void RemoteFile::nextChunk( uint64_t chunkN )
 {
-
+  static uint64_t pass = 0;
   if ( offset_ < size_ ) {
     if ( chunkN == 0 or chunkN > chunkSize_ ) {
       chunkN = chunkSize_;
     }
+    cout << "network, " << ++pass << ", " << time_diff<ms>( netStart_ ) << endl;
     c_->sendRead( offset_, chunkN );
     offset_ += chunkN;
     readRPC_ = true;
@@ -48,6 +49,7 @@ void RemoteFile::nextRecord( uint64_t remaining )
       nextChunk( remaining );
     }
     onWire_ = c_->recvRead();
+    netStart_ = time_now();
     readRPC_ = false;
   }
 

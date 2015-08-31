@@ -27,7 +27,7 @@ void Client::sendRead( uint64_t pos, uint64_t siz )
   rpcStart_ = time_now();
   rpcPos_ = pos;
 
-  cout << "start-read, " << pass++ << ", " << pos << ", " << siz << endl;
+  cout << "start-read, " << ++pass << ", " << pos << ", " << siz << endl;
 
   char data[1 + 2 * sizeof( uint64_t )];
   data[0] = 0;
@@ -42,7 +42,7 @@ uint64_t Client::recvRead( void )
 
   auto nrecsStr = sock_.read_buf_all( sizeof( uint64_t ) ).first;
   auto split = time_now();
-  cout << "read, " << pass << ", " << time_diff<ms>( split, rpcStart_ ) << endl;
+  cout << "read, " << ++pass << ", " << time_diff<ms>( split, rpcStart_ ) << endl;
 
   uint64_t nrecs = *reinterpret_cast<const uint64_t *>( nrecsStr );
   cout << "recv-read, " << pass << ", " << rpcPos_ << ", " << nrecs << endl;
@@ -67,7 +67,7 @@ uint64_t Client::recvSize( void )
   static int pass = 0;
 
   auto sizeStr = sock_.read_buf_all( sizeof( uint64_t ) ).first;
-  cout << "size, " << pass++ << ", " << time_diff<ms>( rpcStart_ ) << endl;
+  cout << "size, " << ++pass << ", " << time_diff<ms>( rpcStart_ ) << endl;
 
   uint64_t size = *reinterpret_cast<const uint64_t *>( sizeStr );
   cout << "recv-size, " << pass << ", " << size << endl;

@@ -35,6 +35,8 @@ private:
   std::unique_ptr<uint8_t> buf_{};
   uint64_t bufOffset_ = 0;
 
+  tpoint_t netStart_{};
+
   RecordPtr head_;
 
   void copyWire( void );
@@ -63,6 +65,7 @@ public:
     , inBuf_{other.inBuf_}
     , buf_{std::move( other.buf_ )}
     , bufOffset_{other.bufOffset_}
+    , netStart_{other.netStart_}
     , head_{other.head_}
   {}
 
@@ -79,6 +82,7 @@ public:
       inBuf_ = other.inBuf_;
       buf_ = std::move( other.buf_ );
       bufOffset_ = other.bufOffset_;
+      netStart_ = other.netStart_;
       head_ = other.head_;
     }
     return *this;
