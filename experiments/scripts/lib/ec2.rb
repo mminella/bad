@@ -25,57 +25,185 @@ class Launcher
     i2.4xlarge
     i2.8xlarge]
 
-  # Hash of Ubuntu 15.04 AMIs by availability zone.
+  # Hash of Ubuntu 14.04.1 AMIs by availability zone.
   # Array is in order 64-bit hvm-ssd, 64-bit ebs, 64-bit instance
   UBUNTU_AMIS = {
     :"ap-northeast-1" =>
-      %w[ami-5a78fc5a
-         ami-4478fc44
-         ami-c470f4c4
+      %w[ami-aa7da3aa
+         ami-607da360
+         ami-c44a94c4
         ],
 
     :"ap-southeast-1" =>
-      %w[ami-0cb6b85e
-         ami-6eb6b83c
-         ami-e6bbb5b4
+      %w[ami-fae0daa8
+         ami-cae0da98
+         ami-c4edd796
         ],
 
     :"ap-southeast-2" =>
-      %w[ami-db7133e1
-         ami-f57133cf
-         ami-6772305d
+      %w[ami-cf047ff5
+         ami-e1047fdb
+         ami-37057e0d
         ],
 
     :"eu-west-1" =>
-      %w[ami-e8de819f
-         ami-f0de8187
-         ami-3cabf44b
+      %w[ami-85344af2
+         ami-97344ae0
+         ami-273c4250
         ],
 
     :"sa-east-1" =>
-      %w[ami-9176fe8c
-         ami-9d76fe80
-         ami-1775fd0a
+      %w[ami-952eae88
+         ami-652eae78
+         ami-392dad24
         ],
 
     :"us-east-1" =>
-      %w[ami-6b50e100
-         ami-b951e0d2
-         ami-9b7ccdf0
+      %w[ami-3b6a8050
+         ami-5f6a8034
+         ami-1305ef78
         ],
 
     :"us-west-1" =>
-      %w[ami-0bf60f4f
-         ami-01f60f45
-         ami-4df50c09
+      %w[ami-fb05efbf
+         ami-e305efa7
+         ami-2107ed65
         ],
 
     :"us-west-2" =>
-      %w[ami-efd2c6df
-         ami-e3d2c6d3
-         ami-75d5c145
+      %w[ami-ade2da9d
+         ami-ade1d99d
+         ami-bdedd58d
         ],
   }
+
+  # # Hash of Ubuntu 15.04 AMIs by availability zone.
+  # # Array is in order 64-bit hvm-ssd, 64-bit ebs, 64-bit instance
+  # UBUNTU_AMIS = {
+  #   :"ap-northeast-1" =>
+  #     %w[ami-5a78fc5a
+  #        ami-4478fc44
+  #        ami-c470f4c4
+  #       ],
+  #
+  #   :"ap-southeast-1" =>
+  #     %w[ami-0cb6b85e
+  #        ami-6eb6b83c
+  #        ami-e6bbb5b4
+  #       ],
+  #
+  #   :"ap-southeast-2" =>
+  #     %w[ami-db7133e1
+  #        ami-f57133cf
+  #        ami-6772305d
+  #       ],
+  #
+  #   :"eu-west-1" =>
+  #     %w[ami-e8de819f
+  #        ami-f0de8187
+  #        ami-3cabf44b
+  #       ],
+  #
+  #   :"sa-east-1" =>
+  #     %w[ami-9176fe8c
+  #        ami-9d76fe80
+  #        ami-1775fd0a
+  #       ],
+  #
+  #   :"us-east-1" =>
+  #     %w[ami-6b50e100
+  #        ami-b951e0d2
+  #        ami-9b7ccdf0
+  #       ],
+  #
+  #   :"us-west-1" =>
+  #     %w[ami-0bf60f4f
+  #        ami-01f60f45
+  #        ami-4df50c09
+  #       ],
+  #
+  #   :"us-west-2" =>
+  #     %w[ami-efd2c6df
+  #        ami-e3d2c6d3
+  #        ami-75d5c145
+  #       ],
+  # }
+
+  # Hash of Amazon Linux AMI's (64bit)
+  # Array order: HVM-SSD, HVM-Instance, PV-EBS, PV-Instance
+  # UBUNTU_AMIS = {
+  #   # N. Virginia
+  #   :"us-east-1" =>
+  #     %w[ami-0d4cfd66
+  #        ami-1b4cfd70
+  #        ami-0f4cfd64
+  #        ami-094cfd62
+  #       ],
+  #
+  #   # N. California
+  #   :"us-west-1" =>
+  #     %w[ami-87ea13c3
+  #        ami-fdea13b9
+  #        ami-85ea13c1
+  #        ami-f3ea13b7
+  #       ],
+  #
+  #   # Oregon
+  #   :"us-west-2" =>
+  #     %w[ami-d5c5d1e5
+  #        ami-abc5d19b
+  #        ami-d3c5d1e3
+  #        ami-a9c5d199
+  #       ],
+  #
+  #   # Ireland
+  #   :"eu-west-1" =>
+  #     %w[ami-e4d18e93
+  #        ami-08d18e7f
+  #        ami-d6d18ea1
+  #        ami-0ad18e7d
+  #       ],
+  #
+  #   # Frankfurt
+  #   :"eu-west-2" =>
+  #     %w[ami-a6b0b7bb
+  #        ami-b4b0b7a9
+  #        ami-a4b0b7b9
+  #        ami-b6b0b7ab
+  #       ],
+  #
+  #   # Singapore
+  #   :"ap-southeast-1" =>
+  #     %w[ami-d44b4286
+  #        ami-2e4b427c
+  #        ami-d24b4280
+  #        ami-284b427a
+  #       ],
+  #
+  #   # Sydney
+  #   :"ap-southeast-2" =>
+  #     %w[ami-db7b39e1
+  #        ami-f17b39cb
+  #        ami-ef7b39d5
+  #        ami-f37b39c9
+  #       ],
+  #
+  #   # Tokyo
+  #   :"ap-northeast-1" =>
+  #     %w[ami-1c1b9f1c
+  #        ami-f61a9ef6
+  #        ami-1a1b9f1a
+  #        ami-de1a9ede
+  #       ],
+  #
+  #   # o Paolo
+  #   :"sa-east-1" =>
+  #     %w[ami-55098148
+  #        ami-25098138
+  #        ami-5b098146
+  #        ami-2b098136
+  #       ],
+  # }
 
   def createEC2Client(region='us-east-1')
     keyID = ENV["BAD_AWS_ACCESS_KEY"]
@@ -158,7 +286,7 @@ class Launcher
 
     # Placement group for r3 nodes
     if @options[:instance_type].start_with? "r3" or
-        @options[:instance_type].start_with? "i2" 
+        @options[:instance_type].start_with? "i2"
       puts ""
       print "Placement group? "
       pg = gets.strip
@@ -253,7 +381,7 @@ class Launcher
     if @options[:interactive]
       interactive!
     end
-    
+
     # configure creation
     region = @ec2.regions[@options[:zone][0..-2]]
     ami = UBUNTU_AMIS[region.name.to_sym][@options[:store]]
