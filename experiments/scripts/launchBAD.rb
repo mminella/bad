@@ -122,8 +122,10 @@ Launcher.new(options).launch! do |instance|
   `echo "export M#{i}_ID=#{instance.id}" >> #{options[:file]}`
 end
 
+i = 0
 # configure instances
 instances.each do |instance|
+  i += 1
   # wait for instance to be ready and SSH up
   puts "Waiting for instances to become ready..."
   timeout = 120
