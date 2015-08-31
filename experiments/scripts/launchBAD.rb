@@ -34,11 +34,15 @@ end
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: #{$0} [options]\nCreate a set of new i2.xlarge instances for B.A.D."
 
-  options[:zone] = "ap-southeast-1a"
   options[:group] = "default"
   options[:arch] = 0 # 64-bit
   options[:store] = 0
   options[:terminate] = 0
+
+  options[:zone] = "ap-southeast-1a"
+  opts.on("-z", "--zone ZONE", "AWS region to deploy in") do |zone|
+    options[:zone] = zone.strip
+  end
 
   options[:key_name] = `hostname`.strip
   opts.on("-k", "--key KEY_NAME", "Security key name") do |key|
@@ -102,6 +106,7 @@ end
 
 # start new cluster config
 `echo "# #{Time.now}" > #{options[:file]}`
+`echo "export MREGION=#{options[:zone][0..-2]}" >> #{options[:file]}`
 `echo "export MN=#{options[:count]}" >> #{options[:file]}`
 
 # launch instance

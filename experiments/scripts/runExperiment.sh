@@ -6,14 +6,17 @@ FILE=$1
 SAVE=$2
 N=$3
 MACHINE=$4
+ZONE=$5
 
-if [ -z "${FILE}" -o -z "${SAVE}" -o -z "${N}" -o -z "${MACHINE}" ]; then
-  echo "runExperiment.sh <cluster file> <log path> <nodes> <machine>"
+if [ -z "${FILE}" -o -z "${SAVE}" -o -z "${N}" -o -z "${MACHINE}" \
+      -o -z "${ZONE}" ]; then
+  echo "runExperiment.sh <cluster file> <log path> <nodes> <machine> <zone>"
   exit 1
 fi
 
 # launch
-./launchBAD.rb -f ${FILE} -k ${KEY} -c ${N} 'Measure-%d' -d measure.tar.gz -i ${MACHINE}
+./launchBAD.rb -f ${FILE} -k ${KEY} -c ${N} 'Measure-%d' \
+  -d measure.tar.gz -i ${MACHINE} -z ${ZONE}
 
 source ${FILE}
 

@@ -431,6 +431,7 @@ class Launcher
       ]
     }
 
+    # setup placement group
     if !@options[:placement_group].nil?
       pg = @options[:placement_group]
       config[:placement_group] = pg
@@ -439,6 +440,34 @@ class Launcher
         @ec2.client.create_placement_group(:group_name => pg,
                                            :strategy => 'cluster')
       end
+    end
+
+    # put us into VPC
+    if @options[:zone] == "us-east-1a"
+      config[:subnet] = "subnet-35e65f42"
+      config.delete(:security_groups)
+      config[:security_group_ids] = ["sg-19e00b7d"]
+      # :associate_public_ip_address => true,
+    elsif @options[:zone] == "us-east-1b"
+      config[:subnet] = "subnet-e119c1b8"
+      config.delete(:security_groups)
+      config[:security_group_ids] = ["sg-19e00b7d"]
+    elsif @options[:zone] == "us-east-1d"
+      config[:subnet] = "subnet-cb52a8e0"
+      config.delete(:security_groups)
+      config[:security_group_ids] = ["sg-19e00b7d"]
+    elsif @options[:zone] == "us-east-1e"
+      config[:subnet] = "subnet-cac4a1f0"
+      config.delete(:security_groups)
+      config[:security_group_ids] = ["sg-19e00b7d"]
+    elsif @options[:zone] == "us-west-1a"
+      config[:subnet] = "subnet-1d2a145b"
+      config.delete(:security_groups)
+      config[:security_group_ids] = ["sg-0d946f68"]
+    elsif @options[:zone] == "us-west-1b"
+      config[:subnet] = "subnet-a9c739cc"
+      config.delete(:security_groups)
+      config[:security_group_ids] = ["sg-0d946f68"]
     end
 
     # create the instance(s)
