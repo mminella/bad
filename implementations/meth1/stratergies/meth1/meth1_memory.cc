@@ -46,7 +46,6 @@ uint64_t calc_value_size( void )
   }
 
   uint64_t val_len = *min_element( diffs.begin(), diffs.end() );
-  cout << "record-value, " << val_len << endl;
   return min( val_len, 2 * Rec::VAL_LEN );
 }
 
