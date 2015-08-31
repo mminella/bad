@@ -8,9 +8,10 @@ require 'net/ssh'
 require 'net/scp'
 require './lib/ssh'
 
-HOME = '/home/ubuntu'
-
 class Deploy
+
+  USER = 'ubuntu'
+  HOME = "/home/#{USER}"
 
   # { :hostname, :distfile, :user, :skey }
   def initialize(opts)
@@ -30,9 +31,9 @@ class Deploy
       @hostname = $stdin.gets.strip
     end
 
-    print "SSH username to login with? [ubuntu] "
+    print "SSH username to login with? [#{USER}] "
     @user = $stdin.gets.strip
-    @user = "ubuntu" if @user.length == 0
+    @user = USER if @user.length == 0
 
     if @skey.nil?
       print "Private Key to use? [default] "

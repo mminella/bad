@@ -111,7 +111,7 @@ Launcher.new(options).launch! do |instance|
   i += 1
   instances += [instance]
   puts "New instance (#{i}) at: #{instance.dns_name}"
-  
+
   # store machine
   `echo "export M#{i}=#{instance.dns_name}" >> #{options[:file]}`
   `echo "export M#{i}_ID=#{instance.id}" >> #{options[:file]}`
