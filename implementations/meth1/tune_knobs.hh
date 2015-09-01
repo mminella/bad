@@ -10,7 +10,7 @@
 namespace Knobs {
   /* Overlapped IO buffer sizes .*/
   static constexpr uint64_t IO_BLOCK = 4096 * 256 * 10; // 10MB
-  static constexpr uint64_t IO_NBLOCKS = 300;           // 3GB
+  static constexpr uint64_t IO_NBLOCKS = 400;           // 4GB
 
   /* Buffered (not overlapped) IO size */
   static constexpr uint64_t IO_BUFFER_DEFAULT = 1024 * 1024;
@@ -26,7 +26,8 @@ namespace Knobs {
   static constexpr uint64_t CLIENT_MAX_BUFFER = 1024 * 1024 * 1000 * uint64_t( 5 );
 
   /* Memory to leave unused for OS and other misc purposes. */
-  static constexpr uint64_t MEM_RESERVE = 1024 * 1024 * uint64_t( 1000 ) * uint64_t( 2 );
+  static constexpr uint64_t MEM_RESERVE = 1024 * 1024 * uint64_t( 1000 ) *
+    uint64_t( 3 ) + IO_BUFFER_NETW;
 
   /* How much smaller ( 1 / SORT_MERGE_RATIO ) should the sort buffer be than
    * the merge buffer? */
