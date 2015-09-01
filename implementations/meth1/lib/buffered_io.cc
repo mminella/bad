@@ -12,9 +12,6 @@
 
 using namespace std;
 
-/* needed as we need a definition since std::min takes references */
-const size_t BufferedIO::BUFFER_SIZE;
-
 /* read, returning a pointer into the internal buffer */
 pair<const char *, size_t> BufferedIO::rread_buf( size_t limit, bool read_all )
 {
@@ -23,7 +20,7 @@ pair<const char *, size_t> BufferedIO::rread_buf( size_t limit, bool read_all )
   char * buf = rbuf_.get();
 
   /* can't return large segments than our buffer */
-  limit = min( limit, BUFFER_SIZE );
+  limit = min( limit, rsize_ );
 
   /* can fill (at least partially) from cache */
   if ( rstart_ < rend_ ) {
@@ -44,7 +41,7 @@ pair<const char *, size_t> BufferedIO::rread_buf( size_t limit, bool read_all )
 
   /* cache empty, refill */
   do {
-    rend_ += io_->read( buf + rend_, BUFFER_SIZE - rend_ );
+    rend_ += io_->read( buf + rend_, rsize_ - rend_ );
   } while ( read_all and rend_ < limit and !io_->eof() );
 
   /* return from cache */
@@ -56,7 +53,7 @@ pair<const char *, size_t> BufferedIO::rread_buf( size_t limit, bool read_all )
 pair<const char *, size_t> BufferedIO::read_buf( size_t limit )
 {
   if ( limit == 0 ) {
-    throw runtime_error( "asked to read 0" );
+    limit = rsize_;
   }
   return rread_buf( limit, false );
 }
@@ -65,7 +62,7 @@ pair<const char *, size_t> BufferedIO::read_buf_all( size_t nbytes )
 {
   if ( nbytes == 0 ) {
     throw runtime_error( "asked to read 0" );
-  } else if ( nbytes > BUFFER_SIZE ) {
+  } else if ( nbytes > rsize_ ) {
     throw runtime_error( "read request larger than buffer!" );
   }
   return rread_buf( nbytes, true );
@@ -92,14 +89,14 @@ string BufferedIO::rread( size_t limit )
 size_t BufferedIO::wwrite( const char * buf, size_t nbytes )
 {
   /* copy to available buffer space */
-  size_t limit = min( nbytes, BUFFER_SIZE - wend_ );
+  size_t limit = min( nbytes, wsize_ - wend_ );
   if ( limit > 0 ) {
     memcpy( wbuf_.get() + wend_, buf, limit );
     wend_ += limit;
   }
 
   /* buffer full so flush */
-  if ( wend_ == BUFFER_SIZE ) {
+  if ( wend_ == wsize_ ) {
     flush( false );
   }
 
