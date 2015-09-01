@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <numeric>
 #include <thread>
 
 #include "tbb/task_group.h"
@@ -68,7 +69,8 @@ void parallel( char * key, char * rbuf, size_t splits )
 
 int main( int argc, char ** argv )
 {
-  char * rbuf = (char *) aligned_alloc( ALIGN, DATASIZE );
+  char * rbuf;
+  posix_memalign( (void **) &rbuf, ALIGN, DATASIZE );
   for ( size_t i = KEYSIZE - 1; i < DATASIZE; i += KEYSIZE ) {
     rbuf[i] = 0;
   }

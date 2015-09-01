@@ -54,7 +54,7 @@ void parallel_pinned_n( char * rbuf, size_t splits )
 {
   char ** wbuf_i = new char*[splits];
   for ( size_t i = 0; i < splits; i++ ) {
-    wbuf_i[i] = (char *) aligned_alloc( ALIGN, COPY_SIZE / splits );
+    posix_memalign( (void **) &wbuf_i[i], ALIGN, COPY_SIZE / splits );
     memset( wbuf_i[i], 0, COPY_SIZE / splits );
   }
 
@@ -76,8 +76,10 @@ void parallel_pinned_n( char * rbuf, size_t splits )
 
 int main( int argc, char ** argv )
 {
-  char * rbuf = (char *) aligned_alloc( ALIGN, COPY_SIZE );
-  char * wbuf = (char *) aligned_alloc( ALIGN, COPY_SIZE );
+  char * rbuf;
+  posix_memalign( (void **) &rbuf, ALIGN, COPY_SIZE );
+  char * wbuf;
+  posix_memalign( (void **) &wbuf, ALIGN, COPY_SIZE );
   memset( rbuf, 0, COPY_SIZE );
   memset( wbuf, 0, COPY_SIZE );
 
