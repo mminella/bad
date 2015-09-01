@@ -13,7 +13,10 @@ namespace Knobs {
   static constexpr uint64_t IO_NBLOCKS = 300;           // 3GB
 
   /* Buffered (not overlapped) IO size */
-  static constexpr uint64_t IO_BUFFER = 1024 * 1024;
+  static constexpr uint64_t IO_BUFFER_DEFAULT = 1024 * 1024;
+
+  /* Network write buffer size (measured in records, not bytes) */
+  static constexpr uint64_t IO_BUFFER_NETW = 1024 * 1024 * 5; // 500MB
 
   /* Maximum copy buffer a client should use. The copy buffer is used to copy
    * data of the wire once we less than the copy buffer size is remaining on

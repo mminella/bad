@@ -45,9 +45,9 @@ void Node::Run( void )
 
   while ( true ) {
     try {
-      BufferedIO_O<TCPSocket> client {sock.accept()};
+      TCPSocket client {sock.accept()};
       while ( true ) {
-        const char * str = client.read_buf_all( 1 ).first;
+        auto str = client.read_all( 1 );
         if ( client.eof() ) {
           break;
         }
@@ -73,11 +73,18 @@ exit:
   return;
 }
 
-void Node::RPC_Read( BufferedIO_O<TCPSocket> & client )
+void Node::RPC_Read( TCPSocket & client )
 {
-  const char * str = client.read_buf_all( 2 * sizeof( uint64_t ) ).first;
-  uint64_t pos = *( reinterpret_cast<const uint64_t *>( str ) );
-  uint64_t amt = *( reinterpret_cast<const uint64_t *>( str ) + 1 );
+  static char * buf1 = new char[Knobs::IO_BUFFER_NETW * Rec::SIZE];
+  static char * buf2 = new char[Knobs::IO_BUFFER_NETW * Rec::SIZE];
+
+  constexpr size_t rpcSize = 2 * sizeof( uint64_t );
+  char rpcData[rpcSize];
+
+  client.read_all( rpcData, rpcSize );
+
+  uint64_t pos = *( reinterpret_cast<const uint64_t *>( rpcData ) );
+  uint64_t amt = *( reinterpret_cast<const uint64_t *>( rpcData ) + 1 );
 
   RecV recs;
   if ( pos < Size() ) {
@@ -86,18 +93,55 @@ void Node::RPC_Read( BufferedIO_O<TCPSocket> & client )
 
   uint64_t siz = recs.size();
   client.write_all( reinterpret_cast<const char *>( &siz ), sizeof( uint64_t ) );
-  for ( auto const & r : recs ) {
-    r.write( client );
+
+  const uint64_t splits = 4;
+  const uint64_t chunk = Knobs::IO_BUFFER_NETW / splits;
+  RR * data = recs.data();
+
+  // transfer records
+  for ( uint64_t i = 0; i < siz; i+= Knobs::IO_BUFFER_NETW ) {
+
+    // fill network buffer in parallel
+    for ( uint64_t j = 0; j < splits; j++ ) {
+      const uint64_t start = i + chunk * j;
+      const uint64_t end = min( i + chunk * (j + 1), siz );
+      char * wbuf = buf1 + j * chunk * Rec::SIZE;
+      if ( start >= siz ) {
+        break;
+      }
+
+      tg_.run( [wbuf, start, end, data]() {
+        char * wptr = wbuf;
+        for ( uint64_t k = start; k < end; k++ ) {
+          memcpy( wptr, data[k].key(), Rec::KEY_LEN );
+          memcpy( wptr+Rec::KEY_LEN, data[k].val(), Rec::VAL_LEN );
+          wptr += Rec::SIZE;
+        }
+      } );
+    }
+    tg_.wait();
+
+    // write the buffer (don't wait, as we want to overlap with filling buf2)
+    char * wbuf = buf1;
+    uint64_t bufSize = Knobs::IO_BUFFER_NETW * Rec::SIZE;
+    bufSize = min( bufSize, (siz - i) * Rec::SIZE );
+    tg_.run( [&client, wbuf, bufSize]() {
+      client.write_all( wbuf, bufSize );
+    } );
+
+    // swap buffers
+    swap( buf1, buf2 );
   }
-  client.flush( true );
+
+  // wait for final write to finish
+  tg_.wait();
 }
 
-void Node::RPC_Size( BufferedIO_O<TCPSocket> & client )
+void Node::RPC_Size( TCPSocket & client )
 {
   uint64_t siz = Size();
   client.write_all( reinterpret_cast<const char *>( &siz ),
                     sizeof( uint64_t ) );
-  client.flush( true );
 }
 
 Node::RecV Node::Read( uint64_t pos, uint64_t size )
