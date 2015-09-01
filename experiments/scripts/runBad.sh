@@ -4,8 +4,7 @@ KEY=$( hostname )
 LOG='~/bad.log'
 ITERS=1
 PORT=9000
-MNT=/mnt/b
-READER_OUT=${MNT}/out/
+READER_OUT="/mnt/b/out"
 FILE=$1
 SAVE=$2
 SIZE=$3
@@ -23,6 +22,16 @@ if [ $# != 9 ]; then
   echo "runBad.sh <cluster file> <log path> <size> <chunk> <machine> <nodes>" \
     "<o_direct> <cmd> <dist_tar>"
   exit 1
+fi
+
+if [ $MACHINE = "i2.xlarge" ]; then
+  FILES_ALL="/mnt/b/recs"
+elif [ $MACHINE = "i2.2xlarge" ]; then
+  FILES_ALL="/mnt/b/recs /mnt/c/recs"
+elif [ $MACHINE = "i2.4xlarge" ]; then
+  FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs"
+elif [ $MACHINE = "i2.8xlarge" ]; then
+  FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs /mnt/f/recs /mnt/g/recs /mnt/h/recs /mnt/i/recs"
 fi
 
 # Launch
@@ -74,7 +83,7 @@ reader() {
 # 2 - op
 experiment() {
   for i in `seq 1 $ITERS`; do
-    backends "sudo start meth1 && sudo start meth1_node ODIRECT=${1} FILE=${MNT}/recs"
+    backends "sudo start meth1 && sudo start meth1_node ODIRECT=${1} FILE=\"${FILES_ALL}\""
     reader "# $(( $N - 1 )), ${SIZE}, ${CHUNK}, ${1}, ${2}" \
       ${CHUNK_B} ${2}
     backends "sudo clear_buffers"
@@ -84,7 +93,7 @@ experiment() {
 
 # Run experiment
 all "setup_all_fs 2>&1 > /dev/null"
-backends "gensort -t16 ${SIZE_B},buf ${MNT}/recs 2>&1 > /dev/null"
+backends "gensort_all ${SIZE_B} recs"
 experiment ${ODIR} ${CMDD}
 
 # Create log directory
