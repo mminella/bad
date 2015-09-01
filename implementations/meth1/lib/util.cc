@@ -1,5 +1,8 @@
 #include <fcntl.h>
 #include <pwd.h>
+#ifdef __APPLE__
+#include <sys/sysctl.h>
+#endif
 #include <unistd.h>
 
 #include <algorithm>
@@ -71,15 +74,26 @@ const string join( const vector<string> & command )
 /* Physical memory present on the machine */
 uint64_t memory_exists( void )
 {
+#ifdef __APPLE__
+  uint64_t mem;
+  size_t len = sizeof(mem);
+  sysctlbyname("hw.memsize", &mem, &len, NULL, 0);
+  return mem;
+#else
   uint64_t pages = sysconf( _SC_PHYS_PAGES );
   uint64_t pg_sz = sysconf( _SC_PAGE_SIZE );
   return pages * pg_sz;
+#endif
 }
 
 /* Physical memory present and free on the machine */
 uint64_t memory_free( void )
 {
+#ifdef __APPLE__
+  return memory_exists();
+#else
   uint64_t pages = sysconf( _SC_AVPHYS_PAGES );
   uint64_t pg_sz = sysconf( _SC_PAGE_SIZE );
   return pages * pg_sz;
+#endif
 }

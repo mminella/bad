@@ -2,12 +2,15 @@
  * Test how quickly we can just read from disk, filtering some keys and storing
  * into memory.
  */
+#include <stdlib.h>
 #include <sys/stat.h>
 
 #include <iostream>
+#include <numeric>
 
 #include "file.hh"
 #include "overlapped_rec_io.hh"
+#include "linux_compat.hh"
 #include "record.hh"
 #include "timestamp.hh" 
 #include "util.hh"
@@ -94,7 +97,8 @@ void run_inmem( char * fin )
 
   // 2) READ FILE INTO MEMORY
   auto tr = time_now();
-  char * rbuf = (char *) aligned_alloc( 4096, st.st_size );
+  char * rbuf;
+  posix_memalign( (void **) &rbuf, 4096, st.st_size );
   for ( int nr = 0; nr < st.st_size; ) {
     auto r = fread( rbuf, st.st_size - nr, 1, fdi );
     if ( r <= 0 ) {

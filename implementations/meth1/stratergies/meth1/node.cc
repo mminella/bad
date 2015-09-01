@@ -1,5 +1,8 @@
+#include <numeric>
+
 #include "tune_knobs.hh"
 
+#include "linux_compat.hh"
 #include "util.hh"
 
 #include "meth1_memory.hh"
