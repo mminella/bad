@@ -17,17 +17,20 @@ Client::Client( Address node )
   , addr_{node}
   , rpcStart_{}
   , rpcPos_{0}
+  , sendPass_{0}
+  , recvPass_{0}
+  , sizePass_{0}
 {
   sock_.io().connect( addr_ );
 }
 
 void Client::sendRead( uint64_t pos, uint64_t siz )
 {
-  static int pass = 0;
   rpcStart_ = time_now();
   rpcPos_ = pos;
 
-  cout << "start-read, " << ++pass << ", " << pos << ", " << siz << endl;
+  cout << "start-read, " << sock_.io().fd_num() << ++sendPass_ << ", " << pos
+    << ", " << siz << ", " << timestamp<ms>() << endl;
 
   char data[1 + 2 * sizeof( uint64_t )];
   data[0] = 0;
@@ -38,14 +41,12 @@ void Client::sendRead( uint64_t pos, uint64_t siz )
 
 uint64_t Client::recvRead( void )
 {
-  static int pass = 0;
-
   auto nrecsStr = sock_.read_buf_all( sizeof( uint64_t ) ).first;
   auto split = time_now();
-  cout << "read, " << ++pass << ", " << time_diff<ms>( split, rpcStart_ ) << endl;
+  cout << "read, " sock_<< ++recvPass_ << ", " << time_diff<ms>( split, rpcStart_ ) << endl;
 
   uint64_t nrecs = *reinterpret_cast<const uint64_t *>( nrecsStr );
-  cout << "recv-read, " << pass << ", " << rpcPos_ << ", " << nrecs << endl;
+  cout << "recv-read, " << recvPass_ << ", " << rpcPos_ << ", " << nrecs << endl;
   return nrecs;
 }
 
@@ -64,13 +65,11 @@ void Client::sendSize( void )
 
 uint64_t Client::recvSize( void )
 {
-  static int pass = 0;
-
   auto sizeStr = sock_.read_buf_all( sizeof( uint64_t ) ).first;
-  cout << "size, " << ++pass << ", " << time_diff<ms>( rpcStart_ ) << endl;
+  cout << "size, " << ++sizePass_ << ", " << time_diff<ms>( rpcStart_ ) << endl;
 
   uint64_t size = *reinterpret_cast<const uint64_t *>( sizeStr );
-  cout << "recv-size, " << pass << ", " << size << endl;
+  cout << "recv-size, " << sizePass_ << ", " << size << endl;
   return size;
 }
 

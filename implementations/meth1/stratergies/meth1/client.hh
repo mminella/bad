@@ -30,6 +30,9 @@ public:
   /* rpc state */
   clk::time_point rpcStart_;
   uint64_t rpcPos_;
+  size_t sendPass_;
+  size_t recvPass_;
+  size_t sizePass_;
 
 public:
   Client( Address node );
