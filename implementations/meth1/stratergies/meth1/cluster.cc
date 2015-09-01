@@ -130,6 +130,8 @@ void Cluster::Read( uint64_t pos, uint64_t size )
 
 void Cluster::ReadAll( void )
 {
+  static uint64_t pass = 0;
+
   if ( clients_.size() == 1 ) {
     // optimize for 1 node
     auto & c = clients_.front();
@@ -137,9 +139,11 @@ void Cluster::ReadAll( void )
     for ( uint64_t i = 0; i < size; i += chunkSize_ ) {
       c.sendRead( i, chunkSize_ );
       auto nrecs = c.recvRead();
+      auto t0 = time_now();
       for ( uint64_t j = 0; j < nrecs; j++ ) {
         c.readRecord();
       }
+      cout << "network, " << ++pass << ", " << time_diff<ms>( t0 ) << endl;
     }
   } else {
     // general n node case
