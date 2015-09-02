@@ -8,12 +8,10 @@ using namespace meth1;
 
 void RemoteFile::nextChunk( uint64_t chunkN )
 {
-  static uint64_t pass = 0;
   if ( offset_ < size_ ) {
     if ( chunkN == 0 or chunkN > chunkSize_ ) {
       chunkN = chunkSize_;
     }
-    cout << "network, " << ++pass << ", " << time_diff<ms>( netStart_ ) << endl;
     c_->sendRead( offset_, chunkN );
     offset_ += chunkN;
     readRPC_ = true;
@@ -39,6 +37,8 @@ void RemoteFile::copyWire( void )
     inBuf_ = onWire_;
     onWire_ = 0;
     bufOffset_ = 0;
+    cout << "copy-wire, " << ++wirePass_ << ", " << time_diff<ms>( netStart_ )
+      << endl;
   }
 }
 
@@ -46,7 +46,7 @@ void RemoteFile::nextRecord( uint64_t remaining )
 {
   if ( onWire_ == 0 and inBuf_ == 0 ) {
     if ( !readRPC_ ) {
-      nextChunk( remaining );
+      throw new runtime_error( "no outstanding read rpc" );
     }
     onWire_ = c_->recvRead();
     netStart_ = time_now();

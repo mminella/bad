@@ -39,6 +39,8 @@ private:
 
   RecordPtr head_;
 
+  size_t wirePass_ = 0;
+
   void copyWire( void );
 
 public:

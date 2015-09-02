@@ -29,8 +29,8 @@ void Client::sendRead( uint64_t pos, uint64_t siz )
   rpcStart_ = time_now();
   rpcPos_ = pos;
 
-  cout << "start-read, " << sock_.io().fd_num() << ++sendPass_ << ", " << pos
-    << ", " << siz << ", " << timestamp<ms>() << endl;
+  cout << "start-read, " << sock_.io().fd_num() << ", " << ++sendPass_ << ", "
+    << pos << ", " << siz << ", " << timestamp<ms>() << endl;
 
   char data[1 + 2 * sizeof( uint64_t )];
   data[0] = 0;
@@ -43,10 +43,12 @@ uint64_t Client::recvRead( void )
 {
   auto nrecsStr = sock_.read_buf_all( sizeof( uint64_t ) ).first;
   auto split = time_now();
-  cout << "read, " sock_<< ++recvPass_ << ", " << time_diff<ms>( split, rpcStart_ ) << endl;
+  cout << "read, " << sock_.io().fd_num() << ", " << ++recvPass_ << ", "
+    << time_diff<ms>( split, rpcStart_ ) << endl;
 
   uint64_t nrecs = *reinterpret_cast<const uint64_t *>( nrecsStr );
-  cout << "recv-read, " << recvPass_ << ", " << rpcPos_ << ", " << nrecs << endl;
+  cout << "recv-read, " << sock_.io().fd_num() << ", " << recvPass_ << ", "
+    << rpcPos_ << ", " << nrecs << ", " << timestamp<ms>() << endl;
   return nrecs;
 }
 
@@ -66,15 +68,17 @@ void Client::sendSize( void )
 uint64_t Client::recvSize( void )
 {
   auto sizeStr = sock_.read_buf_all( sizeof( uint64_t ) ).first;
-  cout << "size, " << ++sizePass_ << ", " << time_diff<ms>( rpcStart_ ) << endl;
+  cout << "size, " << sock_.io().fd_num() << ", " << ++sizePass_ << ", "
+    << time_diff<ms>( rpcStart_ ) << endl;
 
   uint64_t size = *reinterpret_cast<const uint64_t *>( sizeStr );
-  cout << "recv-size, " << sizePass_ << ", " << size << endl;
+  cout << "recv-size, " << sock_.io().fd_num() << ", " << sizePass_ << ", "
+    << size << endl;
   return size;
 }
 
 void Client::sendShutdown( void )
 {
   int8_t rpc = 2;
-  sock_.io().write_all( (char *)&rpc, 1 );
+  sock_.io().write_all( (char *) &rpc, 1 );
 }

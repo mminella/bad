@@ -30,6 +30,8 @@ public:
   /* rpc state */
   clk::time_point rpcStart_;
   uint64_t rpcPos_;
+
+  /* debug info */
   size_t sendPass_;
   size_t recvPass_;
   size_t sizePass_;
