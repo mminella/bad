@@ -34,7 +34,7 @@ void reader( Node * node, size_t block_size,
     auto tr = time_now();
     auto recs = node->Read( pos, block_size );
 
-#if REUSE_MEM == 1
+#if defined(REUSE_MEM) && (REUSE_MEM == 1)
     RR * rec_copy = new RR[recs.size()];
     for ( size_t i = 0; i < recs.size(); i++ ) {
       rec_copy[i].copy( recs[i] );
