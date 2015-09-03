@@ -4,7 +4,7 @@
 
 #include "tune_knobs.hh"
 
-#include "overlapped_io.hh"
+#include "circular_io.hh"
 #include "util.hh"
 
 #include "record.hh"
@@ -61,7 +61,7 @@ uint64_t calc_record_space( void )
   // subtract reserved mem for OS & misc
   memFree -= Knobs::MEM_RESERVE;
   // subtract disk read buffers
-  memFree -= ( OverlappedIO::BUFFER_SIZE * num_of_disks() * 1.25 );
+  memFree -= ( CircularIO::BUFFER_SIZE * num_of_disks() * 1.25 );
 
   // divisor for r2 & r3 merge buffers
   uint64_t div1 = uint64_t( 2 ) * uint64_t( sizeof( Node::RR ) ) + val_len;

@@ -11,7 +11,7 @@ libbasicrts_la_SOURCES = \
 	file_descriptor.hh file_descriptor.cc \
 	io_device.hh io_device.cc \
 	linux_compat.hh \
-	memory_io.hh overlapped_io.hh overlapped_rec_io.hh \
+	memory_io.hh overlapped_rec_io.hh \
 	merge.hh \
 	pipe.hh pipe.cc \
 	poller.hh poller.cc \
