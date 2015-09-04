@@ -8,7 +8,8 @@ libmeth1_la_SOURCES = \
 	node.hh node.cc \
 	priority_queue.hh \
 	rec_loader.hh rec_loader.cc \
-	remote_file.hh remote_file.cc
+	remote_file.hh remote_file.cc \
+	remote_file2.hh
 
 libmeth1_la_CPPFLAGS = \
 	-I$(srcdir)/.. \

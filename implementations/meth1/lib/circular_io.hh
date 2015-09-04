@@ -38,6 +38,8 @@ private:
   Channel<uint64_t> start_;
   std::thread reader_;
   uint64_t readPass_;
+  std::function<void(void)> io_cb_;
+  uint64_t id_;
 
   /* continually read from the device, taking commands over a channel */
   void read_loop( void )
@@ -53,8 +55,8 @@ private:
       if ( nbytes == 0 ) {
         continue;
       }
-      std::cout << "circular_read, " << ++readPass_ << ", "
-        << timestamp<ms>() << ", start" << std::endl;
+      std::cout << "circular_read, " << id_ << ", " << ++readPass_ << ", "
+        << nbytes << ", " << timestamp<ms>() << ", start" << std::endl;
 
       auto ts = time_now();
       tdiff_t tt = 0;
@@ -75,26 +77,29 @@ private:
         }
 
         if ( rbytes >= nbytes ) {
+          io_cb_();
           blocks_.send( { nullptr, 0} ); // indicate EOF
           break;
         }
       }
       auto te = time_diff<ms>( ts );
-      std::cout << "circular_read, " << readPass_
+      std::cout << "circular_read, " << id_ << ", " << readPass_
         << ", " << tt << std::endl;
-      std::cout << "circular_read (blocked), " << readPass_
+      std::cout << "circular_read (blocked), " << id_ << ", " << readPass_
         << ", " << te << std::endl;
     }
   }
 
 public:
-  CircularIO( IODevice & io )
+  CircularIO( IODevice & io, uint64_t id = 0 )
     : io_{io}
     , buf_{nullptr}
     , blocks_{NBLOCKS-2}
     , start_{0}
     , reader_{std::thread( &CircularIO::read_loop,  this )}
     , readPass_{0}
+    , io_cb_{[]() {}}
+    , id_{id}
   {
     posix_memalign( (void **) &buf_, ALIGNMENT, BUFFER_SIZE );
   };
@@ -124,6 +129,11 @@ public:
   block_ptr next_block( void )
   {
     return blocks_.recv();
+  }
+
+  void set_io_drained_cb( std::function<void(void)> f )
+  {
+    io_cb_ = f;
   }
 };
 

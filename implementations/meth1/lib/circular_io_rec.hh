@@ -19,8 +19,8 @@ private:
   const char * pos_;
 
 public:
-  CircularIORec( IODevice & io )
-    : CircularIO( io )
+  CircularIORec( IODevice & io, uint64_t id = 0 )
+    : CircularIO( io, id )
     , bend_{nullptr}
     , pos_{nullptr}
   {};

@@ -7,7 +7,7 @@
 #include "cluster.hh"
 #include "meth1_memory.hh"
 #include "priority_queue.hh"
-#include "remote_file.hh"
+#include "remote_file2.hh"
 
 using namespace std;
 using namespace meth1;
@@ -93,37 +93,43 @@ void Cluster::Read( uint64_t pos, uint64_t size )
     }
   } else {
     // general n node case
-    vector<RemoteFile> files;
-    mystl::priority_queue_min<RemoteFilePtr> pq{clients_.size()};
-    uint64_t totalSize = Size();
-    uint64_t end = min( totalSize, pos + size );
+    vector<RemoteFile2 *> files;
+    mystl::priority_queue_min<RemoteFilePtr2> pq{clients_.size()};
 
     // prep -- size
     for ( auto & c : clients_ ) {
-      files.emplace_back( c, chunkSize_, bufSize_ );
-      files.back().sendSize();
+      files.push_back( new RemoteFile2( c, chunkSize_, bufSize_ ) );
+      files.back()->sendSize();
     }
+
+    uint64_t totalSize = 0;
 
     // prep -- 1st chunk
-    for ( auto & f : files ) {
-      f.recvSize();
-      f.nextChunk( size );
+    for ( auto f : files ) {
+      totalSize += f->recvSize();
+      f->nextChunk();
     }
 
+    uint64_t end = min( totalSize, pos + size );
+
     // prep -- 1st record
-    for ( auto & f : files ) {
-      f.nextRecord( size );
+    for ( auto f : files ) {
+      f->nextRecord();
       pq.push( {f} );
     }
 
     // read to end records
     for ( uint64_t i = 0; i < end; i++ ) {
-      RemoteFilePtr f = pq.top();
+      RemoteFilePtr2 f = pq.top();
       pq.pop();
       if ( !f.eof() ) {
-        f.nextRecord( size - i );
+        f.nextRecord();
         pq.push( f );
       }
+    }
+
+    for ( auto f : files ) {
+      delete f;
     }
   }
 }
@@ -147,36 +153,41 @@ void Cluster::ReadAll( void )
     }
   } else {
     // general n node case
-    vector<RemoteFile> files;
-    mystl::priority_queue_min<RemoteFilePtr> pq{clients_.size()};
-    uint64_t size = Size();
+    vector<RemoteFile2 *> files;
+    mystl::priority_queue_min<RemoteFilePtr2> pq{clients_.size()};
 
     // prep -- size
     for ( auto & c : clients_ ) {
-      files.emplace_back( c, chunkSize_, bufSize_ );
-      files.back().sendSize();
+      files.push_back( new RemoteFile2( c, chunkSize_, bufSize_ ) );
+      files.back()->sendSize();
     }
 
+    uint64_t size = 0;
+
     // prep -- 1st chunk
-    for ( auto & f : files ) {
-      f.recvSize();
-      f.nextChunk();
+    for ( auto f : files ) {
+      size += f->recvSize();
+      f->nextChunk();
     }
 
     // prep -- 1st record
-    for ( auto & f : files ) {
-      f.nextRecord();
+    for ( auto f : files ) {
+      f->nextRecord();
       pq.push( {f} );
     }
 
     // read all records
     for ( uint64_t i = 0; i < size; i++ ) {
-      RemoteFilePtr f = pq.top();
+      RemoteFilePtr2 f = pq.top();
       pq.pop();
       if ( !f.eof() ) {
         f.nextRecord();
         pq.push( f );
       }
+    }
+
+    for ( auto f : files ) {
+      delete f;
     }
   }
 }
@@ -188,9 +199,7 @@ static void writer( File out, Channel<vector<Record>> chn )
   vector<Record> recs;
   while ( true ) {
     try {
-      cout << "wait write!" << endl;
       recs = move( chn.recv() );
-      cout << "got write!" << endl;
     } catch ( const std::exception & e ) {
       print_exception( e );
       break;
@@ -222,28 +231,29 @@ void Cluster::WriteAll( File out )
     }
   } else {
     // general n node case
-    vector<RemoteFile> files;
-    mystl::priority_queue_min<RemoteFilePtr> pq{clients_.size()};
-    uint64_t size = Size();
+    vector<RemoteFile2 *> files;
+    mystl::priority_queue_min<RemoteFilePtr2> pq{clients_.size()};
 
     Channel<vector<Record>> chn( WRITE_BUF_N - 1 );
     thread twriter( writer, move( out ), chn );
 
     // prep -- size
     for ( auto & c : clients_ ) {
-      files.emplace_back( c, chunkSize_, bufSize_ );
-      files.back().sendSize();
+      files.push_back( new RemoteFile2( c, chunkSize_, bufSize_ ) );
+      files.back()->sendSize();
     }
 
+    uint64_t size = 0;
+
     // prep -- 1st chunk
-    for ( auto & f : files ) {
-      f.recvSize();
-      f.nextChunk();
+    for ( auto f : files ) {
+      size += f->recvSize();
+      f->nextChunk();
     }
 
     // prep -- 1st record
-    for ( auto & f : files ) {
-      f.nextRecord();
+    for ( auto f : files ) {
+      f->nextRecord();
       pq.push( {f} );
     }
 
@@ -251,7 +261,7 @@ void Cluster::WriteAll( File out )
     vector<Record> recs;
     recs.reserve( bufSize_ );
     for ( uint64_t i = 0; i < size and pq.size() > 0; i++ ) {
-      RemoteFilePtr f = pq.top();
+      RemoteFilePtr2 f = pq.top();
       pq.pop();
       recs.emplace_back( f.curRecord() );
       if ( !f.eof() ) {
@@ -271,6 +281,10 @@ void Cluster::WriteAll( File out )
     chn.waitEmpty();
     chn.close();
     twriter.join();
+
+    for ( auto f : files ) {
+      delete f;
+    }
   }
 }
 
