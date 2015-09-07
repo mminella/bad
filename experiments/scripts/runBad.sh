@@ -95,6 +95,7 @@ experiment() {
 # Run experiment
 all "setup_all_fs 2>&1 > /dev/null"
 backends "gensort_all ${SIZE_B} recs"
+all "sudo clear_buffers"
 experiment ${ODIR} ${CMDD}
 
 # Create log directory
