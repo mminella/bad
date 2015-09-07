@@ -79,7 +79,8 @@ void Node::RPC_Read( TCPSocket & client )
   static char * buf2 = new char[Knobs::IO_BUFFER_NETW * Rec::SIZE];
 
   constexpr size_t rpcSize = 2 * sizeof( uint64_t );
-  char rpcData[rpcSize];
+  char strArray[rpcSize];
+  char * rpcData = strArray;
 
   client.read_all( rpcData, rpcSize );
 
