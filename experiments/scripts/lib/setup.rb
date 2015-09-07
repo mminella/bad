@@ -106,7 +106,7 @@ class Setup
       # install mosh, allocators, performance monitoring tools and schedtool
       ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq install \
         mosh binutils libtbb2 libtbb-dev libgoogle-perftools-dev dstat \
-        sysbench sysstat nicstat nload schedtool"
+        sysbench sysstat nicstat nload schedtool iperf"
 
       # install perf
       ssh.root! "DEBIAN_FRONTEND=noninteractive apt-get -yq install \
