@@ -35,6 +35,8 @@ bin-dist:
 	cp upstart/meth1_node.conf dist_root/etc/init/
 	chmod 755 dist_root/usr/bin/*
 	chmod 644 dist_root/etc/init/*
+	git show HEAD | head -1 > dist_root/etc/bad-version
+	chmod 644 dist_root/etc/bad-version
 	tar cvzf bad.tar.gz -C dist_root .
 
 recs-1gb:
