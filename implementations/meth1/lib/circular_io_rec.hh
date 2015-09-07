@@ -4,6 +4,8 @@
 #include <cstring>
 #include <system_error>
 
+#include "tune_knobs.hh"
+
 #include "circular_io.hh"
 
 /**
@@ -19,8 +21,8 @@ private:
   const char * pos_;
 
 public:
-  CircularIORec( IODevice & io, uint64_t id = 0 )
-    : CircularIO( io, id )
+  CircularIORec( IODevice & io, uint64_t blocks, uint64_t id = 0 )
+    : CircularIO( io, blocks, id )
     , bend_{nullptr}
     , pos_{nullptr}
   {};

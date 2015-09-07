@@ -14,12 +14,10 @@ using namespace meth1;
 
 uint64_t calc_client_buffer( size_t nodes )
 {
-  uint64_t memFree = memory_free() - Knobs::MEM_RESERVE;
-  // We have a max buffer as there is a trade-off between more copying with
-  // larger buffers vs. more change of overlapping reads at backend nodes.
-  uint64_t bufLimit = Cluster::MAX_BUF_SIZE / Rec::SIZE;
-  uint64_t perClient = memFree / Rec::SIZE / ( nodes + Cluster::WRITE_BUF_N );
-  return min( bufLimit, perClient );
+  uint64_t memFree = memory_exists() - Knobs::MEM_RESERVE;
+  memFree -= Cluster::WRITE_BUF * Cluster::WRITE_BUF_N;
+  uint64_t perClient = memFree / CircularIO::BLOCK / nodes;
+  return perClient;
 }
 
 Cluster::Cluster( vector<Address> nodes, uint64_t chunkSize )
@@ -259,7 +257,7 @@ void Cluster::WriteAll( File out )
 
     // read all records
     vector<Record> recs;
-    recs.reserve( bufSize_ );
+    recs.reserve( WRITE_BUF );
     for ( uint64_t i = 0; i < size and pq.size() > 0; i++ ) {
       RemoteFilePtr f = pq.top();
       pq.pop();
@@ -268,7 +266,7 @@ void Cluster::WriteAll( File out )
         f.nextRecord();
         pq.push( f );
       }
-      if ( recs.size() >= bufSize_ ) {
+      if ( recs.size() >= WRITE_BUF ) {
         chn.send( move( recs ) );
         recs = vector<Record>();
       }

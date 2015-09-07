@@ -4,6 +4,8 @@
 #include <cstring>
 #include <system_error>
 
+#include "tune_knobs.hh"
+
 #include "circular_io_rec.hh"
 
 /**
@@ -17,8 +19,8 @@ private:
   uint64_t fsize_;
 
 public:
-  OverlappedRecordIO( File & file )
-    : CircularIORec<rec_size>( file )
+  OverlappedRecordIO( File & file, uint64_t blocks = Knobs::DISK_BLOCKS )
+    : CircularIORec<rec_size>( file, blocks, (uint64_t) file.fd_num() )
     , file_{file}
     , fsize_{file.size()}
   {};

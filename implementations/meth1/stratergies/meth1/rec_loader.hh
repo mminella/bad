@@ -4,6 +4,8 @@
 #include <memory>
 #include <string>
 
+#include "tune_knobs.hh"
+
 #include "file.hh"
 #include "overlapped_rec_io.hh"
 
@@ -24,7 +26,7 @@ private:
 public:
   RecLoader( std::string fileName, int flags )
     : file_{new File( fileName, flags )}
-    , rio_{new RecIO( *file_ )}
+    , rio_{new RecIO( *file_, Knobs::DISK_BLOCKS )}
     , eof_{false}
     , loc_{0}
   {}

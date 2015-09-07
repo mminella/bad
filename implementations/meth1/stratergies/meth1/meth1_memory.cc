@@ -16,7 +16,7 @@ using namespace std;
 using namespace meth1;
 
 /* Get a count of how many disks this machine has */
-size_t num_of_disks( void )
+uint64_t num_of_disks( void )
 {
   FILE * fin = popen("ls /dev/xvd[b-z] | wc -l", "r");
   if ( not fin ) {
@@ -24,7 +24,7 @@ size_t num_of_disks( void )
   }
   char buf[256];
   fgets( buf, 256, fin );
-  return max( (size_t) atoll( buf ), (size_t) 1 );
+  return max( (uint64_t) atoll( buf ), (uint64_t) 1 );
 }
 
 uint64_t calc_value_size( void )
@@ -61,7 +61,8 @@ uint64_t calc_record_space( void )
   // subtract reserved mem for OS & misc
   memFree -= Knobs::MEM_RESERVE;
   // subtract disk read buffers
-  memFree -= ( CircularIO::BUFFER_SIZE * num_of_disks() * 1.25 );
+  memFree -= ( CircularIO::BLOCK * Knobs::DISK_BLOCKS * num_of_disks()
+    * uint64_t( 1.25 ) );
 
   // divisor for r2 & r3 merge buffers
   uint64_t div1 = uint64_t( 2 ) * uint64_t( sizeof( Node::RR ) ) + val_len;

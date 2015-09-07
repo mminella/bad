@@ -20,20 +20,15 @@
 class CircularIO
 {
 public:
-  static constexpr size_t BLOCK = Knobs::IO_BLOCK;
-  static constexpr size_t NBLOCKS = Knobs::IO_NBLOCKS;
-  static constexpr size_t BUFFER_SIZE = NBLOCKS * BLOCK;
-  static constexpr size_t ALIGNMENT = 4096;
+  static constexpr uint64_t BLOCK = Knobs::IO_BLOCK;
+  static constexpr uint64_t ALIGNMENT = 4096;
 
-  // Need at least three blocks, one for queue, one for reader and one for
-  // processing.
-  static_assert( NBLOCKS >= 3, "CircularIO requires at least 3 blocks");
-
-  using block_ptr = std::pair<const char *, size_t>;
+  using block_ptr = std::pair<const char *, uint64_t>;
 
 private:
   IODevice & io_;
   char * buf_;
+  uint64_t bufSize_;
   Channel<block_ptr> blocks_;
   Channel<uint64_t> start_;
   std::thread reader_;
@@ -64,14 +59,14 @@ private:
       uint64_t rbytes = 0;
       while ( true ) {
         auto t0 = time_now();
-        size_t n = io_.read( wptr_, BLOCK );
+        uint64_t n = io_.read( wptr_, BLOCK );
         tt += time_diff<ms>( t0 );
 
         if ( n > 0 ) {
           rbytes += n;
           blocks_.send( {wptr_, n} );
           wptr_ += BLOCK;
-          if ( wptr_ == buf_ + BUFFER_SIZE ) {
+          if ( wptr_ == buf_ + bufSize_ ) {
             wptr_ = buf_;
           }
         }
@@ -91,17 +86,21 @@ private:
   }
 
 public:
-  CircularIO( IODevice & io, uint64_t id = 0 )
+  CircularIO( IODevice & io, uint64_t blocks, uint64_t id = 0 )
     : io_{io}
     , buf_{nullptr}
-    , blocks_{NBLOCKS-2}
+    , bufSize_{blocks * BLOCK}
+    , blocks_{blocks-2}
     , start_{0}
     , reader_{std::thread( &CircularIO::read_loop,  this )}
     , readPass_{0}
     , io_cb_{[]() {}}
     , id_{id}
   {
-    posix_memalign( (void **) &buf_, ALIGNMENT, BUFFER_SIZE );
+    if ( blocks < 3 ) {
+      throw new std::runtime_error( "need at least three blocks" );
+    }
+    posix_memalign( (void **) &buf_, ALIGNMENT, bufSize_ );
   };
 
   /* no copy */

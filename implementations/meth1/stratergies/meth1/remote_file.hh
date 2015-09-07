@@ -28,7 +28,6 @@ private:
   CircularIORec<Rec::SIZE> * buf_;
 
   uint64_t chunkSize_;
-  uint64_t bufSize_;
 
   bool start_;
   uint64_t ioPos_;
@@ -40,9 +39,9 @@ private:
 public:
   RemoteFile( Client & c, uint64_t chunkSize, uint64_t bufSize )
     : c_{&c}
-    , buf_{new CircularIORec<Rec::SIZE>( c.socket(), (uint64_t) c.socket().fd_num() )}
+    , buf_{new CircularIORec<Rec::SIZE>( c.socket(), bufSize,
+        (uint64_t) c.socket().fd_num() )}
     , chunkSize_{chunkSize}
-    , bufSize_{bufSize}
     , start_{true}
     , ioPos_{0}
     , pos_{0}
