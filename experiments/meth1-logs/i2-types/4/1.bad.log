@@ -1,0 +1,19 @@
+# 1, 600, 0, true, read
+record-value, 112
+chunk-size, 667539469, 52428800
+disks, 4
+size, 1, 0
+recv-size, 1, 1996488704
+start-read, 1, 0, 667539469
+read, 1, 441463
+recv-read, 1, 0, 667539469
+network, 1, 269009
+start-read, 2, 667539469, 667539469
+read, 2, 390212
+recv-read, 2, 667539469, 667539469
+network, 2, 268717
+start-read, 3, 1335078938, 667539469
+read, 3, 378791
+recv-read, 3, 1335078938, 661409766
+network, 3, 266237
+cmd-read, 0, 2014431

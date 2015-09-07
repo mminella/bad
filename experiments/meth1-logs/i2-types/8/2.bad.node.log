@@ -1,0 +1,67 @@
+# Tue Sep  1 10:15:51 UTC 2015
+record-value, 96
+seek-chunk, 1520389763
+linear-scan, 1, 1214, start
+linear-scan-chunk, 1355761572, 96840112
+read_file, read_file, read_file, read_file, read_file, read_file, 4, 1, 124283, start
+10, 5, 124284, startread_file, 9, 6, 124284, start
+read_file, 6, 3, 124283, start
+7, 2, 124283, start
+
+8, 4, 124283, start
+11, 7, 124284, start
+5, 1, 124283, start
+read, 5, 7, 292649
+read (blocked), 5, 7, 660142
+read, 8, 7, 293079
+read (blocked), 8, 7, 660163
+read, 7, 7, 286178
+read (blocked), 7, 7, 660281
+read, 9, 7, 289430
+read (blocked), 9, 7, 660383
+read, 11, 7, 288305
+read (blocked), 11, 7, 660500
+read, 4, 7, 289768
+read (blocked), 4, 7, 660586
+read, 6, 7, 290980
+read (blocked), 6, 7, 661879
+read, 10, 7, 298689
+read (blocked), 10, 7, 666333
+total, 671745
+sort , 77160, 37
+merge, 134592, 37
+last , 2324
+do-read, 1, 794816
+
+linear-scan, 2, 977243, start
+linear-scan-chunk, 640727132, 45766223
+read_file, read_file, read_file, 6, 10, 979551, start
+read_file, 5, 88, 979551, start
+, read_file, 10, 14, 979551, start
+read_file, 49, 13, 979551, start
+read_file, 7, 11, 979551, start
+12, 979551, start
+read_file, 11, 15, 979551, start
+, 9, 979551, start
+read, 4, 15, 190142
+read (blocked), 4, 15, 283182
+read, 5, 15, 191633
+read (blocked), 5, 15, 284280
+read, 7, 15, 194815
+read (blocked), 7, 15, 286297
+read, 10, 15, 193161
+read (blocked), 10, 15, 286811
+read, 9, 15, 191957
+read (blocked), 9, 15, 287550
+read, 6, 15, 192366
+read (blocked), 6, 15, 288327
+read, 11, 15, 196548
+read (blocked), 11, 15, 289058
+read, 8, 15, 199663
+read (blocked), 8, 15, 290224
+total, 291932
+sort , 48056, 44
+merge, 72806, 44
+last , 1606
+do-read, 2, 294240
+
