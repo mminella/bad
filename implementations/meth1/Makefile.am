@@ -52,6 +52,7 @@ recs-30gb:
 TESTS = \
 	test/channels.test \
 	test/meth1_node.test \
+	test/meth1_node_multi.test \
 	test/sort_libc.test \
 	test/sort_basicrts.test \
 	test/sort_boost.test \
