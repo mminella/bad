@@ -1,8 +1,10 @@
 #ifndef REMOTE_FILE_HH
 #define REMOTE_FILE_HH
 
+#include <exception>
 #include <memory>
 
+#include "circular_io_rec.hh"
 #include "record.hh"
 
 #include "client.hh"
@@ -23,80 +25,106 @@ class RemoteFile
 {
 private:
   Client * c_;
+  CircularIORec<Rec::SIZE> * buf_;
+
   uint64_t chunkSize_;
-  uint64_t  bufSize_;
+  uint64_t bufSize_;
 
-  uint64_t size_ = 0;
-  uint64_t offset_ = 0;
-
-  bool readRPC_ = false;
-  uint64_t onWire_ = 0;
-  uint64_t inBuf_ = 0;
-  std::unique_ptr<uint8_t> buf_{};
-  uint64_t bufOffset_ = 0;
-
-  tpoint_t netStart_{};
+  bool start_;
+  uint64_t ioPos_;
+  uint64_t pos_;
+  uint64_t size_;
 
   RecordPtr head_;
-
-  size_t wirePass_ = 0;
-
-  void copyWire( void );
 
 public:
   RemoteFile( Client & c, uint64_t chunkSize, uint64_t bufSize )
     : c_{&c}
+    , buf_{new CircularIORec<Rec::SIZE>( c.socket(), (uint64_t) c.socket().fd_num() )}
     , chunkSize_{chunkSize}
     , bufSize_{bufSize}
+    , start_{true}
+    , ioPos_{0}
+    , pos_{0}
+    , size_{0}
     , head_{(const char *) nullptr}
-  {};
+  {
+    buf_->set_io_drained_cb( [this]() {
+      std::cout << "io callback, " << this->c_->socket().fd_num()
+        << ", " << this->ioPos_ << std::endl;
+      this->nextChunk();
+    } );
+  }
 
   /* no copy */
   RemoteFile( const RemoteFile & other ) = delete;
   RemoteFile & operator=( RemoteFile & other ) = delete;
 
-  /* allow move */
-  RemoteFile( RemoteFile && other )
-    : c_{other.c_}
-    , chunkSize_{other.chunkSize_}
-    , bufSize_{other.bufSize_}
-    , size_{other.size_}
-    , offset_{other.offset_}
-    , readRPC_{other.readRPC_}
-    , onWire_{other.onWire_}
-    , inBuf_{other.inBuf_}
-    , buf_{std::move( other.buf_ )}
-    , bufOffset_{other.bufOffset_}
-    , netStart_{other.netStart_}
-    , head_{other.head_}
-  {}
+  /* no move */
+  RemoteFile( RemoteFile && other ) = delete;
+  RemoteFile & operator=( RemoteFile && other ) = delete;
 
-  RemoteFile & operator=( RemoteFile && other )
+  ~RemoteFile( void )
   {
-    if ( this != &other ) {
-      c_ = other.c_;
-      chunkSize_ = other.chunkSize_;
-      bufSize_ = other.bufSize_;
-      size_ = other.size_;
-      offset_ = other.offset_;
-      readRPC_ = other.readRPC_;
-      onWire_ = other.onWire_;
-      inBuf_ = other.inBuf_;
-      buf_ = std::move( other.buf_ );
-      bufOffset_ = other.bufOffset_;
-      netStart_ = other.netStart_;
-      head_ = other.head_;
-    }
-    return *this;
+    if ( buf_ != nullptr ) { delete buf_; }
   }
 
   void sendSize( void ) { c_->sendSize(); }
-  void recvSize( void ) { size_ = c_->recvSize(); }
+  uint64_t recvSize( void ) { size_ = c_->recvSize(); return size_; }
+
+  void nextChunk( void )
+  {
+    std::cout << "nextChunk: " << c_->socket().fd_num() << ", " << ioPos_ << std::endl;
+    if ( size_ == 0 ) {
+      sendSize();
+      recvSize();
+    }
+    if ( ioPos_ < size_ ) {
+      uint64_t siz = std::min( chunkSize_, size_ - ioPos_ );
+      c_->sendRead( ioPos_, siz );
+      std::cout << "sendRead, " << c_->socket().fd_num() << ", " << ioPos_
+        << ", " << siz << std::endl;
+      ioPos_ += siz;
+    }
+  }
+
+  void nextRecord( void )
+  {
+    if ( eof() ) {
+      return;
+    }
+
+    const char * recStr = nullptr;
+    if ( start_ ) {
+      recStr = nullptr;
+      start_ = false;
+    } else {
+      recStr = buf_->next_record();
+    }
+
+    if ( recStr == nullptr ) {
+      uint64_t nrecs = c_->recvRead();
+      buf_->start_read( nrecs * Rec::SIZE );
+      recStr = buf_->next_record();
+    }
+
+    head_ = {recStr};
+    pos_++;
+
+    if ( pos_ == size_ ) {
+      // drain the final nullptr
+      recStr = buf_->next_record();
+      if ( recStr != nullptr ) {
+        throw new std::runtime_error( "not actually eof" );
+      }
+    }
+  }
 
   RecordPtr curRecord( void ) const noexcept { return head_; }
-  void nextRecord( uint64_t remaining = 0 );
-  void nextChunk( uint64_t chunkN = 0 );
-  bool eof( void ) const noexcept;
+  bool eof( void ) const noexcept
+  {
+    return pos_ >= size_;
+  }
 
   bool operator>( const RemoteFile & b ) const noexcept
   {
@@ -111,22 +139,19 @@ private:
   RemoteFile * rf_;
 
 public:
-  RemoteFilePtr( RemoteFile & rf )
-    : rf_{&rf}
+  RemoteFilePtr( RemoteFile * rf )
+    : rf_{rf}
   {}
 
-  RemoteFile & rf( void ) const noexcept { return *rf_; }
+  RemoteFile * rf( void ) const noexcept { return rf_; }
 
-  bool eof( void ) const noexcept { return rf_->eof(); }
   RecordPtr curRecord( void ) const noexcept { return rf_->curRecord(); }
-  void nextRecord( uint64_t remaining = 0 )
-  {
-    return rf_->nextRecord( remaining );
-  }
+  void nextRecord( void ) { return rf_->nextRecord(); }
+  bool eof( void ) const noexcept { return rf_->eof(); }
 
   bool operator>( const RemoteFilePtr & b ) const noexcept
   {
-    return rf_ > b.rf_;
+    return *rf_ > *b.rf_;
   }
 };
 }
