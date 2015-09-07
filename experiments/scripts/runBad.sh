@@ -14,7 +14,7 @@ N=$6
 ODIR=$7
 CMDD=$8
 TARF=$9
-PG=$10
+PG=${10}
 SIZE_B=$( calc "$SIZE * 1024 * 1024 * 1000 / 100" )
 CHUNK_B=$( calc "$CHUNK * 1024 * 1024 * 1000 / 100" )
 
