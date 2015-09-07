@@ -4,43 +4,42 @@
 #include <cstring>
 
 #include "file.hh"
-#include "overlapped_io.hh"
+#include "circular_io.hh"
 
 /**
- * Reads whole file into memory (using a seperate thread) and then serves all
- * future reads from memory.
+ * Reads file into memory (in parallel with serving that data to clients), and
+ * caches the file so that all future reads are from memory.
  */
 template<size_t rec_size>
 class MemoryIO
 {
 private:
-  OverlappedIO io_;
+  CircularIO io_;
   char * bstart_;
   char * bend_;
   char * bready_;
   char * pos_;
-  bool eof_;
 
 public:
-  MemoryIO( File & io )
-    : io_{io}, bstart_{new char[io.size()]}, bend_{bstart_ + io.size()}
-    , bready_{bstart_}, pos_{bstart_} , eof_{false}
+  MemoryIO( File & file )
+    : io_{file, 10, (uint64_t) file.fd_num()}
+    , bstart_{new char[file.size()]}
+    , bend_{bstart_ + file.size()}
+    , bready_{bstart_}
+    , pos_{bstart_}
   {
-    io_.rewind();
+    file.rewind();
   };
 
+  /* no copy or move */
   MemoryIO( const MemoryIO & r ) = delete;
   MemoryIO( MemoryIO && r ) = delete;
   MemoryIO & operator=( const MemoryIO & r ) = delete;
   MemoryIO & operator=( MemoryIO && r ) = delete;
 
-  void rewind( void )
-  {
-    eof_ = false;
-    pos_ = bstart_;
-  }
+  void rewind( void ) noexcept { pos_ = bstart_; }
 
-  void load( void )
+  void load( void ) noexcept
   {
     rewind();
     while( true ) {
@@ -51,26 +50,18 @@ public:
     }
   }
 
-  bool eof( void ) const noexcept { return eof_; }
-
-  const char * next_record( void )
+  const char * next_record( void ) noexcept
   {
-    if ( eof_ ) {
-      return nullptr;
-    }
-
     while ( true ) {
       if ( pos_ + rec_size <= bready_ ) {
         const char * p = pos_;
         pos_ += rec_size;
         return p;
       } else if ( pos_ + rec_size > bend_ ) {
-        eof_ = true;
         return nullptr;
       } else {
         auto blk = io_.next_block();
         if ( blk.first == nullptr ) {
-          eof_ = true;
           return nullptr;
         }
         memcpy( pos_, blk.first, blk.second );

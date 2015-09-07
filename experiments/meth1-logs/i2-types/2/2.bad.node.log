@@ -1,0 +1,101 @@
+# Tue Sep  1 10:20:41 UTC 2015
+record-value, 96
+seek-chunk, 362783246
+linear-scan, 1, 1139, start
+linear-scan-chunk, 323500984, 23107213
+read_file, read_file, 4, 51, 7577, , start2, 
+7577, start
+read, 5, 2, 680444
+read (blocked), 5, 2, 697739
+read, 4, 2, 666403
+read (blocked), 4, 2, 699275
+total, 700750
+sort , 59815, 58
+merge, 33555, 58
+last , 374
+do-read, 1, 707189
+
+linear-scan, 2, 970482, start
+linear-scan-chunk, 323500984, 23107213
+read_file, read_file, 45, , 33, , 971146971146, start, start
+
+read, 5, 3, 633268
+read (blocked), 5, 3, 672798
+read, 4, 3, 634326
+read (blocked), 4, 3, 674290
+total, 674997
+sort , 60645, 57
+merge, 34626, 57
+last , 693
+do-read, 2, 675661
+
+linear-scan, 3, 1907796, start
+linear-scan-chunk, 323500984, 23107213
+read_file, read_file, 4, 54, , 1908661, start5, 
+1908661, start
+read, 5, 5, 633135
+read (blocked), 5, 5, 665445
+read, 4, 5, 634379
+read (blocked), 4, 5, 667093
+total, 667993
+sort , 59962, 56
+merge, 33967, 56
+last , 878
+do-read, 3, 668858
+
+linear-scan, 4, 2838292, start
+linear-scan-chunk, 323500984, 23107213
+read_file, read_file, 54, , 76, , 2839107, start2839107
+, start
+read, 5, 7, 633517
+read (blocked), 5, 7, 659960
+read, 4, 7, 634883
+read (blocked), 4, 7, 661680
+total, 662744
+sort , 56873, 55
+merge, 31952, 55
+last , 1035
+do-read, 4, 663558
+
+linear-scan, 5, 3763437, start
+linear-scan-chunk, 323500984, 23107213
+read_file, 4, 8, 3764101, start
+read_file, 5, 9, 3764101, start
+read, 5, 9, 633017
+read (blocked), 5, 9, 663185
+read, 4, 9, 634297
+read (blocked), 4, 9, 664815
+total, 666065
+sort , 57830, 54
+merge, 32741, 54
+last , 1215
+do-read, 5, 666729
+
+linear-scan, 6, 4691609, start
+linear-scan-chunk, 323500984, 23107213
+read_file, read_file, 4, 10, 4692271, start5
+, 11, 4692271, start
+read, 5, 11, 632520
+read (blocked), 5, 11, 663297
+read, 4, 11, 633559
+read (blocked), 4, 11, 664817
+total, 666100
+sort , 57793, 53
+merge, 32892, 53
+last , 1246
+do-read, 6, 666762
+
+linear-scan, 7, 5620028, start
+linear-scan-chunk, 55482800, 3963057
+read_file, 4, read_file, 12, 5620180, start
+5, 13, 5620180, start
+read, 5, 13, 631928
+read (blocked), 5, 13, 650133
+read, 4, 13, 633067
+read (blocked), 4, 13, 652504
+total, 652624
+sort , 13085, 78
+merge, 7809, 78
+last , 116
+do-read, 7, 652776
+

@@ -24,18 +24,24 @@ class Client
 {
 public:
   /* network state */
-  BufferedIO_O<TCPSocket> sock_;
+  TCPSocket sock_;
   Address addr_;
+  char rec[Rec::SIZE];
 
   /* rpc state */
   clk::time_point rpcStart_;
   uint64_t rpcPos_;
+
+  /* debug info */
   size_t sendPass_;
   size_t recvPass_;
   size_t sizePass_;
 
 public:
   Client( Address node );
+
+  /* accessors */
+  TCPSocket & socket( void ) noexcept { return sock_; }
 
   /* Perform a read. Return value is number of records available to read */
   void sendRead( uint64_t pos, uint64_t size );

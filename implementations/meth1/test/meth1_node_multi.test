@@ -1,0 +1,27 @@
+#!/bin/sh
+
+mkdir -p ${srcdir}/.test-tmp
+rm -rf ${srcdir}/.test-tmp/out
+
+${srcdir}/app/meth1_node 9000 true \
+  ${srcdir}/test/in.s0000.e1000.recs 1>/dev/null 2>&1 &
+NODE_PID1=$!
+
+${srcdir}/app/meth1_node 9001 true \
+  ${srcdir}/test/in.s1000.e2000.recs 1>/dev/null 2>&1 &
+NODE_PID2=$!
+
+sleep 2
+
+${srcdir}/app/meth1_client \
+  500 ${srcdir}/.test-tmp/out write "127.0.0.1:9000" "127.0.0.1:9001" \
+  1>/dev/null 2>&1
+
+kill $NODE_PID1
+wait $NODE_PID1 2>/dev/null
+kill $NODE_PID2
+wait $NODE_PID2 2>/dev/null
+
+diff \
+  ${srcdir}/test/out.s0000.e2000.recs \
+  ${srcdir}/.test-tmp/out/q-0-all

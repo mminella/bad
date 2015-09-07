@@ -10,7 +10,7 @@
 namespace Knobs {
   /* Overlapped IO buffer sizes .*/
   static constexpr uint64_t IO_BLOCK = 4096 * 256 * 10; // 10MB
-  static constexpr uint64_t IO_NBLOCKS = 400;           // 4GB
+  static constexpr uint64_t DISK_BLOCKS = 400;          // 4GB
 
   /* Buffered (not overlapped) IO size */
   static constexpr uint64_t IO_BUFFER_DEFAULT = 1024 * 1024;
@@ -18,12 +18,8 @@ namespace Knobs {
   /* Network write buffer size (measured in records, not bytes) */
   static constexpr uint64_t IO_BUFFER_NETW = 1024 * 1024 * 5; // 500MB
 
-  /* Maximum copy buffer a client should use. The copy buffer is used to copy
-   * data of the wire once we less than the copy buffer size is remaining on
-   * the wire. This gives us some chance that the next read request to that
-   * backend will overlap with other backends. A biffer buffer is a better
-   * chance, but also means increase copying. */
-  static constexpr uint64_t CLIENT_MAX_BUFFER = 1024 * 1024 * 1000 * uint64_t( 5 );
+  /* Size (in records) of client writer buffer */
+  static constexpr uint64_t CLIENT_WRITE_BUFFER = 1024 * 100; // 10MB
 
   /* Memory to leave unused for OS and other misc purposes. */
   static constexpr uint64_t MEM_RESERVE = 1024 * 1024 * uint64_t( 1000 ) *
