@@ -11,6 +11,7 @@
 #include "alloc.hh"
 #include "record_common.hh"
 #include "record_ptr.hh"
+#include "record_loc.hh"
 
 /**
  * Version of Record that only performs a shallow copy on copy construction or
@@ -83,6 +84,11 @@ public:
   /* Construct from c string read from disk */
   RecordS( const uint8_t * s, uint64_t loc = 0 ) { copy( s, loc ); }
   RecordS( const char * s, uint64_t loc = 0 ) { copy( (uint8_t *) s, loc ); }
+  
+  RecordS( const RecordLoc &rloc, const uint8_t * v )
+  {
+      copy(rloc.key(), v, rloc.loc());
+  }
 
   /* Copy constructor. WARNING: This only does a shallow copy! */
   RecordS( const RecordS & other )

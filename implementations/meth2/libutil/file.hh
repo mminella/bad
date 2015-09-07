@@ -16,6 +16,9 @@ public:
   /* rewind to begging of file */
   void rewind( void );
 
+  /* Seek */
+  void seek( uint64_t off );
+
   /* force file contents to disk */
   void fsync( void );
 

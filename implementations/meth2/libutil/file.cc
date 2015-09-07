@@ -30,6 +30,13 @@ void File::rewind( void )
   reset_eof();
 }
 
+/* seek */
+void File::seek( uint64_t off )
+{
+  SystemCall( "lseek", ::lseek( fd_num(), off, SEEK_SET ) );
+  reset_eof();
+}
+
 /* force file contents to disk */
 void File::fsync( void )
 {

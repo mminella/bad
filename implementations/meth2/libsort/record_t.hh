@@ -11,6 +11,7 @@
 #include "alloc.hh"
 #include "record_common.hh"
 #include "record_ptr.hh"
+#include "record_loc.hh"
 #include "record_t_shallow.hh"
 
 /**
@@ -78,7 +79,10 @@ public:
   {
     copy( rptr.key(), rptr.val(), rptr.loc() );
   }
-
+  Record( const RecordLoc & rloc, uint8_t *buf)
+  {
+    copy( rloc.key(), buf, rloc.loc() );
+  }
   Record( const Record & other )
 #if WITHLOC == 1
     : loc_{other.loc_}

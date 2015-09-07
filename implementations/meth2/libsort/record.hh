@@ -29,6 +29,7 @@ inline void rec_sort( R first, R last )
 #endif
 }
 
+/*
 inline int
 compare( const uint8_t * k1, uint64_t loc1,
          const uint8_t * k2, uint64_t loc2 ) noexcept
@@ -51,7 +52,13 @@ compare( const uint8_t * k1, uint64_t loc1,
 #endif
   return 0;
 }
-
+*/
+inline int
+compare( const uint8_t * k1, uint64_t loc1,
+         const uint8_t * k2, uint64_t loc2 ) noexcept
+{
+    return memcmp(k1, k2, Rec::KEY_LEN);
+}
 
 /* RecordS */
 inline int RecordS::compare( const uint8_t * k, uint64_t l ) const noexcept
