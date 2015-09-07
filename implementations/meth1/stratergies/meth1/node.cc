@@ -30,6 +30,8 @@ Node::Node( vector<string> files, string port, bool odirect )
   cout << "seek-chunk, " << seek_chunk_ << endl;
   for ( auto & f : files ) {
     recios_.emplace_back( f, odirect ? O_RDONLY | O_DIRECT : O_RDONLY );
+    cout << "file, " << recios_.back().id() << ", " << recios_.back().records()
+      << endl;
   }
 }
 
@@ -75,6 +77,8 @@ exit:
 
 void Node::RPC_Read( TCPSocket & client )
 {
+  static uint64_t pass = 0;
+
   static char * buf1 = new char[Knobs::IO_BUFFER_NETW * Rec::SIZE];
   static char * buf2 = new char[Knobs::IO_BUFFER_NETW * Rec::SIZE];
 
@@ -92,6 +96,7 @@ void Node::RPC_Read( TCPSocket & client )
     recs = Read( pos, amt );
   }
 
+  auto t0 = time_now();
   uint64_t siz = recs.size();
   client.write_all( reinterpret_cast<const char *>( &siz ), sizeof( uint64_t ) );
 
@@ -136,6 +141,8 @@ void Node::RPC_Read( TCPSocket & client )
 
   // wait for final write to finish
   tg_.wait();
+
+  cout << "network, " << ++pass << ", " << time_diff<ms>( t0 ) << endl;
 }
 
 void Node::RPC_Size( TCPSocket & client )
@@ -148,10 +155,12 @@ void Node::RPC_Size( TCPSocket & client )
 Node::RecV Node::Read( uint64_t pos, uint64_t size )
 {
   static size_t pass = 0;
-
   if ( pos + size > Size() ) {
     size = Size() - pos;
   }
+
+  cout << endl << "read-start, " << ++pass << ", " << pos << ", " << size
+    << ", " << timestamp<ms>() << endl;
 
   auto t0 = time_now();
   auto recs = linear_scan( seek( pos ), size );
@@ -159,7 +168,8 @@ Node::RecV Node::Read( uint64_t pos, uint64_t size )
     last_.copy( recs.back() );
     fpos_ = pos + recs.size();
   }
-  cout << "do-read, " << ++pass << ", " << time_diff<ms>( t0 ) << endl << endl;
+  cout << "read, " << pass << ", " << recs.size() << ", "
+    << time_diff<ms>( t0 ) << endl;
 
   return recs;
 }
@@ -198,8 +208,6 @@ Record Node::seek( uint64_t pos )
  * records that occur directly after the `after` record. */
 Node::RecV Node::linear_scan( const Record & after, uint64_t size )
 {
-  cout << "linear-scan, " << ++lpass_ << ", " << timestamp<ms>()
-    << ", start" << endl;
   if ( size == 1 ) {
     return linear_scan_one( after );
   } else {
@@ -332,10 +340,10 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
   }
   auto t1 = time_now();
 
-  cout << "total, " << time_diff<ms>( t1, t0 ) << endl;
-  cout << "sort , " << ts << ", " << sorts << endl;
-  cout << "merge, " << tm << ", " << merges << endl;
-  cout << "last , " << tl << endl;
+  cout << "linear-scan, " << time_diff<ms>( t1, t0 ) << endl;
+  cout << "-sort , " << ts << ", " << sorts << endl;
+  cout << "-merge, " << tm << ", " << merges << endl;
+  cout << "-last , " << tl << endl;
 
   return {r2, r2s};
 }
@@ -389,7 +397,6 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size )
     r3 = new RR[size];
   }
 
-  cout << "linear-scan-chunk, " << size << ", " << r1x << endl;
   auto rr = linear_scan_chunk( after, size, r1, r2, r3, r1x );
   if ( rr.data() == r3 ) {
     swap( r2, r3 );

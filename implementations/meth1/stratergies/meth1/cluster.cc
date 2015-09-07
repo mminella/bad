@@ -27,11 +27,11 @@ Cluster::Cluster( vector<Address> nodes, uint64_t chunkSize )
 {
   if ( chunkSize_ == 0 ) {
     chunkSize_ = calc_record_space();
-  } 
+  }
   bufSize_ = calc_client_buffer( nodes.size() );
 
   cout << "chunk-size, " << chunkSize_ << ", " << bufSize_ << endl;
-  cout << "disks, " << num_of_disks() << endl;
+  cout << "disks, " << num_of_disks() << endl << endl;
 
   for ( auto & n : nodes ) {
     clients_.push_back( n );
@@ -43,11 +43,12 @@ uint64_t Cluster::Size( void )
   for ( auto & c : clients_ ) {
     c.sendSize();
   }
-  
+
   uint64_t size = 0;
   for ( auto & c : clients_ ) {
     size += c.recvSize();
   }
+  cout << endl;
 
   return size;
 }
@@ -102,13 +103,17 @@ void Cluster::Read( uint64_t pos, uint64_t size )
 
     uint64_t totalSize = 0;
 
-    // prep -- 1st chunk
+    // prep -- size
     for ( auto f : files ) {
       totalSize += f->recvSize();
+    }
+    uint64_t end = min( totalSize, pos + size );
+    cout << endl;
+
+    // prep -- 1st chunk
+    for ( auto f : files ) {
       f->nextChunk();
     }
-
-    uint64_t end = min( totalSize, pos + size );
 
     // prep -- 1st record
     for ( auto f : files ) {
@@ -162,9 +167,14 @@ void Cluster::ReadAll( void )
 
     uint64_t size = 0;
 
-    // prep -- 1st chunk
+    // prep -- size
     for ( auto f : files ) {
       size += f->recvSize();
+    }
+    cout << endl;
+
+    // prep -- 1st chunk
+    for ( auto f : files ) {
       f->nextChunk();
     }
 
@@ -242,9 +252,14 @@ void Cluster::WriteAll( File out )
 
     uint64_t size = 0;
 
-    // prep -- 1st chunk
+    // prep -- size
     for ( auto f : files ) {
       size += f->recvSize();
+    }
+    cout << endl;
+
+    // prep -- 1st chunk
+    for ( auto f : files ) {
       f->nextChunk();
     }
 

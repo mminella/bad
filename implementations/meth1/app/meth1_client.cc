@@ -27,6 +27,7 @@ void run_cmd( Cluster & c, string out_dir, string cmd, uint64_t read_ahead )
     Record r = c.ReadFirst();
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
+    cout << endl;
     cout << "first, " << r << endl;
     cout << "cmd-first, 0, " << dur << endl;
 
@@ -35,6 +36,7 @@ void run_cmd( Cluster & c, string out_dir, string cmd, uint64_t read_ahead )
     c.ReadAll();
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
+    cout << endl;
     cout << "cmd-read, 0, " << dur << endl;
 
   } else if ( cmd == "chunk" ) {
@@ -42,6 +44,7 @@ void run_cmd( Cluster & c, string out_dir, string cmd, uint64_t read_ahead )
     c.Read( 0, read_ahead );
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
+    cout << endl;
     cout << "cmd-chunk, 0, " << dur << endl;
 
   } else if ( cmd.find_first_of( "chunk-" ) == 0 ) {
@@ -52,6 +55,7 @@ void run_cmd( Cluster & c, string out_dir, string cmd, uint64_t read_ahead )
     c.Read( 0, siz );
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
+    cout << endl;
     cout << "cmd-chunk, 0, " << dur << endl;
 
   } else if ( cmd == "write" ) {
@@ -60,6 +64,7 @@ void run_cmd( Cluster & c, string out_dir, string cmd, uint64_t read_ahead )
     c.WriteAll( move( out ) );
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
+    cout << endl;
     cout << "cmd-write, 0, " << dur << endl;
   }
 }

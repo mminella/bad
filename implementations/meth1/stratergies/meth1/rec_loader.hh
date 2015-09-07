@@ -30,7 +30,7 @@ public:
     , eof_{false}
     , loc_{0}
   {}
-  
+
   /* no copy */
   RecLoader( const RecLoader & ) = delete;
   RecLoader & operator=( const RecLoader & ) = delete;
@@ -51,13 +51,14 @@ public:
       eof_ = other.eof_;
       loc_ = other.loc_;
     }
-    return *this;  
+    return *this;
   }
 
+  uint64_t id( void ) const noexcept { return file_->fd_num(); }
   uint64_t records( void ) const noexcept { return file_->size() / Rec::SIZE; }
   bool eof( void ) const noexcept { return eof_; }
   void rewind( void );
-   
+
   RecordPtr next_record( void );
   uint64_t filter( RR * r1, uint64_t size, const Record & after,
                    const RR * const curMin );

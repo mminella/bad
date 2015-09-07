@@ -18,7 +18,7 @@ using namespace meth1;
 /* Get a count of how many disks this machine has */
 uint64_t num_of_disks( void )
 {
-  FILE * fin = popen("ls /dev/xvd[b-z] | wc -l", "r");
+  FILE * fin = popen("ls /dev/xvd[b-z] 2>/dev/null | wc -l", "r");
   if ( not fin ) {
     throw runtime_error( "Couldn't count number of disks" );
   }

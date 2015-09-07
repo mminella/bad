@@ -50,8 +50,8 @@ private:
       if ( nbytes == 0 ) {
         continue;
       }
-      std::cout << "circular_read, " << id_ << ", " << ++readPass_ << ", "
-        << nbytes << ", " << timestamp<ms>() << ", start" << std::endl;
+      std::cout << "circular-read-start, " << id_ << ", " << ++readPass_
+        << ", " << nbytes << ", " << timestamp<ms>() << std::endl;
 
       auto ts = time_now();
       tdiff_t tt = 0;
@@ -78,10 +78,8 @@ private:
         }
       }
       auto te = time_diff<ms>( ts );
-      std::cout << "circular_read, " << id_ << ", " << readPass_
-        << ", " << tt << std::endl;
-      std::cout << "circular_read (blocked), " << id_ << ", " << readPass_
-        << ", " << te << std::endl;
+      std::cout << "circular-read-total, " << id_ << ", " << readPass_
+        << ", " << tt << ", " << te << std::endl;
     }
   }
 
