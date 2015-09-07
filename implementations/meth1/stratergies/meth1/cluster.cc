@@ -199,8 +199,7 @@ static void writer( File out, Channel<vector<Record>> chn )
     try {
       recs = move( chn.recv() );
     } catch ( const std::exception & e ) {
-      print_exception( e );
-      break;
+      break; // EOF
     }
     auto t0 = time_now();
     for ( auto const & r : recs ) {

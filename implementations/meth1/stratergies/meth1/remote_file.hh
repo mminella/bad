@@ -49,8 +49,6 @@ public:
     , head_{(const char *) nullptr}
   {
     buf_->set_io_drained_cb( [this]() {
-      std::cout << "io callback, " << this->c_->socket().fd_num()
-        << ", " << this->ioPos_ << std::endl;
       this->nextChunk();
     } );
   }
@@ -73,7 +71,6 @@ public:
 
   void nextChunk( void )
   {
-    std::cout << "nextChunk: " << c_->socket().fd_num() << ", " << ioPos_ << std::endl;
     if ( size_ == 0 ) {
       sendSize();
       recvSize();
@@ -81,8 +78,6 @@ public:
     if ( ioPos_ < size_ ) {
       uint64_t siz = std::min( chunkSize_, size_ - ioPos_ );
       c_->sendRead( ioPos_, siz );
-      std::cout << "sendRead, " << c_->socket().fd_num() << ", " << ioPos_
-        << ", " << siz << std::endl;
       ioPos_ += siz;
     }
   }
