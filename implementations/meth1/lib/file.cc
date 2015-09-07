@@ -37,9 +37,13 @@ void File::fsync( void )
 }
 
 /* file size */
-size_t File::size( void ) const
+uint64_t File::size( void ) const
 {
   struct stat st;
   fstat( fd_num(), &st );
-  return st.st_size;
+  off_t siz = st.st_size;
+  if ( siz < 0 ) {
+    throw new runtime_error( "file size is less than zero" );
+  }
+  return (uint64_t) siz;
 }

@@ -177,8 +177,8 @@ Node::RecV Node::Read( uint64_t pos, uint64_t size )
 uint64_t Node::Size( void )
 {
   if ( size_ == 0 ) {
-    size_ = accumulate( recios_.begin(), recios_.end(), 0,
-      []( size_t res, RecLoader & r ) { return res + r.records(); } );
+    size_ = accumulate( recios_.begin(), recios_.end(), uint64_t( 0 ),
+      []( uint64_t res, RecLoader & r ) { return res + r.records(); } );
   }
   return size_;
 }
