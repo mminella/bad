@@ -61,7 +61,8 @@ void Node::Run( void )
           RPC_Size( client );
           break;
         case 2:
-          goto exit;
+          print( "\nexit", timestamp<ms>() );
+          return;
         default:
           throw runtime_error( "Unknown RPC method: " + to_string(str[0]) );
           break;
@@ -71,8 +72,7 @@ void Node::Run( void )
       // EOF
     }
   }
-exit:
-  return;
+  print( "\ndirty-exit", timestamp<ms>() );
 }
 
 void Node::RPC_Read( TCPSocket & client )
