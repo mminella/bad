@@ -23,7 +23,7 @@ namespace Knobs {
 
   /* Memory to leave unused for OS and other misc purposes. */
   static constexpr uint64_t MEM_RESERVE = 1024 * 1024 * uint64_t( 1000 ) *
-    uint64_t( 1 ) + IO_BUFFER_NETW;
+    uint64_t( 3 ) + IO_BUFFER_NETW;
 
   /* How much smaller ( 1 / SORT_MERGE_RATIO ) should the sort buffer be than
    * the merge buffer? */
