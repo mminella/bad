@@ -76,7 +76,7 @@ backends() {
 # 2 - chunk size
 # 3 - op
 reader() {
-  ${SSH} ubuntu@${M1} "echo '$1' >> ${LOG};" \
+  ${SSH} ubuntu@${M1} "date >> ${LOG}; echo '$1' >> ${LOG};" \
     "meth1_client $2 ${READER_OUT} $3 ${BACKENDS} 2>> ${LOG} >> ${LOG}"
 }
 
