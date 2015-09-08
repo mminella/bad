@@ -25,4 +25,6 @@
 * 24 -- 8/26 -- 9am
 * 25 -- 8/28 -- 8pm
 * 26 -- 8/31 -- 3am
-27, Mon Aug 31 11:45:24 PDT 2015, ap-southeast-1a, i2.xlarge
+* 27, Mon Aug 31 11:45:24 PDT 2015, ap-southeast-1a, i2.xlarge
+* 28 -- 9/07 -- 7pm
+
