@@ -62,11 +62,9 @@ uint64_t calc_record_space( void )
 
   // subtract reserved mem for OS & misc
   memFree -= Knobs::MEM_RESERVE;
-  cout << "mem: " << memFree << endl;
   // subtract disk read buffers
   uint64_t disks = CircularIO::BLOCK * Knobs::DISK_BLOCKS * num_of_disks();
   memFree -= disks;
-  cout << "mem: " << memFree << endl;
 
   // divisor for r2 & r3 merge buffers
   uint64_t div1 = uint64_t( 2 ) * uint64_t( sizeof( Node::RR ) ) + val_len;
