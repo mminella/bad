@@ -7,6 +7,7 @@
 #include "tune_knobs.hh"
 
 #include "circular_io.hh"
+#include "sync_print.hh"
 
 /**
  * Abstracts the block interface of CircularIO into a record interface. Deals
@@ -19,12 +20,14 @@ private:
   char rec_[rec_size];
   const char * bend_;
   const char * pos_;
+  uint64_t recs_;
 
 public:
   CircularIORec( IODevice & io, uint64_t blocks, uint64_t id = 0 )
     : CircularIO( io, blocks, id )
     , bend_{nullptr}
     , pos_{nullptr}
+    , recs_{0}
   {};
 
   /* no copy or move */
@@ -32,6 +35,10 @@ public:
   CircularIORec & operator=( const CircularIORec & r ) = delete;
   CircularIORec( CircularIORec && r ) = delete;
   CircularIORec & operator=( CircularIORec && r ) = delete;
+
+  void reset_rec_count( void ) noexcept { recs_ = 0; }
+
+  uint64_t rec_count( void ) const noexcept { return recs_; }
 
   const char * next_record( void )
   {
@@ -45,6 +52,7 @@ public:
       bend_ = blk.first + blk.second;
     }
 
+    recs_++;
     if ( pos_ + rec_size <= bend_ ) {
       // record within a single block
       const char * p = pos_;
@@ -57,6 +65,7 @@ public:
 
       auto blk = next_block();
       if ( blk.first == nullptr ) {
+        print( "next_record", "fail", partial, blk.second, recs_ );
         throw std::runtime_error( std::to_string( id_ )
           + ": corrupt record, wasn't enough data" );
       }

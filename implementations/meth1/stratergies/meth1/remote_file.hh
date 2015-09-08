@@ -98,6 +98,7 @@ public:
 
     if ( recStr == nullptr ) {
       uint64_t nrecs = c_->recvRead();
+      buf_->reset_rec_count();
       buf_->start_read( nrecs * Rec::SIZE );
       recStr = buf_->next_record();
     }

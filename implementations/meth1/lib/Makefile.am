@@ -4,7 +4,8 @@ libbasicrts_la_SOURCES = \
 	address.hh address.cc \
 	bench.hh \
 	buffered_io.hh buffered_io.cc \
-	circular_io.hh circular_io_rec.hh \
+	circular_io.hh circular_io.cc \
+	circular_io_rec.hh \
 	domain_socket.hh domain_socket.cc \
 	exception.hh \
 	file.hh file.cc \
