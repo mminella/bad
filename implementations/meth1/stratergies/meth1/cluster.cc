@@ -202,7 +202,7 @@ void Cluster::ReadAll( void )
 
 static void writer( File out, Channel<vector<Record>> chn )
 {
-  static int pass = 0;
+  tdiff_t tw = 0;
   BufferedIO bio( out );
   vector<Record> recs;
   while ( true ) {
@@ -217,9 +217,9 @@ static void writer( File out, Channel<vector<Record>> chn )
     }
     bio.flush( true );
     out.fsync();
-    auto twrite = time_diff<ms>( t0 );
-    cout << "write, " << ++pass << ", " << twrite << endl;
+    tw += time_diff<ms>( t0 );
   }
+  cout << "write, " << tw << endl;
 }
 
 void Cluster::WriteAll( File out )
