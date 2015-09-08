@@ -2,6 +2,7 @@
 
 #include "buffered_io.hh"
 #include "exception.hh"
+#include "sync_print.hh"
 #include "util.hh"
 
 #include "cluster.hh"
@@ -30,8 +31,8 @@ Cluster::Cluster( vector<Address> nodes, uint64_t chunkSize )
   }
   bufSize_ = calc_client_buffer( nodes.size() );
 
-  cout << "chunk-size, " << chunkSize_ << ", " << bufSize_ << endl;
-  cout << "disks, " << num_of_disks() << endl << endl;
+  print( "chunk-size", chunkSize_, bufSize_ );
+  print( "disks", num_of_disks(), "\n" );
 
   for ( auto & n : nodes ) {
     clients_.push_back( n );
@@ -48,7 +49,7 @@ uint64_t Cluster::Size( void )
   for ( auto & c : clients_ ) {
     size += c.recvSize();
   }
-  cout << endl;
+  print( "\n" );
 
   return size;
 }
@@ -108,7 +109,7 @@ void Cluster::Read( uint64_t pos, uint64_t size )
       totalSize += f->recvSize();
     }
     uint64_t end = min( totalSize, pos + size );
-    cout << endl;
+    print( "\n" );
 
     // prep -- 1st chunk
     for ( auto f : files ) {
@@ -152,7 +153,7 @@ void Cluster::ReadAll( void )
       for ( uint64_t j = 0; j < nrecs; j++ ) {
         c.readRecord();
       }
-      cout << "network, " << ++pass << ", " << time_diff<ms>( t0 ) << endl;
+      print( "network", ++pass, time_diff<ms>( t0 ) );
     }
   } else {
     // general n node case
@@ -171,7 +172,7 @@ void Cluster::ReadAll( void )
     for ( auto f : files ) {
       size += f->recvSize();
     }
-    cout << endl;
+    print( "\n" );
 
     // prep -- 1st chunk
     for ( auto f : files ) {
@@ -219,7 +220,7 @@ static void writer( File out, Channel<vector<Record>> chn )
     out.fsync();
     tw += time_diff<ms>( t0 );
   }
-  cout << "write, " << tw << endl;
+  print( "write", tw );
 }
 
 void Cluster::WriteAll( File out )
@@ -256,7 +257,7 @@ void Cluster::WriteAll( File out )
     for ( auto f : files ) {
       size += f->recvSize();
     }
-    cout << endl;
+    print( "\n" );
 
     // prep -- 1st chunk
     for ( auto f : files ) {

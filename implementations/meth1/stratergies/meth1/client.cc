@@ -3,6 +3,7 @@
 #include "buffered_io.hh"
 #include "exception.hh"
 #include "socket.hh"
+#include "sync_print.hh"
 #include "timestamp.hh"
 
 #include "record.hh"
@@ -29,8 +30,7 @@ void Client::sendRead( uint64_t pos, uint64_t siz )
   rpcStart_ = time_now();
   rpcPos_ = pos;
 
-  cout << "read-start, " << sock_.fd_num() << ", " << ++sendPass_ << ", "
-    << pos << ", " << siz << ", " << timestamp<ms>() << endl;
+  print( "read-start", sock_.fd_num(), ++sendPass_, pos, siz, timestamp<ms>() );
 
   char data[1 + 2 * sizeof( uint64_t )];
   data[0] = 0;
@@ -46,8 +46,8 @@ uint64_t Client::recvRead( void )
   sock_.read_all( nrecsStr, sizeof( uint64_t ) );
   uint64_t nrecs = *reinterpret_cast<uint64_t *>( nrecsStr );
 
-  cout << "read, " << sock_.fd_num() << ", " << ++recvPass_ << ", "
-    << rpcPos_ << ", " << nrecs << ", " << time_diff<ms>( rpcStart_ ) << endl;
+  print( "read", sock_.fd_num(), ++recvPass_, rpcPos_, nrecs,
+    time_diff<ms>( rpcStart_ ) );
 
   return nrecs;
 }
@@ -72,8 +72,8 @@ uint64_t Client::recvSize( void )
   sock_.read_all( sizeStr, sizeof( uint64_t ) );
   uint64_t size = *reinterpret_cast<const uint64_t *>( sizeStr );
 
-  cout << "size, " << sock_.fd_num() << ", " << ++sizePass_ << ", "
-    << size << ", " << time_diff<ms>( rpcStart_ ) << endl;
+  print( "size", sock_.fd_num(), ++sizePass_, size,
+    time_diff<ms>( rpcStart_ ) );
 
   return size;
 }

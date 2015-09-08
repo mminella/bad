@@ -3,6 +3,7 @@
 #include "tune_knobs.hh"
 
 #include "linux_compat.hh"
+#include "sync_print.hh"
 #include "util.hh"
 
 #include "meth1_memory.hh"
@@ -27,11 +28,10 @@ Node::Node( vector<string> files, string port, bool odirect )
     throw runtime_error( "No files to read from" );
   }
 
-  cout << "seek-chunk, " << seek_chunk_ << endl;
+  print( "seek-chunk", seek_chunk_ );
   for ( auto & f : files ) {
     recios_.emplace_back( f, odirect ? O_RDONLY | O_DIRECT : O_RDONLY );
-    cout << "file, " << recios_.back().id() << ", " << recios_.back().records()
-      << endl;
+    print( "file", recios_.back().id(), recios_.back().records() );
   }
 }
 
@@ -142,7 +142,7 @@ void Node::RPC_Read( TCPSocket & client )
   // wait for final write to finish
   tg_.wait();
 
-  cout << "network, " << ++pass << ", " << time_diff<ms>( t0 ) << endl;
+  print( "network", ++pass, time_diff<ms>( t0 ) );
 }
 
 void Node::RPC_Size( TCPSocket & client )
@@ -159,8 +159,7 @@ Node::RecV Node::Read( uint64_t pos, uint64_t size )
     size = Size() - pos;
   }
 
-  cout << endl << "read-start, " << ++pass << ", " << pos << ", " << size
-    << ", " << timestamp<ms>() << endl;
+  print( "\nread-start", ++pass, pos, size, timestamp<ms>() );
 
   auto t0 = time_now();
   auto recs = linear_scan( seek( pos ), size );
@@ -168,8 +167,7 @@ Node::RecV Node::Read( uint64_t pos, uint64_t size )
     last_.copy( recs.back() );
     fpos_ = pos + recs.size();
   }
-  cout << "read, " << pass << ", " << recs.size() << ", "
-    << time_diff<ms>( t0 ) << endl;
+  print( "read", pass, recs.size(), time_diff<ms>( t0 ) );
 
   return recs;
 }
@@ -254,7 +252,7 @@ Node::RecV Node::linear_scan_one( const Record & after )
   vector<RR> rec;
   rec.push_back( move( min ) );
   auto tt = time_diff<ms>( t0 );
-  cout << "linear-scan, " << lpass_ << ", " << tt << endl;
+  print( "linear-scan", lpass_, tt );
 
   return {move( rec )};
 }
@@ -340,10 +338,10 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
   }
   auto t1 = time_now();
 
-  cout << "linear-scan, " << time_diff<ms>( t1, t0 ) << endl;
-  cout << "-sort , " << ts << ", " << sorts << endl;
-  cout << "-merge, " << tm << ", " << merges << endl;
-  cout << "-last , " << tl << endl;
+  print( "linear-scan", time_diff<ms>( t1, t0 ) );
+  print( "-sort ", ts, sorts );
+  print( "-merge", tm, merges );
+  print( "-last ", tl );
 
   return {r2, r2s};
 }

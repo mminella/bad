@@ -11,6 +11,7 @@
 
 #include "channel.hh"
 #include "file.hh"
+#include "sync_print.hh"
 #include "timestamp.hh"
 
 /**
@@ -53,8 +54,7 @@ private:
       if ( nbytes == 0 ) {
         continue;
       }
-      std::cout << "circular-read-start, " << id_ << ", " << ++readPass_
-        << ", " << nbytes << ", " << timestamp<ms>() << std::endl;
+      print( "circular-read-start", id_, ++readPass_, nbytes, timestamp<ms>() );
 
       auto ts = time_now();
       tdiff_t tt = 0;
@@ -85,8 +85,7 @@ private:
         }
       }
       auto te = time_diff<ms>( ts );
-      std::cout << "circular-read-total, " << id_ << ", " << readPass_
-        << ", " << tt << ", " << te << std::endl;
+      print( "circular-read-total", id_, readPass_, tt, te );
     }
   }
 

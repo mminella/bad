@@ -5,6 +5,7 @@
 #include "tune_knobs.hh"
 
 #include "circular_io.hh"
+#include "sync_print.hh"
 #include "util.hh"
 
 #include "record.hh"
@@ -46,7 +47,8 @@ uint64_t calc_value_size( void )
   }
 
   uint64_t val_len = *min_element( diffs.begin(), diffs.end() );
-  cout << "record-value, " << val_len << endl;
+  print( "record-value", val_len );
+
   return min( val_len, 2 * Rec::VAL_LEN );
 }
 
