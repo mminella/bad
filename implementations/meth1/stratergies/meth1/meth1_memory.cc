@@ -57,13 +57,16 @@ uint64_t calc_record_space( void )
 {
   // XXX: we should really do this at the backend node, not the client, but the
   // RPC interface isn't really setup that way.
-  uint64_t memFree = memory_exists();
+  uint64_t memFree = uint64_t( 240 ) * uint64_t( 1024 ) * uint64_t( 1024 * 1024 );
   uint64_t val_len = calc_value_size();
 
   // subtract reserved mem for OS & misc
   memFree -= Knobs::MEM_RESERVE;
+  cout << "mem: " << memFree << endl;
   // subtract disk read buffers
-  memFree -= ( CircularIO::BLOCK * Knobs::DISK_BLOCKS * num_of_disks() );
+  uint64_t disks = CircularIO::BLOCK * Knobs::DISK_BLOCKS * num_of_disks();
+  memFree -= disks;
+  cout << "mem: " << memFree << endl;
 
   // divisor for r2 & r3 merge buffers
   uint64_t div1 = uint64_t( 2 ) * uint64_t( sizeof( Node::RR ) ) + val_len;
