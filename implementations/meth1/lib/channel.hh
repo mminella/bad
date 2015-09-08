@@ -15,7 +15,7 @@
 namespace internal {
 
   /* A channel provides a buffered communication pipe.
-   */ 
+   */
   template <typename T>
   class Channel_
   {
@@ -77,7 +77,7 @@ namespace internal {
           // we consumed one we don't need, so pass onwards
           send_cv_.notify_one();
         }
-      } 
+      }
     }
 
     void close()
@@ -166,7 +166,7 @@ namespace internal {
           }
         }
         send_cv_.notify_one();
-        
+
         used_--;
         size_t i = rptr_;
         rptr_ = (rptr_ + 1) % size_;

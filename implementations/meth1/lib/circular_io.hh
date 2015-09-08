@@ -96,7 +96,7 @@ public:
     , bufSize_{blocks * BLOCK}
     , blocks_{blocks-2}
     , start_{0}
-    , reader_{std::thread( &CircularIO::read_loop,  this )}
+    , reader_{}
     , readPass_{0}
     , io_cb_{[]() {}}
     , id_{id}
@@ -104,7 +104,11 @@ public:
     if ( blocks < 3 ) {
       throw new std::runtime_error( "need at least three blocks" );
     }
-    posix_memalign( (void **) &buf_, ALIGNMENT, bufSize_ );
+    int r = posix_memalign( (void **) &buf_, ALIGNMENT, bufSize_ );
+    if ( r != 0 ) {
+      throw new std::bad_alloc();
+    }
+    reader_ = std::thread( &CircularIO::read_loop,  this );
   };
 
   /* no copy */
