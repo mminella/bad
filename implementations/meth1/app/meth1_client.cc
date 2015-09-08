@@ -8,6 +8,7 @@
 #include <string>
 
 #include "exception.hh"
+#include "sync_print.hh"
 
 #include "cluster.hh"
 
@@ -27,25 +28,21 @@ void run_cmd( Cluster & c, string out_dir, string cmd, uint64_t read_ahead )
     Record r = c.ReadFirst();
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
-    cout << endl;
-    cout << "first, " << r << endl;
-    cout << "cmd-first, 0, " << dur << endl;
+    print( "\nfirst", r, "\ncmd-first", dur );
 
   } else if ( cmd == "read" ) {
     auto start = chrono::high_resolution_clock::now();
     c.ReadAll();
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
-    cout << endl;
-    cout << "cmd-read, 0, " << dur << endl;
+    print( "\ncmd-read", dur );
 
   } else if ( cmd == "chunk" ) {
     auto start = chrono::high_resolution_clock::now();
     c.Read( 0, read_ahead );
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
-    cout << endl;
-    cout << "cmd-chunk, 0, " << dur << endl;
+    print( "\ncmd-chunk", dur );
 
   } else if ( cmd.find_first_of( "chunk-" ) == 0 ) {
     size_t i = cmd.find_last_of( '-' );
@@ -55,8 +52,7 @@ void run_cmd( Cluster & c, string out_dir, string cmd, uint64_t read_ahead )
     c.Read( 0, siz );
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
-    cout << endl;
-    cout << "cmd-chunk, 0, " << dur << endl;
+    print( "\ncmd-chunk", dur );
 
   } else if ( cmd == "write" ) {
     auto start = chrono::high_resolution_clock::now();
@@ -64,8 +60,7 @@ void run_cmd( Cluster & c, string out_dir, string cmd, uint64_t read_ahead )
     c.WriteAll( move( out ) );
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
-    cout << endl;
-    cout << "cmd-write, 0, " << dur << endl;
+    print( "\ncmd-write", dur );
   }
 }
 
