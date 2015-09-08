@@ -15,13 +15,14 @@ ODIR=$7
 CMDD=$8
 TARF=$9
 PG=${10}
+ZONE=${11}
 SIZE_B=$( calc "$SIZE * 1024 * 1024 * 1000 / 100" )
 CHUNK_B=$( calc "$CHUNK * 1024 * 1024 * 1000 / 100" )
 
 # Args
-if [ $# != 10 ]; then
+if [ $# != 11 ]; then
   echo "runBad.sh <cluster file> <log path> <size> <chunk> <machine> <nodes>" \
-    "<o_direct> <cmd> <dist_tar> <pgroup>"
+    "<o_direct> <cmd> <dist_tar> <pgroup> <zone>"
   exit 1
 fi
 
@@ -36,7 +37,7 @@ elif [ $MACHINE = "i2.8xlarge" ]; then
 fi
 
 # Launch
-./launchBAD.rb -f ${FILE} -k ${KEY} -c ${N} -n "${SAVE}-%d" -d ${TARF} -i ${MACHINE} -p ${PG}
+./launchBAD.rb -f ${FILE} -k ${KEY} -c ${N} -n "${SAVE}-%d" -d ${TARF} -i ${MACHINE} -p ${PG} -z ${ZONE}
 if [ $? -ne 0 ]; then
   echo "Launching instances failed! (${FILE})"
   ./shutdown-cluster.sh ${FILE}
@@ -76,7 +77,7 @@ backends() {
 # 3 - op
 reader() {
   ${SSH} ubuntu@${M1} "echo '$1' >> ${LOG};" \
-    "meth1_client $2 ${READER_OUT} $3 ${BACKENDS} 2>&1 >> ${LOG}"
+    "meth1_client $2 ${READER_OUT} $3 ${BACKENDS} 2>> ${LOG} >> ${LOG}"
 }
 
 # Run an experiment (start + run + stop method)
@@ -93,7 +94,7 @@ experiment() {
 }
 
 # Run experiment
-all "setup_all_fs 2>&1 > /dev/null"
+all "setup_all_fs 2> /dev/null > /dev/null"
 backends "gensort_all ${SIZE_B} recs"
 all "sudo clear_buffers"
 experiment ${ODIR} ${CMDD}
@@ -111,5 +112,5 @@ done
 scp ubuntu@$M1:~/bad.log $SAVE/1.bad.log
 
 # Kill cluster
-./shutdown-cluster.sh ${FILE}
+# ./shutdown-cluster.sh ${FILE}
 
