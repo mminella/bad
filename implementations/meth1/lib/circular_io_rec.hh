@@ -57,7 +57,8 @@ public:
 
       auto blk = next_block();
       if ( blk.first == nullptr ) {
-        throw std::runtime_error( "corrupt record, wasn't enough data" );
+        throw std::runtime_error( std::to_string( id_ )
+          + ": corrupt record, wasn't enough data" );
       }
       pos_ = blk.first;
       bend_ = blk.first + blk.second;

@@ -34,8 +34,11 @@ private:
   std::thread reader_;
   uint64_t readPass_;
   std::function<void(void)> io_cb_;
+
+protected:
   uint64_t id_;
 
+private:
   /* continually read from the device, taking commands over a channel */
   void read_loop( void )
   {
@@ -71,10 +74,14 @@ private:
           }
         }
 
-        if ( rbytes >= nbytes ) {
+        if ( rbytes == nbytes ) {
           io_cb_();
           blocks_.send( { nullptr, 0} ); // indicate EOF
           break;
+        } else if ( rbytes > nbytes ) {
+          throw new std::runtime_error( "read more bytes than should have been" \
+            " available ( " + std::to_string( rbytes ) + " vs " +
+            std::to_string( nbytes ) + " )" );
         }
       }
       auto te = time_diff<ms>( ts );
