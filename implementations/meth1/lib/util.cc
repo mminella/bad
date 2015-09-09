@@ -75,10 +75,13 @@ const string join( const vector<string> & command )
 uint64_t memory_exists( void )
 {
 #ifdef __APPLE__
-  uint64_t mem;
+  int64_t mem;
   size_t len = sizeof(mem);
   sysctlbyname("hw.memsize", &mem, &len, NULL, 0);
-  return mem;
+  if ( mem < 0 ) {
+    throw runtime_error( "memory available less than zero" );
+  }
+  return (uint64_t) mem;
 #else
   uint64_t pages = sysconf( _SC_PHYS_PAGES );
   uint64_t pg_sz = sysconf( _SC_PAGE_SIZE );
