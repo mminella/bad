@@ -69,7 +69,7 @@ pair<const char *, size_t> BufferedIO::read_buf_all( size_t nbytes )
 }
 
 /* overriden base read method */
-size_t BufferedIO::rread( char * buf, size_t limit )
+size_t BufferedIO::read( char * buf, size_t limit )
 {
   auto cstr = rread_buf( limit, false );
   if ( cstr.second > 0 ) {
@@ -78,15 +78,8 @@ size_t BufferedIO::rread( char * buf, size_t limit )
   return cstr.second;
 }
 
-/* overriden base read method */
-string BufferedIO::rread( size_t limit )
-{
-  auto cstr = rread_buf( limit, false );
-  return {cstr.first, cstr.second};
-}
-
 /* overriden base write method */
-size_t BufferedIO::wwrite( const char * buf, size_t nbytes )
+size_t BufferedIO::write( const char * buf, size_t nbytes )
 {
   /* copy to available buffer space */
   size_t limit = min( nbytes, wsize_ - wend_ );

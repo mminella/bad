@@ -23,10 +23,6 @@ private:
   /* base buffer read method */
   std::pair<const char *, size_t> rread_buf( size_t limit, bool read_all );
 
-  /* implement read + write */
-  size_t rread( char * buf, size_t limit ) override;
-  std::string rread( size_t limit = MAX_READ ) override;
-  size_t wwrite( const char * buf, size_t nbytes ) override;
 
 protected:
   /* underlying file descriptor */
@@ -85,6 +81,9 @@ public:
     return *this;
   }
 
+  /* destructor */
+  ~BufferedIO() { flush( true ); }
+
   /* buffer read method */
   std::pair<const char *, size_t> read_buf( size_t limit = 0 );
   std::pair<const char *, size_t> read_buf_all( size_t nbytes );
@@ -92,8 +91,15 @@ public:
   /* flush */
   size_t flush( bool flush_all = true );
 
-  /* destructor */
-  ~BufferedIO() { flush( true ); }
+  /* implement read + write */
+  size_t read( char * buf, size_t limit ) override;
+  size_t write( const char * buf, size_t nbytes ) override;
+  size_t pread( char * buf, size_t limit, off_t offset ) override {
+    return io_->pread(buf, limit, offset);
+  }
+  size_t pwrite( const char * buf, size_t nbytes, off_t offset ) override {
+    return io_->pwrite(buf, nbytes, offset);
+  }
 };
 
 /* A version of BufferedIO that takes ownership of the IODevice */
