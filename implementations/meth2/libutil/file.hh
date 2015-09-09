@@ -23,7 +23,7 @@ public:
   void fsync( void );
 
   /* file size */
-  size_t size( void );
+  size_t size( void ) const;
 };
 
 #endif /* FILE_HH */

@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <cstring>
 
+#include "tune_knobs.hh"
+
+
 /* Use parallel sort? */
 #define PARALLEL_SORT 1
 

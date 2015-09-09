@@ -12,7 +12,7 @@ private:
   int fd_ = -1;
   bool eof_ = false;
 
-public: // XXX: should leave private
+public:
   /* implement read + write */
   size_t rread( char * buf, size_t limit ) override;
   size_t wwrite( const char * buf, size_t nbytes ) override;
