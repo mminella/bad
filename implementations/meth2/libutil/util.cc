@@ -71,29 +71,40 @@ const string join( const vector<string> & command )
     []( const string & a, const string & b ) { return a + " " + b; } );
 }
 
+/* Ensure size_t is large enough */
+
 /* Physical memory present on the machine */
-uint64_t memory_exists( void )
+size_t memory_exists( void )
 {
 #ifdef __APPLE__
-  uint64_t mem;
+  static_assert( sizeof( size_t ) >= sizeof( int64_t ), "size_t >= int64_t" );
+
+  int64_t mem;
   size_t len = sizeof(mem);
   sysctlbyname("hw.memsize", &mem, &len, NULL, 0);
-  return mem;
+  if ( mem < 0 ) {
+    throw runtime_error( "memory available less than zero" );
+  }
+  return (size_t) mem;
 #else
-  uint64_t pages = sysconf( _SC_PHYS_PAGES );
-  uint64_t pg_sz = sysconf( _SC_PAGE_SIZE );
+  static_assert( sizeof( size_t ) >= sizeof( long ), "size_t >= long" );
+
+  size_t pages = (size_t) sysconf( _SC_PHYS_PAGES );
+  size_t pg_sz = (size_t) sysconf( _SC_PAGE_SIZE );
   return pages * pg_sz;
 #endif
 }
 
 /* Physical memory present and free on the machine */
-uint64_t memory_free( void )
+size_t memory_free( void )
 {
 #ifdef __APPLE__
   return memory_exists();
 #else
-  uint64_t pages = sysconf( _SC_AVPHYS_PAGES );
-  uint64_t pg_sz = sysconf( _SC_PAGE_SIZE );
+  static_assert( sizeof( size_t ) >= sizeof( long ), "size_t >= long" );
+
+  size_t pages = (size_t) sysconf( _SC_AVPHYS_PAGES );
+  size_t pg_sz = (size_t) sysconf( _SC_PAGE_SIZE );
   return pages * pg_sz;
 #endif
 }

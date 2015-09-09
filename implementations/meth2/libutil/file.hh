@@ -16,14 +16,11 @@ public:
   /* rewind to begging of file */
   void rewind( void );
 
-  /* Seek */
-  void seek( uint64_t off );
-
   /* force file contents to disk */
   void fsync( void );
 
   /* file size */
-  uint64_t size( void ) const;
+  off_t size( void ) const;
 };
 
 #endif /* FILE_HH */

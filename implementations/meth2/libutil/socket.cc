@@ -92,7 +92,7 @@ void Socket::connect( const Address & addr )
 /* receive datagram and where it came from */
 UDPSocket::received_datagram UDPSocket::recv( void )
 {
-  static const ssize_t RECEIVE_MTU = 65536;
+  static const size_t RECEIVE_MTU = 65536;
 
   /* receive source address, timestamp and payload */
   Address::raw datagram_source_address;

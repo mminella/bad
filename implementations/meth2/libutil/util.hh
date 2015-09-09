@@ -23,10 +23,10 @@ const std::string join( const std::vector<std::string> & command );
 template <typename T> inline void zero( T & x ) { memset( &x, 0, sizeof( x ) ); }
 
 /* Physical memory present on the machine */
-uint64_t memory_exists( void );
+size_t memory_exists( void );
 
 /* Physical memory present and free on the machine */
-uint64_t memory_free( void );
+size_t memory_free( void );
 
 /* A merge that move's elements rather than copy and doesn't have a stupid API
  * like STL */

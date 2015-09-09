@@ -7,11 +7,11 @@
 class IODevice
 {
 public:
-  static const size_t MAX_READ = 128 * 1024;
+  static constexpr size_t MAX_READ = 128 * 1024;
 
 private:
-  unsigned int read_count_ = 0;
-  unsigned int write_count_ = 0;
+  size_t read_count_ = 0;
+  size_t write_count_ = 0;
   
 protected:
   /* io device state */
@@ -29,8 +29,8 @@ public:
 
   /* accessors */
   bool eof( void ) const noexcept { return get_eof(); }
-  unsigned int read_count( void ) const noexcept { return read_count_; }
-  unsigned int write_count( void ) const noexcept { return write_count_; }
+  size_t read_count( void ) const noexcept { return read_count_; }
+  size_t write_count( void ) const noexcept { return write_count_; }
 
   /* read methods */
   virtual size_t read( char * buf, size_t limit ) = 0;

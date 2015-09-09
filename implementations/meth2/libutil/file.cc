@@ -30,13 +30,6 @@ void File::rewind( void )
   reset_eof();
 }
 
-/* seek */
-void File::seek( uint64_t off )
-{
-  SystemCall( "lseek", ::lseek( fd_num(), off, SEEK_SET ) );
-  reset_eof();
-}
-
 /* force file contents to disk */
 void File::fsync( void )
 {
@@ -44,13 +37,13 @@ void File::fsync( void )
 }
 
 /* file size */
-uint64_t File::size( void ) const
+off_t File::size( void ) const
 {
   struct stat st;
   fstat( fd_num(), &st );
   off_t siz = st.st_size;
   if ( siz < 0 ) {
-    throw new runtime_error( "file size is less than zero" );
+    throw runtime_error( "file size is less than zero" );
   }
-  return (uint64_t) siz;
+  return siz;
 }

@@ -8,6 +8,9 @@
 
 #include "circular_io_rec.hh"
 
+/* Ensure size_t is large enough */
+static_assert( sizeof( off_t ) <= sizeof( size_t ), "off_t <= size_t" );
+
 /**
  * Specializes CircularIORec to deal with Files.
  */
@@ -16,14 +19,18 @@ class OverlappedRecordIO : public CircularIORec<rec_size>
 {
 private:
   File & file_;
-  uint64_t fsize_;
+  off_t fsize_;
 
 public:
-  OverlappedRecordIO( File & file, uint64_t blocks = Knobs::DISK_BLOCKS )
-    : CircularIORec<rec_size>( file, blocks, (uint64_t) file.fd_num() )
+  OverlappedRecordIO( File & file, size_t blocks = Knobs::DISK_BLOCKS )
+    : CircularIORec<rec_size>( file, blocks, file.fd_num() )
     , file_{file}
     , fsize_{file.size()}
-  {};
+  {
+    if ( fsize_ < 0 ) {
+      throw std::runtime_error( "file size less then zero" );
+    }
+  };
 
   /* no copy or move */
   OverlappedRecordIO( const OverlappedRecordIO & r ) = delete;

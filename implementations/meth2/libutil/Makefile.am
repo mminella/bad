@@ -4,6 +4,7 @@ libutil_la_SOURCES = \
 	address.hh address.cc \
 	bench.hh \
 	buffered_io.hh buffered_io.cc \
+	circular_io.cc \
 	domain_socket.hh domain_socket.cc \
 	exception.hh \
 	file.hh file.cc \
