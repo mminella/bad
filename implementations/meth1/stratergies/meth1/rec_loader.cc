@@ -1,3 +1,5 @@
+#include "sync_print.hh"
+
 #include "rec_loader.hh"
 
 void RecLoader::rewind( void )
@@ -32,6 +34,9 @@ uint64_t RecLoader::filter( RR * r1, uint64_t size, const Record & after,
       }
       if ( after.compare( r, loc_ ) < 0 ) {
         r1[i++].copy( r, loc_ );
+      // } else if ( after.compare( r, loc_ ) == 0 ) {
+      //   print( "duplicate-rec", 1, after );
+      //   r1[i++].copy( r, loc_ );
       }
     }
   } else {
@@ -42,8 +47,20 @@ uint64_t RecLoader::filter( RR * r1, uint64_t size, const Record & after,
         return i;
       }
       if ( after.compare( r, loc_ ) < 0 and
-            curMin->compare( r, loc_ ) > 0 ) {
+           curMin->compare( r, loc_ ) > 0 ) {
         r1[i++].copy( r, loc_ );
+      // } else if ( after.compare( r, loc_ ) == 0 and
+      //        curMin->compare( r, loc_ ) > 0 ) {
+      //   print( "duplicate-rec", 2, after );
+      //   r1[i++].copy( r, loc_ );
+      // } else if ( after.compare( r, loc_ ) < 0 and
+      //        curMin->compare( r, loc_ ) == 0 ) {
+      //   print( "duplicate-rec", 3, curMin );
+      //   r1[i++].copy( r, loc_ );
+      // } else if ( after.compare( r, loc_ ) == 0 and
+      //        curMin->compare( r, loc_ ) == 0 ) {
+      //   print( "duplicate-rec", 4, after, curMin );
+      //   r1[i++].copy( r, loc_ );
       }
     }
   }

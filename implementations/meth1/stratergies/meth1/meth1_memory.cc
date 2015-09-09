@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <system_error>
 
@@ -17,7 +18,7 @@ using namespace std;
 using namespace meth1;
 
 /* Get a count of how many disks this machine has */
-uint64_t num_of_disks( void )
+size_t num_of_disks( void )
 {
   FILE * fin = popen("ls /dev/xvd[b-z] 2>/dev/null | wc -l", "r");
   if ( not fin ) {
@@ -25,15 +26,14 @@ uint64_t num_of_disks( void )
   }
   char buf[256];
   fgets( buf, 256, fin );
-  return max( (uint64_t) atoll( buf ), (uint64_t) 1 );
+  return max( (size_t) atoll( buf ), (size_t) 1 );
 }
 
-uint64_t calc_value_size( void )
+/* Try to figure out how tightly we can allocate values */
+size_t calc_value_size( void )
 {
-  // Try to figure out how tightly we can allocate values (i.e., external
-  // fragementation)
   vector <uint8_t *> vals;
-  vector <uint64_t> diffs;
+  vector <size_t> diffs;
   for ( size_t i = 0; i < 6; i++ ) {
     vals.push_back( Rec::alloc_val() );
   }
@@ -43,10 +43,10 @@ uint64_t calc_value_size( void )
   }
 
   for ( size_t i = 1; i < vals.size(); i++ ) {
-    diffs.push_back( uint64_t( vals[i] - vals[i-1] ) );
+    diffs.push_back( abs( vals[i] - vals[i-1] ) );
   }
 
-  uint64_t val_len = *min_element( diffs.begin(), diffs.end() );
+  size_t val_len = *min_element( diffs.begin(), diffs.end() );
   print( "record-value", val_len );
 
   return min( val_len, 2 * Rec::VAL_LEN );
@@ -57,20 +57,20 @@ uint64_t calc_record_space( void )
 {
   // XXX: we should really do this at the backend node, not the client, but the
   // RPC interface isn't really setup that way.
-  uint64_t memFree = uint64_t( 240 ) * uint64_t( 1024 ) * uint64_t( 1024 * 1024 );
+  static_assert( sizeof( uint64_t ) >= sizeof( size_t ), "uint64_t >= size_t" );
+
+  uint64_t memFree = memory_exists();
   uint64_t val_len = calc_value_size();
 
-  // subtract reserved mem for OS & misc
   memFree -= Knobs::MEM_RESERVE;
-  // subtract disk read buffers
-  uint64_t disks = CircularIO::BLOCK * Knobs::DISK_BLOCKS * num_of_disks();
-  memFree -= disks;
+  memFree -= ( CircularIO::BLOCK * Knobs::DISK_BLOCKS * num_of_disks() );
 
   // divisor for r2 & r3 merge buffers
   uint64_t div1 = uint64_t( 2 ) * uint64_t( sizeof( Node::RR ) ) + val_len;
   // divisor for r1 sort buffer
   uint64_t div2 = ( uint64_t( sizeof( Node::RR ) ) + val_len )
     / Knobs::SORT_MERGE_RATIO;
+
   // divide by sort + merge buffers
   memFree /= ( div1 + div2 );
 

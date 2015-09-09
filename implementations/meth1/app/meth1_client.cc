@@ -28,7 +28,8 @@ void run_cmd( Cluster & c, string out_dir, string cmd, uint64_t read_ahead )
     Record r = c.ReadFirst();
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
-    print( "\nfirst", r, "\ncmd-first", dur );
+    print( "\nfirst", r );
+    print( "cmd-first", dur );
 
   } else if ( cmd == "read" ) {
     auto start = chrono::high_resolution_clock::now();

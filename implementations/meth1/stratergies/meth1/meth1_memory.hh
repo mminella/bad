@@ -5,7 +5,7 @@
 #include <cstdint>
 
 /* Get a count of how many disks this machine has */
-uint64_t num_of_disks( void );
+size_t num_of_disks( void );
 
 /* figure out max chunk size available */
 uint64_t calc_record_space( void );

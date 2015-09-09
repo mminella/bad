@@ -1,5 +1,5 @@
-#ifndef METH1_CLIENT2_HH
-#define METH1_CLIENT2_HH
+#ifndef METH1_CLIENT_HH
+#define METH1_CLIENT_HH
 
 #include "address.hh"
 #include "buffered_io.hh"
@@ -57,4 +57,4 @@ public:
 };
 }
 
-#endif /* METH1_CLIENT2_HH */
+#endif /* METH1_CLIENT_HH */

@@ -15,10 +15,11 @@ using namespace meth1;
 
 uint64_t calc_client_buffer( size_t nodes )
 {
+  static_assert( sizeof( uint64_t ) >= sizeof( size_t ), "uint64_t >= size_t" );
+
   uint64_t memFree = memory_exists() - Knobs::MEM_RESERVE;
   memFree -= Cluster::WRITE_BUF * Cluster::WRITE_BUF_N;
-  uint64_t perClient = memFree / CircularIO::BLOCK / nodes;
-  return perClient;
+  return memFree / CircularIO::BLOCK / nodes;
 }
 
 Cluster::Cluster( vector<Address> nodes, uint64_t chunkSize )

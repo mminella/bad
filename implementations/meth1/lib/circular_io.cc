@@ -2,18 +2,18 @@
 
 using namespace std;
 
-constexpr uint64_t CircularIO::BLOCK;
+constexpr size_t CircularIO::BLOCK;
 
 /* construct a CircularIO */
-CircularIO::CircularIO( IODevice & io, uint64_t blocks, uint64_t id )
+CircularIO::CircularIO( IODevice & io, size_t blocks, int id )
   : io_{io}
   , buf_{nullptr}
   , bufSize_{blocks * BLOCK}
   , blocks_{blocks-2}
   , start_{0}
   , reader_{}
-  , readPass_{0}
   , io_cb_{[]() {}}
+  , readPass_{0}
   , id_{id}
 {
   if ( blocks < 3 ) {
@@ -35,7 +35,7 @@ CircularIO::~CircularIO( void )
 }
 
 /* start reading nbytes from the io device (separate thread) */
-void CircularIO::start_read( uint64_t nbytes )
+void CircularIO::start_read( size_t nbytes )
 {
   start_.send( nbytes );
 }
@@ -52,11 +52,17 @@ void CircularIO::set_io_drained_cb( function<void(void)> f )
   io_cb_ = f;
 }
 
+/* return id of back IODevice */
+int CircularIO::id( void ) const noexcept
+{
+  return id_;
+}
+
 /* continually read from the device, taking commands over a channel */
 void CircularIO::read_loop( void )
 {
   while ( true ) {
-    uint64_t nbytes = 0;
+    size_t nbytes = 0;
     try {
       nbytes = start_.recv();
     } catch ( const exception & e ) {
@@ -71,11 +77,17 @@ void CircularIO::read_loop( void )
     auto ts = time_now();
     tdiff_t tt = 0;
     char * wptr_ = buf_;
-    uint64_t rbytes = 0, n = 0;
+    size_t rbytes = 0;
     while ( true ) {
       auto t0 = time_now();
-      n = io_.read( wptr_, min( BLOCK, nbytes - rbytes ) );
+      size_t blkSize = min( BLOCK, nbytes - rbytes );
+      size_t n = io_.read_all( wptr_, blkSize );
       tt += time_diff<ms>( t0 );
+
+      if ( n != blkSize ) {
+        throw runtime_error( "read didn't read amount requeststed( "
+          + to_string( blkSize ) + " vs " + to_string( n ) + " )" );
+      }
 
       if ( n > 0 ) {
         rbytes += n;
@@ -91,13 +103,12 @@ void CircularIO::read_loop( void )
         blocks_.send( { nullptr, 0} ); // indicate EOF
         break;
       } else if ( rbytes > nbytes ) {
-        throw new runtime_error( "read more bytes than should have been" \
+        throw runtime_error( "read more bytes than should have been" \
           " available ( " + to_string( rbytes ) + " vs " +
           to_string( nbytes ) + " )" );
       }
     }
     auto te = time_diff<ms>( ts );
-    print( "last-block", n );
     print( "circular-read-total", id_, readPass_, rbytes, tt, te );
   }
 }

@@ -40,7 +40,7 @@ public:
   RemoteFile( Client & c, uint64_t chunkSize, uint64_t bufSize )
     : c_{&c}
     , buf_{new CircularIORec<Rec::SIZE>( c.socket(), bufSize,
-        (uint64_t) c.socket().fd_num() )}
+        c.socket().fd_num() )}
     , chunkSize_{chunkSize}
     , start_{true}
     , ioPos_{0}
@@ -110,7 +110,7 @@ public:
       // drain the final nullptr
       recStr = buf_->next_record();
       if ( recStr != nullptr ) {
-        throw new std::runtime_error( "not actually eof" );
+        throw std::runtime_error( "not actually eof" );
       }
     }
   }

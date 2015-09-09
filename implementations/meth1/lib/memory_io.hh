@@ -22,7 +22,7 @@ private:
 
 public:
   MemoryIO( File & file )
-    : io_{file, 10, (uint64_t) file.fd_num()}
+    : io_{file, 10, file.fd_num()}
     , bstart_{new char[file.size()]}
     , bend_{bstart_ + file.size()}
     , bready_{bstart_}

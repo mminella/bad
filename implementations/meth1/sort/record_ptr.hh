@@ -81,12 +81,11 @@ public:
   /* Write to IO device */
   void write( IODevice & io, Rec::loc_t locinfo = Rec::NO_LOC ) const
   {
-    io.write_all( (char *) key(), Rec::KEY_LEN );
-    io.write_all( (char *) val(), Rec::VAL_LEN );
+    io.write_all( (const char *) key(), Rec::KEY_LEN );
+    io.write_all( (const char *) val(), Rec::VAL_LEN );
     if ( locinfo == Rec::WITH_LOC ) {
       uint64_t l = loc();
-      io.write_all( reinterpret_cast<const char *>( &l ),
-                    sizeof( uint64_t ) );
+      io.write_all( (const char *) &l, Rec::LOC_LEN );
     }
   }
 };

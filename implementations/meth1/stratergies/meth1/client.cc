@@ -41,12 +41,14 @@ void Client::sendRead( uint64_t pos, uint64_t siz )
 
 uint64_t Client::recvRead( void )
 {
+  print( "read-wait", sock_.fd_num(), ++recvPass_, time_diff<ms>( rpcStart_ ) );
+
   char data[sizeof( uint64_t )];
   char * nrecsStr = data;
   sock_.read_all( nrecsStr, sizeof( uint64_t ) );
   uint64_t nrecs = *reinterpret_cast<uint64_t *>( nrecsStr );
 
-  print( "read", sock_.fd_num(), ++recvPass_, rpcPos_, nrecs,
+  print( "read", sock_.fd_num(), recvPass_, rpcPos_, nrecs,
     time_diff<ms>( rpcStart_ ) );
 
   return nrecs;

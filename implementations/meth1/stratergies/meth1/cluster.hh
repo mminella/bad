@@ -31,8 +31,8 @@ private:
   uint64_t bufSize_;
 
 public:
-  static uint64_t constexpr WRITE_BUF = Knobs::CLIENT_WRITE_BUFFER;
-  static uint64_t constexpr WRITE_BUF_N = 2;
+  static size_t constexpr WRITE_BUF = Knobs::CLIENT_WRITE_BUFFER;
+  static size_t constexpr WRITE_BUF_N = 2;
 
   Cluster( std::vector<Address> nodes, uint64_t chunkSize = 0 );
 

@@ -54,7 +54,7 @@ public:
     return *this;
   }
 
-  uint64_t id( void ) const noexcept { return file_->fd_num(); }
+  int id( void ) const noexcept { return file_->fd_num(); }
   uint64_t records( void ) const noexcept { return file_->size() / Rec::SIZE; }
   bool eof( void ) const noexcept { return eof_; }
   void rewind( void );

@@ -20,14 +20,16 @@ private:
   char rec_[rec_size];
   const char * bend_;
   const char * pos_;
-  uint64_t recs_;
+  size_t recs_;
+  size_t rrbytes_;
 
 public:
-  CircularIORec( IODevice & io, uint64_t blocks, uint64_t id = 0 )
+  CircularIORec( IODevice & io, size_t blocks, int id = 0 )
     : CircularIO( io, blocks, id )
     , bend_{nullptr}
     , pos_{nullptr}
     , recs_{0}
+    , rrbytes_{0}
   {};
 
   /* no copy or move */
@@ -36,20 +38,26 @@ public:
   CircularIORec( CircularIORec && r ) = delete;
   CircularIORec & operator=( CircularIORec && r ) = delete;
 
-  void reset_rec_count( void ) noexcept { recs_ = 0; }
+  void reset_rec_count( void ) noexcept
+  {
+    print( "records", 0 );
+    recs_ = 0;
+  }
 
-  uint64_t rec_count( void ) const noexcept { return recs_; }
+  size_t rec_count( void ) const noexcept { return recs_; }
 
   const char * next_record( void )
   {
     // either haven't got first block OR exactly consumed current block
     if ( pos_ == nullptr || pos_ == bend_) {
       auto blk = next_block();
+      print( "cr-recv", (void *) blk.first, blk.second );
       if ( blk.first == nullptr ) {
         return nullptr;
       }
       pos_ = blk.first;
       bend_ = blk.first + blk.second;
+      rrbytes_ += blk.second;
     }
 
     recs_++;
@@ -64,13 +72,15 @@ public:
       memcpy( rec_, pos_, partial );
 
       auto blk = next_block();
+      print( "cr-recv", (void *) blk.first, blk.second );
       if ( blk.first == nullptr ) {
-        print( "next_record", "fail", partial, blk.second, recs_ );
-        throw std::runtime_error( std::to_string( id_ )
+        print( "next_record", "fail", partial, blk.second, recs_, rrbytes_ );
+        throw std::runtime_error( std::to_string( id() )
           + ": corrupt record, wasn't enough data" );
       }
       pos_ = blk.first;
       bend_ = blk.first + blk.second;
+      rrbytes_ += blk.second;
 
       memcpy( rec_ + partial, pos_, rec_size - partial );
       pos_ += rec_size - partial;

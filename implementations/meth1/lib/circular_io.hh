@@ -21,42 +21,43 @@
 class CircularIO
 {
 public:
-  static constexpr uint64_t BLOCK = Knobs::IO_BLOCK;
-  static constexpr uint64_t ALIGNMENT = 4096;
+  static constexpr size_t BLOCK = Knobs::IO_BLOCK;
+  static constexpr size_t ALIGNMENT = 4096;
 
-  using block_ptr = std::pair<const char *, uint64_t>;
+  using block_ptr = std::pair<const char *, size_t>;
 
 private:
   IODevice & io_;
   char * buf_;
-  uint64_t bufSize_;
+  size_t bufSize_;
   Channel<block_ptr> blocks_;
-  Channel<uint64_t> start_;
+  Channel<size_t> start_;
   std::thread reader_;
-  uint64_t readPass_;
   std::function<void(void)> io_cb_;
+
+  /* debug info */
+  size_t readPass_;
+  int id_;
 
   /* continually read from the device, taking commands over a channel */
   void read_loop( void );
 
-protected:
-  uint64_t id_;
-
 public:
-  CircularIO( IODevice & io, uint64_t blocks, uint64_t id = 0 );
-  /* no copy */
+  CircularIO( IODevice & io, size_t blocks, int id = 0 );
+
+  /* no copy or move */
   CircularIO( const CircularIO & r ) = delete;
   CircularIO & operator=( const CircularIO & r ) = delete;
-
-  /* no move */
   CircularIO( CircularIO && r ) = delete;
   CircularIO & operator=( CircularIO && r ) = delete;
 
   ~CircularIO( void );
 
-  void start_read( uint64_t nbytes );
+  void start_read( size_t nbytes );
   block_ptr next_block( void );
   void set_io_drained_cb( std::function<void(void)> f );
+
+  int id( void ) const noexcept;
 };
 
 #endif /* CIRCULAR_IO_HH */
