@@ -11,8 +11,8 @@ libsort_la_SOURCES = \
 
 libsort_la_CPPFLAGS = \
 	-I$(srcdir)/.. \
-	-I$(srcdir)/../lib \
+	-I$(srcdir)/../libutil \
 	-I$(srcdir)/../contrib
 
 libsort_la_LIBADD = \
-	../lib/libbasicrts.la
+	../libutil/libbasicrts.la

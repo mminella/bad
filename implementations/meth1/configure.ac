@@ -10,7 +10,7 @@ AC_INIT([bad1],[1.0.0],[dterei@cs.stanford.edu])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 # Set sanity check for a source file.
-AC_CONFIG_SRCDIR([lib/address.hh])
+AC_CONFIG_SRCDIR([libutil/address.hh])
 
 # Set m4 output directory (for libtool).
 AC_CONFIG_MACRO_DIR([m4])
@@ -49,9 +49,8 @@ AC_CONFIG_FILES([
   Makefile
   app/Makefile
   experiments/Makefile
-  lib/Makefile
-  sort/Makefile
-  stratergies/Makefile
-  stratergies/meth1/Makefile
+  libutil/Makefile
+  libsort/Makefile
+  libmeth1/Makefile
 ])
 AC_OUTPUT

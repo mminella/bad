@@ -21,13 +21,13 @@ bin_PROGRAMS = \
 AM_CPPFLAGS = \
 	-D_REENTRANT \
 	-I$(srcdir)/.. \
-	-I$(srcdir)/../lib \
-	-I$(srcdir)/../sort \
+	-I$(srcdir)/../libutil \
+	-I$(srcdir)/../libsort \
 	-I$(srcdir)/../contrib
 
 LDADD = \
-	../lib/libbasicrts.la \
-	../sort/libsort.la \
+	../libutil/libbasicrts.la \
+	../libsort/libsort.la \
 	-lpthread \
 	$(TBB_LIBS)
 
