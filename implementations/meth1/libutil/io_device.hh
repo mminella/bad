@@ -13,11 +13,6 @@ private:
   size_t read_count_ = 0;
   size_t write_count_ = 0;
   
-  /* base read & write methods */
-  virtual size_t rread( char * buf, size_t limit ) = 0;
-  virtual std::string rread( size_t limit = MAX_READ );
-  virtual size_t wwrite( const char * buf, size_t nbytes ) = 0;
-
 protected:
   /* io device state */
   virtual bool get_eof( void ) const noexcept = 0;
@@ -38,16 +33,24 @@ public:
   size_t write_count( void ) const noexcept { return write_count_; }
 
   /* read methods */
-  size_t read( char * buf, size_t limit );
+  virtual size_t read( char * buf, size_t limit ) = 0;
   std::string read( size_t limit = MAX_READ );
   size_t read_all( char * buf, size_t nbytes );
   std::string read_all( size_t nbytes );
 
+  virtual size_t pread( char * buf, size_t limit, off_t offset ) = 0;
+  std::string pread( size_t limit, off_t offset );
+  size_t pread_all( char * buf, size_t nbytes, off_t offset );
+  std::string pread_all( size_t nbytes, off_t offset );
+
   /* write methods */
-  size_t write( const char * buf, size_t nbytes );
+  virtual size_t write( const char * buf, size_t nbytes ) = 0;
   std::string::const_iterator write( const std::string & buf );
   size_t write_all( const char * buf, size_t nbytes );
   std::string::const_iterator write_all( const std::string & buf );
+
+  virtual size_t pwrite( const char * buf, size_t nbytes, off_t offset ) = 0;
+  std::string::const_iterator pwrite( const std::string & buf, off_t offset );
 };
 
 #endif /* IO_DEVICE_HH */

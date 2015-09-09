@@ -10,42 +10,11 @@ using namespace std;
 
 /* virtual to allow performance improvements if io device already has an
  * internal buffer. */
-string IODevice::rread( size_t limit )
-{
-  char buf[MAX_READ];
-  size_t n = rread( buf, min( limit, sizeof( buf ) ) );
-  return {buf, n};
-}
-
-/* read methods */
-size_t IODevice::read( char * buf, size_t limit )
-{
-  if ( limit == 0 ) {
-    throw runtime_error( "asked to read 0" );
-  }
-
-  size_t n = rread( buf, limit );
-  if ( n == 0 ) {
-    set_eof();
-  }
-  register_read();
-
-  return n;
-}
-
 string IODevice::read( size_t limit )
 {
-  if ( limit == 0 ) {
-    throw runtime_error( "asked to read 0" );
-  }
-
-  string str = rread( limit );
-  if ( str.size() == 0 ) {
-    set_eof();
-  }
-  register_read();
-
-  return str;
+  char buf[MAX_READ];
+  size_t n = read( buf, min( limit, sizeof( buf ) ) );
+  return {buf, n};
 }
 
 size_t IODevice::read_all( char * buf, size_t nbytes )
@@ -73,24 +42,38 @@ string IODevice::read_all( size_t nbytes )
   return str;
 }
 
-/* write methods */
-size_t IODevice::write( const char * buf, size_t nbytes )
+string IODevice::pread( size_t limit, off_t offset )
 {
-  if ( nbytes == 0 ) {
-    throw runtime_error( "nothing to write" );
-  } else if ( buf == nullptr ) {
-    throw runtime_error( "null buffer for write" );
-  }
+  char buf[MAX_READ];
+  size_t n = pread( buf, min( limit, sizeof( buf ) ), offset );
+  return {buf, n};
+}
 
-  size_t n = wwrite( buf, nbytes );
-  if ( n == 0 ) {
-    throw runtime_error( "write returned 0" );
-  }
-  register_write();
+size_t IODevice::pread_all( char * buf, size_t nbytes, off_t offset )
+{
+  size_t n = 0;
+
+  do {
+    n += pread( buf + n, nbytes - n, offset + n );
+  } while ( n < nbytes and !eof() );
 
   return n;
 }
 
+string IODevice::pread_all( size_t nbytes, off_t offset )
+{
+  string str;
+  if ( nbytes > 0 ) {
+    str.reserve( nbytes );
+  }
+
+  do {
+    str += pread( nbytes - str.size(), offset + str.size() );
+  } while ( str.size() < nbytes and !eof() );
+
+  return str;
+}
+/* write methods */
 string::const_iterator IODevice::write( const string & buf )
 {
   auto it = buf.begin();
@@ -111,6 +94,13 @@ string::const_iterator IODevice::write_all( const string & buf )
 {
   auto it = buf.begin();
   it += write_all( &*it, buf.end() - it );
+  return it;
+}
+
+string::const_iterator IODevice::pwrite( const string & buf, off_t offset )
+{
+  auto it = buf.begin();
+  it += pwrite( &*it, buf.end() - it, offset );
   return it;
 }
 

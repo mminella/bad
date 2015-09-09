@@ -30,11 +30,11 @@ int main( int argc, char *argv[] )
       cerr << "New connection from "
            << bio.io().peer_address().to_string() << endl;
       while ( true ) {
-        const string chunk = bio.read();
+        const string chunk = bio.IODevice::read();
         if ( bio.eof() ) { break; }
         cerr << "Got " << chunk.size() << " bytes from "
              << bio.io().peer_address().to_string() << ": " << chunk;
-        bio.write( chunk );
+        bio.IODevice::write( chunk );
         bio.flush( true );
       }
 

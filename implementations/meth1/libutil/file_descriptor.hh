@@ -12,10 +12,6 @@ private:
   int fd_ = -1;
   bool eof_ = false;
 
-  /* implement read + write */
-  size_t rread( char * buf, size_t limit ) override;
-  size_t wwrite( const char * buf, size_t nbytes ) override;
-
 protected:
   /* io device state */
   bool get_eof( void ) const noexcept override { return eof_; }
@@ -41,6 +37,12 @@ public:
 
   /* accessors */
   int fd_num( void ) const noexcept { return fd_; }
+
+  /* implement (p)read + (p)write */
+  size_t read( char * buf, size_t limit ) override;
+  size_t write( const char * buf, size_t nbytes ) override;
+  size_t pread( char * buf, size_t limit, off_t offset ) override;
+  size_t pwrite( const char * buf, size_t nbytes, off_t offset ) override;
 };
 
 #endif /* FILE_DESCRIPTOR_HH */
