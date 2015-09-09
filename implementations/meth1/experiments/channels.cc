@@ -3,50 +3,58 @@
  */
 #include <iostream>
 #include <mutex>
+#include <vector>
 #include <thread>
 
 #include "channel.hh"
+#include "record.hh"
 
 using namespace std;
 
+/* Class to debug copy vs move constructors */
 class C
 {
-int c_;
 public:
-  C() : c_{0} {};
-  C(int c) : c_{c} {}
+  int c_;
 
-  C(const C & c) : c_{c.c_} {
-    cout << "C:copy " << c_ << endl;
-  }
+  C(void) : c_{0} {};
+  C(int c) : c_{c} {}
+  C(const C & c) : c_{c.c_} { cout << "C:copy " << c_ << endl; }
 
   C & operator=( const C & c ) {
-    c_ = c.c_;
-    cout << "C:=copy " << c_ << endl;
+    if ( this != &c ) {
+      c_ = c.c_;
+      cout << "C:=copy " << c_ << endl;
+    }
     return *this;
   }
 
   C( C && c ) : c_{c.c_} {
+    c.c_ = 0;
     cout << "C:move " << c_ << endl;
   }
 
   C & operator=( C && c ) {
-    c_ = c.c_;
-    cout << "C:=move " << c_ << endl;
+    if ( this != &c ) {
+      c_ = c.c_;
+      c.c_ = 0;
+      cout << "C:=move " << c_ << endl;
+    }
     return *this;
   }
 
-  ~C() {}
+  ~C() { cout << "C:dtor " << c_ << endl; }
 };
 
-// mutex mtx;
+ostream & operator<<( ostream & o, const C & c )
+{
+  return o << c.c_;
+}
 
 void thread_a( int id, Channel<int> c )
 {
   for ( int i = 0; i < 20; i++ ) {
     c.send( id );
-    // lock_guard<mutex> lck( mtx );
-    // cout << "[" << id << "] Sent" << endl;
   }
 }
 
@@ -54,14 +62,11 @@ void thread_b( int id, Channel<int> c )
 {
   (void) id;
   for ( int i = 0; i < 20; i++ ) {
-    int tid = c.recv();
-    (void) tid;
-    // lock_guard<mutex> lck( mtx );
-    // cout << "[" << id << "] Recv: " << tid << endl;
+    c.recv();
   }
 }
 
-int main( void )
+void test_async_channels( void )
 {
   for ( int i = 0; i < 50; i++ ) {
     Channel<int> async( 5 );
@@ -75,8 +80,12 @@ int main( void )
     a2.join();
     b1.join();
     b2.join();
-    // cout << "Done async..." << endl;
+  }
+}
 
+void test_sync_channels( void )
+{
+  for ( int i = 0; i < 50; i++ ) {
     Channel<int> sync( 0 );
 
     thread a3 ( thread_a, 0, sync );
@@ -88,17 +97,66 @@ int main( void )
     a4.join();
     b3.join();
     b4.join();
-    // cout << "Done sync..." << endl;
   }
+}
 
-  Channel<C> chn(2);
-  C c1( 1 );
-  C c2( 2 );
-  chn.send(c1);
-  C c3 = chn.recv();
+void test_copy_move( void )
+{
+  Channel<C> chn;
+
+  C c1( 1 ), c2( 2 );
+  cout << "c1: " << c1 << ", c2: " << c2 << endl;
+
+  chn.send( move( c1 ) );
+  c2 = chn.recv();
+  cout << "c1: " << c1 << ", c2: " << c2 << endl;
+
   cout << "-------" << endl;
   chn.send( move( c2 ) );
   C c4 = chn.recv();
+
+  thread t ( [&] {
+    chn.send( c1 );
+  } );
+  c2 = chn.recv();
+  cout << "c1: " << c1 << ", c2: " << c2 << endl;
+
+  t.join();
+}
+
+void test_vec_records( void )
+{
+  using R = string;
+  char recStr[Rec::SIZE];
+  Channel<vector<R>> chn;
+  vector<R> recs1, recs2;
+
+  recs1.emplace_back( recStr );
+  recs1.emplace_back( recStr );
+
+  thread t ( [&] {
+    chn.send( recs1 );
+  } );
+  recs2 = chn.recv();
+
+  t.join();
+}
+
+void test_basic_chan( void )
+{
+  Channel<int> chn;
+  int x = 1, y = 2;
+  chn.send( x );
+  y = chn.recv();
+}
+
+int main( void )
+{
+  test_async_channels();
+  test_sync_channels();
+  test_copy_move();
+  test_vec_records();
+  test_basic_chan();
 
   return EXIT_SUCCESS;
 }
