@@ -10,16 +10,15 @@ bin_PROGRAMS = \
 AM_CPPFLAGS = \
 	-D_REENTRANT \
 	-I$(srcdir)/.. \
-	-I$(srcdir)/../lib \
-	-I$(srcdir)/../sort \
-	-I$(srcdir)/../stratergies \
-	-I$(srcdir)/../stratergies/meth1 \
+	-I$(srcdir)/../libutil \
+	-I$(srcdir)/../libsort \
+	-I$(srcdir)/../libmeth1 \
 	-I$(srcdir)/../contrib
 
 LDADD = \
-	../lib/libbasicrts.la \
-	../sort/libsort.la \
-	../stratergies/meth1/libmeth1.la \
+	../libutil/libbasicrts.la \
+	../libsort/libsort.la \
+	../libmeth1/libmeth1.la \
 	-lpthread \
 	$(TBB_LIBS)
 
