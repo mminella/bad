@@ -1,0 +1,58 @@
+# Thu Sep 10 01:55:29 PDT 2015
+# 3, 33, 0, read
+record-value, 112
+chunk-size, 171478413, 989
+disks, 1, 
+
+size, 5, 1, 346030080, 0
+size, 6, 1, 346030080, 0
+size, 7, 1, 346030080, 0
+
+
+read-start, 5, 1, 0, 171478413, 34
+read-start, 6, 1, 0, 171478413, 34
+read-start, 7, 1, 0, 171478413, 34
+read-wait, 5, 1, 0
+read, 5, 1, 0, 171478413, 82499
+circular-read-start, 5, 1, 17147841300, 82534
+read-wait, 6, 1, 82913
+read, 6, 1, 0, 171478413, 93112
+circular-read-start, 6, 1, 17147841300, 93146
+read-wait, 7, 1, 93792
+read, 7, 1, 0, 171478413, 93792
+circular-read-start, 7, 1, 17147841300, 93827
+read-start, 6, 2, 171478413, 171478413, 674863
+circular-read-total, 6, 1, 17147841300, 544262, 581716
+read-start, 5, 2, 171478413, 171478413, 676798
+circular-read-total, 5, 1, 17147841300, 512794, 594264
+read-start, 7, 2, 171478413, 171478413, 678006
+circular-read-total, 7, 1, 17147841300, 531443, 584179
+read-wait, 5, 2, 1216
+read, 5, 2, 171478413, 171478413, 73560
+circular-read-start, 5, 2, 17147841300, 750358
+read-wait, 6, 2, 75810
+read, 6, 2, 171478413, 171478413, 75810
+circular-read-start, 6, 2, 17147841300, 750674
+read-wait, 7, 2, 72668
+read, 7, 2, 171478413, 171478413, 73888
+circular-read-start, 7, 2, 17147841300, 751894
+read-start, 6, 3, 342956826, 3073254, 1342888
+circular-read-total, 6, 2, 17147841300, 518341, 592214
+read-start, 5, 3, 342956826, 3073254, 1344767
+circular-read-total, 5, 2, 17147841300, 501493, 594408
+read-start, 7, 3, 342956826, 3073254, 1345238
+circular-read-total, 7, 2, 17147841300, 546885, 593343
+read-wait, 5, 3, 473
+read, 5, 3, 342956826, 3073254, 71384
+circular-read-start, 5, 3, 307325400, 1416152
+read-wait, 6, 3, 73448
+read, 6, 3, 342956826, 3073254, 73448
+circular-read-start, 6, 3, 307325400, 1416337
+read-wait, 7, 3, 71101
+read, 7, 3, 342956826, 3073254, 71770
+circular-read-start, 7, 3, 307325400, 1417008
+circular-read-total, 6, 3, 307325400, 4078, 5483
+circular-read-total, 5, 3, 307325400, 4796, 6193
+circular-read-total, 7, 3, 307325400, 5463, 5949
+
+cmd-read, 1422999

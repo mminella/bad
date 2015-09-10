@@ -1,0 +1,54 @@
+# Thu Sep 10 09:44:32 PDT 2015
+# 4, 25, 0, read
+record-value, 112
+chunk-size, 171478413, 741
+disks, 1, 
+
+size, 5, 1, 262144000, 0
+size, 6, 1, 262144000, 0
+size, 7, 1, 262144000, 0
+size, 8, 1, 262144000, 0
+
+
+read-start, 5, 1, 0, 171478413, 19
+read-start, 6, 1, 0, 171478413, 19
+read-start, 7, 1, 0, 171478413, 19
+read-start, 8, 1, 0, 171478413, 19
+read-wait, 5, 1, 0
+read, 5, 1, 0, 171478413, 72887
+circular-read-start, 5, 1, 17147841300, 72906
+read-wait, 6, 1, 73417
+read, 6, 1, 0, 171478413, 73417
+circular-read-start, 6, 1, 17147841300, 73436
+read-wait, 7, 1, 73420
+read, 7, 1, 0, 171478413, 73420
+circular-read-start, 7, 1, 17147841300, 73440
+read-wait, 8, 1, 73427
+read, 8, 1, 0, 171478413, 73427
+circular-read-start, 8, 1, 17147841300, 73446
+read-start, 6, 2, 171478413, 90665587, 863898
+circular-read-total, 6, 1, 17147841300, 750029, 790461
+read-start, 8, 2, 171478413, 90665587, 865518
+circular-read-total, 8, 1, 17147841300, 731407, 792071
+read-start, 7, 2, 171478413, 90665587, 866006
+circular-read-total, 7, 1, 17147841300, 736410, 792566
+read-start, 5, 2, 171478413, 90665587, 867003
+circular-read-total, 5, 1, 17147841300, 749285, 794097
+read-wait, 5, 2, 5
+read, 5, 2, 171478413, 90665587, 55734
+circular-read-start, 5, 2, 9066558700, 922738
+read-wait, 6, 2, 59268
+read, 6, 2, 171478413, 90665587, 59268
+circular-read-start, 6, 2, 9066558700, 923167
+read-wait, 7, 2, 57164
+read, 7, 2, 171478413, 90665587, 57164
+circular-read-start, 7, 2, 9066558700, 923170
+read-wait, 8, 2, 57656
+read, 8, 2, 171478413, 90665587, 57656
+circular-read-start, 8, 2, 9066558700, 923175
+circular-read-total, 5, 2, 9066558700, 379171, 413575
+circular-read-total, 6, 2, 9066558700, 379903, 416855
+circular-read-total, 7, 2, 9066558700, 367867, 416878
+circular-read-total, 8, 2, 9066558700, 391540, 417366
+
+cmd-read, 1340599
