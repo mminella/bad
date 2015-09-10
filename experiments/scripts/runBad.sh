@@ -50,6 +50,15 @@ source ${FILE}
 # Get start time
 D=$( date )
 
+# All nodes
+ALL_NODES=""
+for i in `seq 2 $MN`; do
+  declare MV="M${i}"
+  ALL_NODES="${!MV} ${ALL_NODES}"
+done
+
+# ./deployBAD.rb -d ${ALL_NODES}
+
 # Backend nodes
 BACKENDS=""
 for i in `seq 2 $MN`; do
@@ -89,7 +98,6 @@ experiment() {
     backends "sudo start meth1 && sudo start meth1_node NOW=\"${D}\" FILE=\"${FILES_ALL}\""
     reader "# $(( $N - 1 )), ${SIZE}, ${CHUNK}, ${1}" \
       ${CHUNK_B} ${1}
-    backends "sudo clear_buffers"
     backends "sudo stop meth1"
   done
 }
