@@ -23,6 +23,3 @@ DEPENDENCIES
   net-scp
   net-ssh
   parallel
-
-BUNDLED WITH
-   1.10.6
