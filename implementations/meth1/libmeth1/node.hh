@@ -4,7 +4,11 @@
 #include <string>
 #include <vector>
 
+#include "config.h"
+
+#ifdef HAVE_TBB_TASK_GROUP_H
 #include "tbb/task_group.h"
+#endif
 
 #include "buffered_io.hh"
 #include "raw_vector.hh"
@@ -31,7 +35,9 @@ public:
   using RecV = RawVector<RR>;
 
 private:
+#ifdef HAVE_TBB_TASK_GROUP_H
   tbb::task_group tg_;
+#endif
   std::vector<RecLoader> recios_;
   std::string port_;
   Record last_;

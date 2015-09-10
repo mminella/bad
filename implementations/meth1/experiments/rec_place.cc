@@ -66,7 +66,9 @@ void run_inmem_seq( char * rbuf, uint64_t nrecs )
 void run_inmem_par( char * rbuf, uint64_t nrecs, size_t p )
 {
   cout << "parallel, " << p << endl;
+#ifdef HAVE_TBB_TASK_GROUP_H
   tbb::task_group tg;
+#endif
 
   RR * recs = new RR[nrecs];
   RR after( rbuf );
@@ -76,11 +78,17 @@ void run_inmem_par( char * rbuf, uint64_t nrecs, size_t p )
   for ( size_t i = 0; i < p; i++ ) {
     char * buf_i = rbuf + (nrecs / p * Rec::SIZE) * i;
     RR * recs_i = recs + (nrecs / p) * i;
+#ifdef HAVE_TBB_TASK_GROUP_H
     tg.run( [=]() {
       zrecs_i[i] = scan_inmem( buf_i, nrecs / p, recs_i, &after );
     } );
+#else
+    zrecs_i[i] = scan_inmem( buf_i, nrecs / p, recs_i, &after );
+#endif
   }
+#ifdef HAVE_TBB_TASK_GROUP_H
   tg.wait();
+#endif
   uint64_t zrecs = accumulate( zrecs_i, zrecs_i + p, 0 );
 
   test_end( t0, nrecs, zrecs );
