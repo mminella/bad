@@ -90,7 +90,7 @@ void run_inmem_par( char * rbuf, uint64_t nrecs, size_t p )
 void run_inmem( char * fin )
 {
   // 1) OPEN FILE
-  FILE *fdi = fdopen( open( fin, O_RDONLY | O_DIRECT ), "r" );
+  FILE *fdi = fdopen( open( fin, O_RDONLY, true ), "r" );
   struct stat st;
   fstat( fileno( fdi ), &st );
   size_t nrecs = st.st_size / Rec::SIZE;
@@ -122,7 +122,7 @@ void run_inmem( char * fin )
 void run_overlap( char * fin )
 {
   // open file
-  File file( fin, O_RDONLY | O_DIRECT );
+  File file( fin, O_RDONLY );
   OverlappedRecordIO<Rec::SIZE> rio( file );
   size_t nrecs = file.size() / Rec::SIZE;
 

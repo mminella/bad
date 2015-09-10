@@ -30,7 +30,7 @@ Node::Node( vector<string> files, string port, bool odirect )
 
   print( "seek-chunk", seek_chunk_ );
   for ( auto & f : files ) {
-    recios_.emplace_back( f, odirect ? O_RDONLY | O_DIRECT : O_RDONLY );
+    recios_.emplace_back( f, O_RDONLY, odirect );
     print( "file", recios_.back().id(), recios_.back().records() );
   }
 }

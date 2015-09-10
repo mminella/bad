@@ -67,7 +67,7 @@ vector<RR> scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size, const RR & af
 void run( char * fin )
 {
   // open file
-  File file( fin, O_RDONLY | O_DIRECT );
+  File file( fin, O_RDONLY );
   OverlappedRecordIO<Rec::SIZE> rio( file );
 
   // stats

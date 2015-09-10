@@ -24,8 +24,8 @@ private:
   uint64_t loc_;
 
 public:
-  RecLoader( std::string fileName, int flags )
-    : file_{new File( fileName, flags )}
+  RecLoader( std::string fileName, int flags, bool odirect )
+    : file_{new File( fileName, flags, odirect ? File::DIRECT : File::CACHED )}
     , rio_{new RecIO( *file_, Knobs::DISK_BLOCKS )}
     , eof_{false}
     , loc_{0}

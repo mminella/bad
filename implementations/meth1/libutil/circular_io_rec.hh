@@ -25,7 +25,7 @@ private:
 
 public:
   CircularIORec( IODevice & io, size_t blocks, int id = 0 )
-    : CircularIO( io, blocks, id )
+    : CircularIO{io, blocks, id}
     , bend_{nullptr}
     , pos_{nullptr}
     , recs_{0}

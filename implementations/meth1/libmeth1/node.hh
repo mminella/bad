@@ -51,7 +51,7 @@ private:
 
 public:
   Node( std::vector<std::string> files, std::string port,
-        bool odirect = false);
+        bool odirect = true );
 
   /* No copy or move */
   Node( const Node & n ) = delete;

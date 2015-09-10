@@ -12,7 +12,7 @@
 #include "linux_compat.hh"
 #include "overlapped_rec_io.hh"
 #include "record.hh"
-#include "timestamp.hh" 
+#include "timestamp.hh"
 #include "util.hh"
 
 #include "merge_wrapper.hh"
@@ -41,13 +41,13 @@ private:
   uint64_t loc_;
 
 public:
-  RecLoader( string fileName, int flags )
-    : file_{new File( fileName, flags )}
+  RecLoader( string fileName, int flags, bool odirect = false )
+    : file_{new File( fileName, flags, odirect ? File::DIRECT : File::CACHED )}
     , rio_{new RecIO( *file_ )}
     , eof_{false}
     , loc_{0}
   {}
-  
+
   /* no copy */
   RecLoader( const RecLoader & ) = delete;
   RecLoader & operator=( const RecLoader & ) = delete;
@@ -68,7 +68,7 @@ public:
       eof_ = other.eof_;
       loc_ = other.loc_;
     }
-    return *this;  
+    return *this;
   }
 
   const File & file( void ) const noexcept { return *file_; }
@@ -169,7 +169,7 @@ RR * scan( vector<RecLoader> & rios, size_t size, const RR & after )
       }
       r1s += r1s_i[i+1];
     }
-    
+
     if ( r1s > 0 ) {
       auto ts1 = time_now();
       rec_sort( r1, r1 + r1s );
@@ -204,7 +204,7 @@ RR * scan( vector<RecLoader> & rios, size_t size, const RR & after )
   cout << "sort , " << ts << endl;
   cout << "merge, " << tm << endl;
   cout << "last , " << tl << endl;
-  
+
   return r2;
 }
 
@@ -215,7 +215,7 @@ void run( vector<string> fileNames )
   // open files
   vector<RecLoader> recio;
   for ( auto & fn : fileNames ) {
-    recio.emplace_back( fn, O_RDONLY | O_DIRECT );
+    recio.emplace_back( fn, O_RDONLY );
   }
 
   // ASSUMPTION: Files are same size

@@ -47,7 +47,7 @@ int run( int argc, char * argv[] )
 
   auto addrs = vector<Address>( addresses, argv + argc );
   Cluster c{addrs, readahead};
-  
+
   auto size = c.Size();
   cout << "Size: " << size << endl;
 

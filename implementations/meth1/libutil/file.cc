@@ -8,20 +8,26 @@
 
 #include "file.hh"
 #include "exception.hh"
+#include "linux_compat.hh"
 
 using namespace std;
 
 /* construct by opening file at path given */
-File::File( const string & path, int flags )
-  : FileDescriptor( SystemCall( "open", ::open( path.c_str(), flags ) ) )
-{
-}
+File::File( const string & path, int flags, odirect_t od )
+  : FileDescriptor(
+      SystemCall( "open", ::open( path.c_str(),
+                                  od == DIRECT ? flags | O_DIRECT : flags )
+    ), od )
+{}
 
 /* construct by opening file at path given */
-File::File( const string & path, int flags, mode_t mode )
-  : FileDescriptor( SystemCall( "open", ::open( path.c_str(), flags, mode ) ) )
-{
-}
+File::File( const string & path, int flags, mode_t mode, odirect_t od )
+  : FileDescriptor(
+      SystemCall( "open", ::open( path.c_str(),
+                                  od == DIRECT ? flags | O_DIRECT : flags,
+                                  mode )
+    ), od )
+{}
 
 /* rewind to begging of file */
 void File::rewind( void )
