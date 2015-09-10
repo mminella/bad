@@ -112,5 +112,12 @@ done
 scp ubuntu@$M1:~/bad.log $SAVE/1.bad.log
 
 # Kill cluster
-# ./shutdown-cluster.sh ${FILE}
+./shutdown-cluster.sh ${FILE}
+
+# Done!
+echo "
+=========================
+Test [${FILE}] done!
+=========================
+"
 
