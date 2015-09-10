@@ -3,4 +3,4 @@ measure.tar.gz
 logs/
 logs-*/
 .*
-rB*.sh
+r*.sh
