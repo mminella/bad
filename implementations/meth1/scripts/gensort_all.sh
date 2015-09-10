@@ -11,15 +11,10 @@ DISKS=$( ls ${DISK_PATH}[b-z] )
 SIZE_I=$(( $SIZE / $DISKS_N ))
 STEP_I=${SIZE_I}
 
-RECS=""
-
 for d in ${DISKS}; do
   X=$( echo $d | sed -e "s/^.*\(.\)$/\1/" )
   FPATH="/mnt/${X}/${FILE}"
   gensort -b${START} -t4 ${SIZE_I} "${FPATH},buf"
   START=$(( ${START} + ${STEP_I} ))
-  RECS="$RECS $FPATH"
 done
-
-echo $RECS
 
