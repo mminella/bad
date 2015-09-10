@@ -33,7 +33,8 @@ Cluster::Cluster( vector<Address> nodes, uint64_t chunkSize )
   bufSize_ = calc_client_buffer( nodes.size() );
 
   print( "chunk-size", chunkSize_, bufSize_ );
-  print( "disks", num_of_disks(), "\n" );
+  print( "disks", num_of_disks() );
+  print( "" );
 
   for ( auto & n : nodes ) {
     clients_.push_back( n );
