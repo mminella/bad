@@ -94,10 +94,20 @@ experiment() {
   done
 }
 
-# Run experiment
+# Prepare disks
 all "setup_all_fs 2> /dev/null > /dev/null"
-backends "gensort_all ${SIZE_B} recs"
+
+START=0
+for i in `seq 2 $MN`; do
+  declare MV="M${i}"
+  ${SSH} ubuntu@${!MV} "gensort_all ${START} ${SIZE_B} recs" &
+  START=$(( ${START} + ${SIZE_B} ))
+done
+wait
+
 all "sudo clear_buffers"
+
+# Run experiment
 experiment ${CMDD}
 
 # Create log directory
