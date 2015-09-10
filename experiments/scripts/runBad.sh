@@ -11,18 +11,17 @@ SIZE=$3
 CHUNK=$4
 MACHINE=$5
 N=$6
-ODIR=$7
-CMDD=$8
-TARF=$9
-PG=${10}
-ZONE=${11}
+CMDD=$7
+TARF=$8
+PG=${9}
+ZONE=${10}
 SIZE_B=$( calc "$SIZE * 1024 * 1024 * 1000 / 100" )
 CHUNK_B=$( calc "$CHUNK * 1024 * 1024 * 1000 / 100" )
 
 # Args
-if [ $# != 11 ]; then
+if [ $# != 10 ]; then
   echo "runBad.sh <cluster file> <log path> <size> <chunk> <machine> <nodes>" \
-    "<o_direct> <cmd> <dist_tar> <pgroup> <zone>"
+    "<cmd> <dist_tar> <pgroup> <zone>"
   exit 1
 fi
 
@@ -47,6 +46,9 @@ fi
 echo "Machines setup! (${FILE})"
 
 source ${FILE}
+
+# Get start time
+D=$( date )
 
 # Backend nodes
 BACKENDS=""
@@ -76,18 +78,17 @@ backends() {
 # 2 - chunk size
 # 3 - op
 reader() {
-  ${SSH} ubuntu@${M1} "date >> ${LOG}; echo '$1' >> ${LOG};" \
+  ${SSH} ubuntu@${M1} "echo \"# ${D}\" >> ${LOG}; echo '$1' >> ${LOG};" \
     "meth1_client $2 ${READER_OUT} $3 ${BACKENDS} 2>> ${LOG} >> ${LOG}"
 }
 
 # Run an experiment (start + run + stop method)
-# 1 - odirect
-# 2 - op
+# 1 - op
 experiment() {
   for i in `seq 1 $ITERS`; do
-    backends "sudo start meth1 && sudo start meth1_node ODIRECT=${1} FILE=\"${FILES_ALL}\""
-    reader "# $(( $N - 1 )), ${SIZE}, ${CHUNK}, ${1}, ${2}" \
-      ${CHUNK_B} ${2}
+    backends "sudo start meth1 && sudo start meth1_node NOW=\"${D}\" FILE=\"${FILES_ALL}\""
+    reader "# $(( $N - 1 )), ${SIZE}, ${CHUNK}, ${1}" \
+      ${CHUNK_B} ${1}
     backends "sudo clear_buffers"
     backends "sudo stop meth1"
   done
@@ -97,7 +98,7 @@ experiment() {
 all "setup_all_fs 2> /dev/null > /dev/null"
 backends "gensort_all ${SIZE_B} recs"
 all "sudo clear_buffers"
-experiment ${ODIR} ${CMDD}
+experiment ${CMDD}
 
 # Create log directory
 mkdir -p $SAVE
