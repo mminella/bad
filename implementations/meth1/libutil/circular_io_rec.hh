@@ -40,7 +40,6 @@ public:
 
   void reset_rec_count( void ) noexcept
   {
-    print( "records", 0 );
     recs_ = 0;
   }
 
@@ -51,7 +50,6 @@ public:
     // either haven't got first block OR exactly consumed current block
     if ( pos_ == nullptr || pos_ == bend_) {
       auto blk = next_block();
-      print( "cr-recv", (void *) blk.first, blk.second );
       if ( blk.first == nullptr ) {
         return nullptr;
       }
@@ -72,7 +70,6 @@ public:
       memcpy( rec_, pos_, partial );
 
       auto blk = next_block();
-      print( "cr-recv", (void *) blk.first, blk.second );
       if ( blk.first == nullptr ) {
         print( "next_record", "fail", partial, blk.second, recs_, rrbytes_ );
         throw std::runtime_error( std::to_string( id() )
