@@ -1,0 +1,16 @@
+# Fri Sep 11 12:23:09 PDT 2015
+record-value, 96
+seek-chunk, 188593327
+file, 4, 149946368
+
+read-start, 1, 0, 149946368, 2099
+circular-read-start, 4, 1, 14994636800, 3509
+circular-read-total, 4, 1, 14994636800, 33693, 34467
+linear-scan, 35893
+-sort , 10818, 15
+-merge, 7166, 15
+-last , 266
+read, 1, 149946368, 37303
+network, 1, 1213558
+
+exit, 1253299

@@ -1,0 +1,26 @@
+# Fri Sep 11 01:35:29 PDT 2015
+record-value, 96
+seek-chunk, 188593327
+file, 4, 175112192
+
+read-start, 1, 0, 168172393, 1114
+circular-read-start, 4, 1, 17511219200, 2847
+circular-read-total, 4, 1, 17511219200, 39929, 40835
+linear-scan, 42099
+-sort , 13347, 15
+-merge, 9286, 15
+-last , 888
+read, 1, 168172393, 43832
+network, 1, 1166988
+
+read-start, 2, 168172393, 6939799, 1211946
+circular-read-start, 4, 2, 17511219200, 1211959
+circular-read-total, 4, 2, 17511219200, 35136, 36276
+linear-scan, 36338
+-sort , 520, 3
+-merge, 101, 3
+-last , 61
+read, 2, 6939799, 36352
+network, 2, 41346
+
+exit, 1292415
