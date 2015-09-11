@@ -8,6 +8,10 @@
 #include <cstdint>
 
 namespace Knobs {
+  /* Network send & receive kernel buffer sizes */
+  static constexpr std::size_t NET_SND_BUF = std::size_t( 1024 ) * 1024 * 2;
+  static constexpr std::size_t NET_RCV_BUF = std::size_t( 1024 ) * 1024 * 2;
+
   /* Overlapped IO buffer sizes .*/
   static constexpr uint64_t IO_BLOCK = 4096 * 256 * 10; // 10MB
   static constexpr uint64_t DISK_BLOCKS = 400;          // 4GB

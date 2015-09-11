@@ -46,6 +46,9 @@ void Node::Run( void )
 {
   TCPSocket sock{IPV4};
   sock.set_reuseaddr();
+  sock.set_nodelay();
+  sock.set_send_buffer( Knobs::NET_SND_BUF );
+  sock.set_recv_buffer( Knobs::NET_RCV_BUF );
   sock.bind( {"0.0.0.0", port_} );
   sock.listen();
 
