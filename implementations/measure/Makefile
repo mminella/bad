@@ -15,7 +15,7 @@ BINARIES= \
 
 all: $(BINARIES)
 
-.PHONY: clean dist
+.PHONY: clean dist bin-dist
 
 clean:
 	rm -f *.o
@@ -44,3 +44,5 @@ dist: $(BINARIES)
 	cp setup_fs.sh dist_root/usr/bin/setup_fs
 	cp run_experiment.sh dist_root/usr/bin/run_experiment
 	tar cvzf measure.tar.gz -C dist_root .
+
+bin-dist: dist
