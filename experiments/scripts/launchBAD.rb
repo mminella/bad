@@ -122,7 +122,7 @@ Launcher.new(options).launch! do |instance|
   # store machine
   `echo "export M#{i}=#{instance.dns_name}" >> #{options[:file]}`
   `echo "export M#{i}_ID=#{instance.id}" >> #{options[:file]}`
-  `echo "alias m#{i}=\\"ssh ubuntu@$M#{i}\\"" >> #{options[:file]}`
+  `echo "alias m#{i}=\\"ssh ubuntu@\\$M#{i}\\"" >> #{options[:file]}`
 end
 
 # configure instances
