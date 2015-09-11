@@ -54,12 +54,6 @@ uint64_t Client::recvRead( void )
   return nrecs;
 }
 
-RecordPtr Client::readRecord( void )
-{
-  sock_.read_all( rec, Rec::SIZE );
-  return { rec };
-}
-
 void Client::sendSize( void )
 {
   rpcStart_ = time_now();
