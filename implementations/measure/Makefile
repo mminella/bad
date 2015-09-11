@@ -9,7 +9,9 @@ BINARIES= \
 	async_read \
 	memalloc_speed \
 	memcpy_speed \
-	memcmp_speed
+	memcmp_speed \
+	network_recv \
+	network_send
 
 all: $(BINARIES)
 
@@ -33,6 +35,8 @@ dist: $(BINARIES)
 	cp random_write dist_root/usr/bin/measure_random_write
 	cp async_read dist_root/usr/bin/measure_async_read
 	cp async_random_read dist_root/usr/bin/measure_async_random_read
+	cp network_recv dist_root/usr/bin/measure_network_recv
+	cp network_send dist_root/usr/bin/measure_network_send
 	cp test_async.py dist_root/usr/bin
 	cp test_sync.py dist_root/usr/bin
 	cp test_dd.py dist_root/usr/bin
