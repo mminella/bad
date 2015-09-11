@@ -62,7 +62,9 @@ uint64_t calc_record_space( void )
   uint64_t memFree = memory_exists();
   uint64_t val_len = calc_value_size();
 
+  // remove fixed buffers
   memFree -= Knobs::MEM_RESERVE;
+  memFree -= ( Knobs::IO_BUFFER_NETW * Rec::SIZE * 2 );
   memFree -= ( CircularIO::BLOCK * Knobs::DISK_BLOCKS * num_of_disks() );
 
   // divisor for r2 & r3 merge buffers
