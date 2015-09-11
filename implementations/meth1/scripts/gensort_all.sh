@@ -14,7 +14,9 @@ STEP_I=${SIZE_I}
 for d in ${DISKS}; do
   X=$( echo $d | sed -e "s/^.*\(.\)$/\1/" )
   FPATH="/mnt/${X}/${FILE}"
-  gensort -b${START} -t4 ${SIZE_I} "${FPATH},buf"
+  gensort -b${START} -t4 ${SIZE_I} "${FPATH},buf" &
   START=$(( ${START} + ${STEP_I} ))
 done
+
+wait
 
