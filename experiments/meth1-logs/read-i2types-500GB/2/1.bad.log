@@ -1,8 +1,8 @@
-Thu Sep 10 01:07:18 UTC 2015
+# Thu Sep 10 01:07:18 UTC 2015
 # 1, 500, 0, true, read
 record-value, 112
 chunk-size, 350216296, 6043
-disks, 2, 
+disks, 2
 
 size, 5, 1, 5242880000, 0
 
