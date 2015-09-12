@@ -132,27 +132,49 @@ sum <- mutate(sum,
 # for color scheme list -- https://github.com/cttobin/ggthemr
 ggthemr('fresh')
 
-mkGraph <- function(file, data, title) {
+mkGraph <- function(file, data, title, xl, yl) {
   if (is.data.frame(data) & nrow(data) > 0) {
     pdf(file)
-    g <- ggplot(data, aes(clarity, x=i2, y=time, group=type, fill=type))
+    g <- ggplot(data, aes(clarity, x=xv, y=yv, group=type, fill=type))
     g <- g + geom_bar(stat = "identity", position="dodge")
     g <- g + ggtitle(title)
-    g <- g + xlab("I2 Instance Type")
-    g <- g + ylab("Time (s)")
+    g <- g + xlab(xl)
+    g <- g + ylab(yl)
     print(g)
     dev.off()
   }
 }
 
 # Total Time
-total <- select(sum, i2, total, p.total) %>% rename(observed=total, predicted=p.total)
 total <-
-  melt(
-    total,
-    id.vars=c("i2"),
-    variable.name="type",
-    value.name="time"
-  )
+  select(sum, i2, total, p.total) %>%
+  rename(observed=total, predicted=p.total) %>%
+  melt(id.vars=c("i2"), variable.name="type", value.name="yv") %>%
+  rename(xv=i2)
 
-mkGraph("total.pdf", total, "Time to read all records")
+mkGraph("total.pdf", total, "Time to Read all Records",
+        "I2 Instance Type", "Time (s)")
+
+# i2.xN
+i2xN <- function(xn, file, title) {
+  i2x <- filter(sum, i2==xn) %>%
+    select(total, read, network, p.total, p.read, p.network)
+  i2x <-
+    melt(i2x, measure.vars=colnames(i2x),
+         variable.name="operation", value.name="time") %>%
+    mutate(type=ifelse(stri_startswith_fixed(operation, "p."),
+                       "predicted", "observed")) %>%
+    rename(xv=operation, yv=time)
+  levels(i2x$xv) <-
+    list(total=c("total", "p.total"),
+         read=c("read", "p.read"),
+         network=c("network", "p.network"))
+  mkGraph(file, i2x, paste(title, "Time for all Records"),
+          "Operation", "Time (s)")
+}
+
+i2xN(1, "i2.xlarge.pdf",  "I2.xlarge")
+i2xN(2, "i2.2xlarge.pdf", "I2.2xlarge")
+i2xN(4, "i2.4xlarge.pdf", "I2.4xlarge")
+i2xN(8, "i2.8xlarge.pdf", "I2.8xlarge")
+
