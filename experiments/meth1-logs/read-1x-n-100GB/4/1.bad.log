@@ -2,7 +2,7 @@
 # 4, 25, 0, read
 record-value, 112
 chunk-size, 171478413, 741
-disks, 1, 
+disks, 1
 
 size, 5, 1, 262144000, 0
 size, 6, 1, 262144000, 0
