@@ -25,31 +25,37 @@ using namespace std;
 using namespace meth2;
 
 /* Construct Node */
-Node::Node( string file, string port, uint64_t max_mem, bool odirect )
-  : data_{file.c_str(), odirect ? O_RDONLY | O_DIRECT : O_RDONLY},
+Node::Node( vector<string> files, string port )
+  : data_{},
   recs_{},
   port_{port},
   last_{Rec::MIN},
   fpos_{0},
-  max_mem_{max_mem},
   lpass_{0}
 {
+    for (string &f : files) {
+	data_.emplace_back(f.c_str(), O_RDONLY | O_DIRECT);
+    }
 }
 
 void Node::Initialize( void )
 {
-    // Create sorted in-memory index
-    BufferedIO fdi(data_);
-    size_t nrecs = data_.size() / Rec::SIZE;
-
     // Load records
-    recs_.reserve(nrecs);
-    for (uint64_t i = 0; i < nrecs; i++) {
-	const uint8_t *rec = (const uint8_t *)fdi.read_buf(Rec::SIZE).first;
-	if (fdi.eof()) {
-	    throw runtime_error("Premature EOF");
+    recs_.reserve(Size());
+    for (size_t d = 0; d < data_.size(); d++) {
+	BufferedIO fdi(data_[d]);
+	size_t nrecs = data_[d].size() / Rec::SIZE;
+
+	for (uint64_t i = 0; i < nrecs; i++) {
+	    const uint8_t *rec = (const uint8_t *)fdi.read_buf(Rec::SIZE).first;
+	    if (fdi.eof()) {
+		throw runtime_error("Premature EOF");
+	    }
+	    recs_.emplace_back(/*key*/rec,
+			       /*loc*/i * Rec::SIZE + Rec::KEY_LEN,
+			       /*host*/0,
+			       /*disk*/d);
 	}
-	recs_.emplace_back(rec, i * Rec::SIZE + Rec::KEY_LEN);
     }
 
     // Sort
@@ -139,7 +145,7 @@ Node::RecV Node::Read( uint64_t pos, uint64_t size )
 	size = recs_.size() - pos;
     }
     recs.reserve(size);
-    Circular_AIO caio(&data_, recs_);
+    Circular_AIO caio(data_, recs_);
     caio.begin(&recs, pos, size);
     caio.wait();
   }
@@ -154,7 +160,13 @@ Node::RecV Node::Read( uint64_t pos, uint64_t size )
 
 uint64_t Node::Size( void )
 {
-  return data_.size() / Rec::SIZE;
+  uint64_t sz = 0;
+
+  for ( auto &d : data_ ) {
+    sz += (d.size() / Rec::SIZE);
+  }
+
+  return sz;
 }
 
 Node::RecV Node::linear_scan(uint64_t start, uint64_t size )
@@ -170,12 +182,13 @@ Node::RecV Node::linear_scan(uint64_t start, uint64_t size )
   for ( uint64_t i = 0; i < size; i++ ) {
     size_t len;
     uint8_t buf[Rec::VAL_LEN];
+    RecordLoc &r = recs_[start + i];
 
     if (start + i >= recs_.size()) {
       break;
     }
 
-    len = data_.pread_all((char *)&buf, Rec::VAL_LEN, recs_[start+i].loc());
+    len = data_[r.disk()].pread_all((char *)&buf, Rec::VAL_LEN, r.loc());
     assert(len == Rec::VAL_LEN);
 
     recV.emplace_back(recs_[start+i], buf);

@@ -49,14 +49,14 @@ void reader( Node * node, size_t block_size,
   }
 }
 
-void run( char * fin, char * fout, double block )
+void run( std::vector<std::string> fin, char * fout, double block )
 {
   BufferedIO_O<File> out( {fout, O_WRONLY | O_CREAT | O_TRUNC,
                                  S_IRUSR | S_IWUSR} );
   auto t0 = time_now();
 
   // start node
-  Node node{fin, "0", MAX_MEM};
+  Node node{ fin, "0" };
   node.Initialize();
   auto t1 = time_now();
 
@@ -135,7 +135,7 @@ int main( int argc, char * argv[] )
   try {
     check_usage( argc, argv );
     double block = argc == 4 ? stod( argv[3] ) : 1;
-    run( argv[1], argv[2], block );
+    run( { argv+1, argv+1 } , argv[2], block );
   } catch ( const exception & e ) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;

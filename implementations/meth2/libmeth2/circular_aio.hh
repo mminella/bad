@@ -11,7 +11,7 @@ public:
 	void *buf;
 	uint64_t len;
     };
-    Circular_AIO(IODevice *dev, std::vector<RecordLoc> &recs_);
+    Circular_AIO(std::vector<File> &dev, std::vector<RecordLoc> &recs_);
     ~Circular_AIO();
     void begin(Node::RecV *buf, uint64_t start, uint64_t size);
     void wait();
@@ -23,7 +23,7 @@ private:
     Channel<int> result;
     std::vector<std::thread> threads;
     // IO Device
-    IODevice *io_;
+    std::vector<File> &io_;
     // Sorted Records
     std::vector<RecordLoc> &recs_;
     // Output

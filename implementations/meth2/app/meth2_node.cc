@@ -24,10 +24,9 @@ bool to_bool( std::string str )
   return b;
 }
 
-int run( const char * mem, const char * port, const char * odirect,
-         const char * file)
+int run( const char * port, vector<string> files)
 {
-  Node node{file, port, stoul( mem ), to_bool( odirect )};
+  Node node{files, port};
   node.Initialize();
   node.Run();
 
@@ -36,9 +35,9 @@ int run( const char * mem, const char * port, const char * odirect,
 
 void check_usage( const int argc, const char * const argv[] )
 {
-  if ( argc != 5 ) {
+  if ( argc < 3 ) {
     throw runtime_error( "Usage: " + string( argv[0] ) +
-                         " [max mem] [port] [odirect] [file]" );
+                         " [port] [file...]" );
   }
 }
 
@@ -46,7 +45,7 @@ int main( int argc, char * argv[] )
 {
   try {
     check_usage( argc, argv );
-    run( argv[1], argv[2], argv[3], argv[4] );
+    run( argv[1], { argv+2, argv+argc } );
   } catch ( const exception & e ) {
     print_exception( e );
     return EXIT_FAILURE;

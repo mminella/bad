@@ -45,18 +45,16 @@ public:
   using RecV = std::vector<RR>;
 
 private:
-  File data_;
+  std::vector<File> data_;
   std::vector<RecordLoc> recs_;
   //OverlappedRecordIO<Rec::SIZE> recio_;
   std::string port_;
   Record last_;
   uint64_t fpos_;
-  uint64_t max_mem_;
   uint64_t lpass_;
 
 public:
-  Node( std::string file, std::string port, uint64_t max_memory,
-        bool odirect = false );
+  Node( std::vector<std::string> file, std::string port);
 
   /* No copy or move */
   Node( const Node & n ) = delete;

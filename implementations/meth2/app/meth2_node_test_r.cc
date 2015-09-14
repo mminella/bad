@@ -13,12 +13,12 @@ using namespace meth2;
 
 static constexpr size_t MAX_MEM = 2097152; // 200MB
 
-void run( char * fin, double block )
+void run( std::vector<std::string> fin, double block )
 {
   auto t0 = time_now();
 
   // start node
-  Node node{fin, "0", MAX_MEM, true};
+  Node node{ fin, "0" };
   node.Initialize();
   auto t1 = time_now();
 
@@ -62,7 +62,7 @@ int main( int argc, char * argv[] )
   try {
     check_usage( argc, argv );
     double block = argc == 3 ? stod( argv[2] ) : 1;
-    run( argv[1], block );
+    run( { argv+1, argv+1 } , block );
   } catch ( const exception & e ) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;

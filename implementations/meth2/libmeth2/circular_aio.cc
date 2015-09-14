@@ -9,12 +9,14 @@
 #include "node.hh"
 #include "circular_aio.hh"
 
-#define AIO_MAX_THREADS		16
+#define AIO_MAX_THREADS_PER_DISK	16
+
+using namespace std;
 
 namespace meth2
 {
 
-Circular_AIO::Circular_AIO(IODevice *dev, std::vector<RecordLoc> &recs_)
+Circular_AIO::Circular_AIO(vector<File> &dev, vector<RecordLoc> &recs_)
     : requestExit(false),
       cmd(),
       result(),
@@ -27,11 +29,9 @@ Circular_AIO::Circular_AIO(IODevice *dev, std::vector<RecordLoc> &recs_)
       start(0),
       size(0)
 {
-    int i;
-
     std::atomic_store(&requestExit, false);
 
-    for (i = 0; i < AIO_MAX_THREADS; i++) {
+    for (size_t i = 0; i < (dev.size() * AIO_MAX_THREADS_PER_DISK); i++) {
 	threads.emplace_back(&Circular_AIO::ioThread, this);
     }
 }
@@ -101,8 +101,9 @@ Circular_AIO::ioProcess()
 	}
 
 	uint8_t buf[Rec::VAL_LEN];
+	RecordLoc &r = recs_[start+off];
 
-	io_->pread_all((char *)&buf, Rec::VAL_LEN, recs_[start+off].loc());
+	io_[r.disk()].pread_all((char *)&buf, Rec::VAL_LEN, r.loc());
 
 	(*out)[off] = Node::RR(recs_[off], buf);
     }
