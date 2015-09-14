@@ -23,7 +23,7 @@ private:
 
 public:
   OverlappedRecordIO( File & file, size_t blocks = Knobs::DISK_BLOCKS )
-    : CircularIORec<rec_size>( file, blocks, file.fd_num() )
+    : CircularIORec<rec_size>{file, blocks, file.fd_num()}
     , file_{file}
     , fsize_{file.size()}
   {

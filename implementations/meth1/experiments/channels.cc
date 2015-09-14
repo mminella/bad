@@ -145,9 +145,9 @@ void test_vec_records( void )
 void test_basic_chan( void )
 {
   Channel<int> chn;
-  int x = 1, y = 2;
+  int x = 1;
   chn.send( x );
-  y = chn.recv();
+  chn.recv();
 }
 
 int main( void )

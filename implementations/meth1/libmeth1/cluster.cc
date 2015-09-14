@@ -33,7 +33,8 @@ Cluster::Cluster( vector<Address> nodes, uint64_t chunkSize )
   bufSize_ = calc_client_buffer( nodes.size() );
 
   print( "chunk-size", chunkSize_, bufSize_ );
-  print( "disks", num_of_disks(), "\n" );
+  print( "disks", num_of_disks() );
+  print( "" );
 
   for ( auto & n : nodes ) {
     clients_.push_back( n );
@@ -61,11 +62,13 @@ Record Cluster::ReadFirst( void )
     c.sendRead( 0, 1 );
   }
 
+  char rec[Rec::SIZE];
   Record min( Rec::MAX );
   for ( auto & c : clients_ ) {
     uint64_t s = c.recvRead();
     if ( s >= 1 ) {
-      RecordPtr p = c.readRecord();
+      c.socket().read_all( rec, Rec::SIZE );
+      RecordPtr p( rec );
       if ( p < min ) {
         min.copy( p );
       }
@@ -80,6 +83,7 @@ void Cluster::Read( uint64_t pos, uint64_t size )
   if ( clients_.size() == 1 ) {
     // optimize for 1 node
     auto & c = clients_.front();
+    BufferedIO bio( c.socket() );
     uint64_t totalSize = Size();
     if ( pos < totalSize ) {
       size = min( totalSize - pos, size );
@@ -88,7 +92,7 @@ void Cluster::Read( uint64_t pos, uint64_t size )
         c.sendRead( i, n );
         auto nrecs = c.recvRead();
         for ( uint64_t j = 0; j < nrecs; j++ ) {
-          c.readRecord();
+          bio.read_buf_all( Rec::SIZE );
         }
       }
     }
@@ -146,13 +150,14 @@ void Cluster::ReadAll( void )
   if ( clients_.size() == 1 ) {
     // optimize for 1 node
     auto & c = clients_.front();
+    BufferedIO bio( c.socket() );
     uint64_t size = Size();
     for ( uint64_t i = 0; i < size; i += chunkSize_ ) {
       c.sendRead( i, chunkSize_ );
       auto nrecs = c.recvRead();
       auto t0 = time_now();
       for ( uint64_t j = 0; j < nrecs; j++ ) {
-        c.readRecord();
+        bio.read_buf_all( Rec::SIZE );
       }
       print( "network", ++pass, time_diff<ms>( t0 ) );
     }
@@ -229,13 +234,16 @@ void Cluster::WriteAll( File out )
   if ( clients_.size() == 1 ) {
     // optimize for 1 node
     auto & c = clients_.front();
+    BufferedIO bin( c.socket() );
+    BufferedIO bout( out );
     uint64_t size = Size();
     for ( uint64_t i = 0; i < size; i += chunkSize_ ) {
       c.sendRead( i, chunkSize_ );
       auto nrecs = c.recvRead();
       for ( uint64_t j = 0; j < nrecs; j++ ) {
-        RecordPtr rec = c.readRecord();
-        rec.write( out );
+        // XXX: We copy between two buffers and can avoid this.
+        const char * rec = bin.read_buf_all( Rec::SIZE ).first;
+        bout.write_all( rec, Rec::SIZE );
       }
     }
   } else {

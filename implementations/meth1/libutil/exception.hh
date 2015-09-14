@@ -1,8 +1,6 @@
 #ifndef EXCEPTION_HH
 #define EXCEPTION_HH
 
-#include <cassert>
-
 #include <system_error>
 #include <iostream>
 
@@ -48,7 +46,6 @@ inline unsigned int SystemCall( const char * s_attempt, int status )
   if ( status >= 0 ) {
     return status;
   }
-  assert(false);
   throw unix_error( s_attempt );
 }
 

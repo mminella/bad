@@ -12,7 +12,7 @@
 #include "linux_compat.hh"
 #include "overlapped_rec_io.hh"
 #include "record.hh"
-#include "timestamp.hh" 
+#include "timestamp.hh"
 #include "util.hh"
 
 #include "merge_wrapper.hh"
@@ -41,13 +41,13 @@ private:
   uint64_t loc_;
 
 public:
-  RecLoader( string fileName, int flags )
-    : file_{new File( fileName, flags )}
+  RecLoader( string fileName, int flags, bool odirect = false )
+    : file_{new File( fileName, flags, odirect ? File::DIRECT : File::CACHED )}
     , rio_{new RecIO( *file_ )}
     , eof_{false}
     , loc_{0}
   {}
-  
+
   /* no copy */
   RecLoader( const RecLoader & ) = delete;
   RecLoader & operator=( const RecLoader & ) = delete;
@@ -68,7 +68,7 @@ public:
       eof_ = other.eof_;
       loc_ = other.loc_;
     }
-    return *this;  
+    return *this;
   }
 
   const File & file( void ) const noexcept { return *file_; }
@@ -121,7 +121,9 @@ RR * scan( vector<RecLoader> & rios, size_t size, const RR & after )
 {
   auto t0 = time_now();
 
+#ifdef HAVE_TBB_TASK_GROUP_H
   tbb::task_group tg;
+#endif
   tdiff_t tm = 0, ts = 0, tl = 0;
 
   // setup loader processes
@@ -143,14 +145,20 @@ RR * scan( vector<RecLoader> & rios, size_t size, const RR & after )
     uint64_t rio_i = 0;
     for ( auto & rio : rios ) {
       if ( not rio.eof() ) {
+#ifdef HAVE_TBB_TASK_GROUP_H
         tg.run( [&rio, rio_i, r1s_i, r1, r1x_i, &after, curMin]() {
           r1s_i[rio_i] =
             rio.filter( &r1[r1x_i * rio_i], r1x_i, after, curMin );
         } );
+#else
+        r1s_i[rio_i] = rio.filter( &r1[r1x_i * rio_i], r1x_i, after, curMin );
+#endif
         rio_i++;
       }
     }
+#ifdef HAVE_TBB_TASK_GROUP_H
     tg.wait();
+#endif
 
     // eof?
     if ( rio_i == 0 ) {
@@ -169,7 +177,7 @@ RR * scan( vector<RecLoader> & rios, size_t size, const RR & after )
       }
       r1s += r1s_i[i+1];
     }
-    
+
     if ( r1s > 0 ) {
       auto ts1 = time_now();
       rec_sort( r1, r1 + r1s );
@@ -204,7 +212,7 @@ RR * scan( vector<RecLoader> & rios, size_t size, const RR & after )
   cout << "sort , " << ts << endl;
   cout << "merge, " << tm << endl;
   cout << "last , " << tl << endl;
-  
+
   return r2;
 }
 
@@ -215,7 +223,7 @@ void run( vector<string> fileNames )
   // open files
   vector<RecLoader> recio;
   for ( auto & fn : fileNames ) {
-    recio.emplace_back( fn, O_RDONLY | O_DIRECT );
+    recio.emplace_back( fn, O_RDONLY );
   }
 
   // ASSUMPTION: Files are same size

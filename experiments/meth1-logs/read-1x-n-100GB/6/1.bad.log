@@ -1,0 +1,76 @@
+# Fri Sep 11 01:35:29 PDT 2015
+# 6, 16.7, 0, read
+record-value, 112
+chunk-size, 168172393, 502
+disks, 1
+
+size, 5, 1, 175112192, 0
+size, 6, 1, 175112192, 0
+size, 7, 1, 175112192, 0
+size, 8, 1, 175112192, 0
+size, 9, 1, 175112192, 0
+size, 10, 1, 175112192, 0
+
+
+read-start, 5, 1, 0, 168172393, 21
+read-start, 6, 1, 0, 168172393, 21
+read-start, 7, 1, 0, 168172393, 21
+read-start, 8, 1, 0, 168172393, 21
+read-start, 9, 1, 0, 168172393, 21
+read-start, 10, 1, 0, 168172393, 21
+read-wait, 5, 1, 0
+read, 5, 1, 0, 168172393, 43832
+circular-read-start, 5, 1, 16817239300, 43854
+read-wait, 6, 1, 44007
+read, 6, 1, 0, 168172393, 44007
+circular-read-start, 6, 1, 16817239300, 44029
+read-wait, 7, 1, 44012
+read, 7, 1, 0, 168172393, 44012
+circular-read-start, 7, 1, 16817239300, 44034
+read-wait, 8, 1, 44018
+read, 8, 1, 0, 168172393, 44018
+circular-read-start, 8, 1, 16817239300, 44040
+read-wait, 9, 1, 44025
+read, 9, 1, 0, 168172393, 44025
+circular-read-start, 9, 1, 16817239300, 44047
+read-wait, 10, 1, 44032
+read, 10, 1, 0, 168172393, 44032
+circular-read-start, 10, 1, 16817239300, 44054
+read-start, 9, 2, 168172393, 6939799, 1205455
+circular-read-total, 9, 1, 16817239300, 1066927, 1161408
+read-start, 10, 2, 168172393, 6939799, 1207470
+circular-read-total, 10, 1, 16817239300, 1080755, 1163416
+read-start, 7, 2, 168172393, 6939799, 1208002
+circular-read-total, 7, 1, 16817239300, 1083146, 1163968
+read-start, 6, 2, 168172393, 6939799, 1209627
+circular-read-total, 6, 1, 16817239300, 1078967, 1165598
+read-start, 8, 2, 168172393, 6939799, 1210851
+circular-read-total, 8, 1, 16817239300, 1069276, 1166810
+read-start, 5, 2, 168172393, 6939799, 1210866
+circular-read-total, 5, 1, 16817239300, 1094955, 1167011
+read-wait, 5, 2, 44
+read, 5, 2, 168172393, 6939799, 36352
+circular-read-start, 5, 2, 693979900, 1247219
+read-wait, 10, 2, 39885
+read, 10, 2, 168172393, 6939799, 39885
+circular-read-start, 10, 2, 693979900, 1247356
+read-wait, 9, 2, 41905
+read, 9, 2, 168172393, 6939799, 41905
+circular-read-start, 9, 2, 693979900, 1247360
+read-wait, 7, 2, 39363
+read, 7, 2, 168172393, 6939799, 39363
+circular-read-start, 7, 2, 693979900, 1247366
+read-wait, 6, 2, 37743
+read, 6, 2, 168172393, 6939799, 37743
+circular-read-start, 6, 2, 693979900, 1247371
+read-wait, 8, 2, 36523
+read, 8, 2, 168172393, 6939799, 36523
+circular-read-start, 8, 2, 693979900, 1247374
+circular-read-total, 10, 2, 693979900, 37652, 38604
+circular-read-total, 8, 2, 693979900, 38724, 40604
+circular-read-total, 5, 2, 693979900, 37814, 41605
+circular-read-total, 7, 2, 693979900, 41841, 42919
+circular-read-total, 9, 2, 693979900, 41237, 43131
+circular-read-total, 6, 2, 693979900, 42710, 43898
+
+cmd-read, 1291315

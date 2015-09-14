@@ -9,6 +9,8 @@ class IODevice
 public:
   static constexpr size_t MAX_READ = 128 * 1024;
 
+  enum odirect_t { CACHED, DIRECT };
+
 private:
   size_t read_count_ = 0;
   size_t write_count_ = 0;
@@ -31,6 +33,9 @@ public:
   bool eof( void ) const noexcept { return get_eof(); }
   size_t read_count( void ) const noexcept { return read_count_; }
   size_t write_count( void ) const noexcept { return write_count_; }
+
+  /* using O_DIRECT? needed since we need to issue aligned reads then */
+  virtual bool is_odirect( void ) const noexcept = 0;
 
   /* read methods */
   virtual size_t read( char * buf, size_t limit ) = 0;

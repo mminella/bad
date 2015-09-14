@@ -15,8 +15,12 @@ using namespace meth1;
 
 /* Construct Node */
 Node::Node( vector<string> files, string port, bool odirect )
+#ifdef HAVE_TBB_TASK_GROUP_H
   : tg_{}
   , recios_{}
+#else
+  : recios_{}
+#endif
   , port_{port}
   , last_{Rec::MIN}
   , fpos_{0}
@@ -30,7 +34,7 @@ Node::Node( vector<string> files, string port, bool odirect )
 
   print( "seek-chunk", seek_chunk_ );
   for ( auto & f : files ) {
-    recios_.emplace_back( f, odirect ? O_RDONLY | O_DIRECT : O_RDONLY );
+    recios_.emplace_back( f, O_RDONLY, odirect );
     print( "file", recios_.back().id(), recios_.back().records() );
   }
 }
@@ -42,6 +46,9 @@ void Node::Run( void )
 {
   TCPSocket sock{IPV4};
   sock.set_reuseaddr();
+  sock.set_nodelay();
+  sock.set_send_buffer( Knobs::NET_SND_BUF );
+  sock.set_recv_buffer( Knobs::NET_RCV_BUF );
   sock.bind( {"0.0.0.0", port_} );
   sock.listen();
 
@@ -116,6 +123,7 @@ void Node::RPC_Read( TCPSocket & client )
         break;
       }
 
+#ifdef HAVE_TBB_TASK_GROUP_H
       tg_.run( [wbuf, start, end, data]() {
         char * wptr = wbuf;
         for ( uint64_t k = start; k < end; k++ ) {
@@ -124,23 +132,39 @@ void Node::RPC_Read( TCPSocket & client )
           wptr += Rec::SIZE;
         }
       } );
+#else
+      char * wptr = wbuf;
+      for ( uint64_t k = start; k < end; k++ ) {
+        memcpy( wptr, data[k].key(), Rec::KEY_LEN );
+        memcpy( wptr+Rec::KEY_LEN, data[k].val(), Rec::VAL_LEN );
+        wptr += Rec::SIZE;
+      }
+#endif
     }
+#ifdef HAVE_TBB_TASK_GROUP_H
     tg_.wait();
+#endif
 
     // write the buffer (don't wait, as we want to overlap with filling buf2)
     char * wbuf = buf1;
     uint64_t bufSize = Knobs::IO_BUFFER_NETW * Rec::SIZE;
     bufSize = min( bufSize, (siz - i) * Rec::SIZE );
+#ifdef HAVE_TBB_TASK_GROUP_H
     tg_.run( [&client, wbuf, bufSize]() {
       client.write_all( wbuf, bufSize );
     } );
+#else
+    client.write_all( wbuf, bufSize );
+#endif
 
     // swap buffers
     swap( buf1, buf2 );
   }
 
   // wait for final write to finish
+#ifdef HAVE_TBB_TASK_GROUP_H
   tg_.wait();
+#endif
 
   print( "network", ++pass, time_diff<ms>( t0 ) );
 }
@@ -225,6 +249,7 @@ Node::RecV Node::linear_scan_one( const Record & after )
     RR * rr_i = &rr[i];
 
     rio.rewind();
+#ifdef HAVE_TBB_TASK_GROUP_H
     tg_.run( [&rio, &after, rr_i]() {
 
       RR min( Rec::MAX );
@@ -239,8 +264,23 @@ Node::RecV Node::linear_scan_one( const Record & after )
       }
       rr_i->copy( min );
     } );
+#else
+    RR min( Rec::MAX );
+    while ( true ) {
+      RecordPtr next = rio.next_record();
+      if ( rio.eof() ) {
+        break;
+      }
+      if ( next > after and min > next ) {
+        min.copy( next );
+      }
+    }
+    rr_i->copy( min );
+#endif
   }
+#ifdef HAVE_TBB_TASK_GROUP_H
   tg_.wait();
+#endif
 
   // find min of all files
   RR & min = rr[0];
@@ -280,14 +320,20 @@ Node::RecV Node::linear_scan_chunk( const Record & after, uint64_t size,
     uint64_t rio_i = 0;
     for ( auto & rio : recios_ ) {
       if ( not rio.eof() ) {
+#ifdef HAVE_TBB_TASK_GROUP_H
         tg_.run( [&rio, rio_i, &r1s_i, r1, r1x_i, &after, curMin]() {
           r1s_i[rio_i] =
             rio.filter( &r1[r1x_i * rio_i], r1x_i, after, curMin );
         } );
+#else
+        r1s_i[rio_i] = rio.filter( &r1[r1x_i * rio_i], r1x_i, after, curMin );
+#endif
         rio_i++;
       }
     }
+#ifdef HAVE_TBB_TASK_GROUP_H
     tg_.wait();
+#endif
 
     // EOF?
     if ( rio_i == 0 ) {

@@ -22,6 +22,9 @@ Client::Client( Address node )
   , recvPass_{0}
   , sizePass_{0}
 {
+  sock_.set_nodelay();
+  sock_.set_send_buffer( Knobs::NET_SND_BUF );
+  sock_.set_recv_buffer( Knobs::NET_RCV_BUF );
   sock_.connect( addr_ );
 }
 
@@ -52,12 +55,6 @@ uint64_t Client::recvRead( void )
     time_diff<ms>( rpcStart_ ) );
 
   return nrecs;
-}
-
-RecordPtr Client::readRecord( void )
-{
-  sock_.read_all( rec, Rec::SIZE );
-  return { rec };
 }
 
 void Client::sendSize( void )

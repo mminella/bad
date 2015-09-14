@@ -12,6 +12,7 @@ require 'parallel'
 SSH_USER = 'ubuntu'
 SSH_PKEY = {} # default
 TAR_FILE = 'bad.tar.gz'
+CLUSTER_CONF = 'cluster.conf'
 
 nameArg = nil
 options = {}
@@ -121,6 +122,7 @@ Launcher.new(options).launch! do |instance|
   # store machine
   `echo "export M#{i}=#{instance.dns_name}" >> #{options[:file]}`
   `echo "export M#{i}_ID=#{instance.id}" >> #{options[:file]}`
+  `echo "alias m#{i}=\\"ssh ubuntu@\\$M#{i}\\"" >> #{options[:file]}`
 end
 
 # configure instances
@@ -143,6 +145,10 @@ Parallel.map(instances, :in_threads => instances.size) { |instance|
   puts "Waiting on SSH to become ready..."
   sleep 10
   Net::SSH.wait(instance.dns_name, SSH_USER, SSH_PKEY)
+
+  # copy across cluster config
+  Net::SCP.start(instance.dns_name, SSH_USER, SSH_PKEY)
+    .upload!(options[:file], CLUSTER_CONF)
 
   # setup instance
   puts "Setting up instance (#{j})..."

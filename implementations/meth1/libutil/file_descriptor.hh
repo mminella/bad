@@ -11,6 +11,7 @@ class FileDescriptor : public IODevice
 private:
   int fd_ = -1;
   bool eof_ = false;
+  bool odirect_ = false;
 
 protected:
   /* io device state */
@@ -22,7 +23,7 @@ protected:
 
 public:
   /* construct from fd number */
-  FileDescriptor( int fd ) noexcept;
+  FileDescriptor( int fd, bool odirect = false ) noexcept;
 
   /* move */
   FileDescriptor( FileDescriptor && other ) noexcept;
@@ -37,6 +38,9 @@ public:
 
   /* accessors */
   int fd_num( void ) const noexcept { return fd_; }
+
+  /* using O_DIRECT? */
+  bool is_odirect( void ) const noexcept override { return odirect_; }
 
   /* implement (p)read + (p)write */
   size_t read( char * buf, size_t limit ) override;

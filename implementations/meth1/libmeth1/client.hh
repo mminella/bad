@@ -26,7 +26,6 @@ public:
   /* network state */
   TCPSocket sock_;
   Address addr_;
-  char rec[Rec::SIZE];
 
   /* rpc state */
   clk::time_point rpcStart_;
@@ -46,7 +45,6 @@ public:
   /* Perform a read. Return value is number of records available to read */
   void sendRead( uint64_t pos, uint64_t size );
   uint64_t recvRead( void );
-  RecordPtr readRecord( void );
 
   /* Return the number of records available at this server */
   void sendSize( void );

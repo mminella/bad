@@ -1,0 +1,65 @@
+# Thu Sep 10 01:55:17 PDT 2015
+# 5, 20, 0, read
+record-value, 112
+chunk-size, 171478413, 593
+disks, 1
+
+size, 5, 1, 209715200, 0
+size, 6, 1, 209715200, 0
+size, 7, 1, 209715200, 0
+size, 8, 1, 209715200, 0
+size, 9, 1, 209715200, 0
+
+
+read-start, 5, 1, 0, 171478413, 23
+read-start, 6, 1, 0, 171478413, 23
+read-start, 7, 1, 0, 171478413, 23
+read-start, 8, 1, 0, 171478413, 23
+read-start, 9, 1, 0, 171478413, 23
+read-wait, 5, 1, 0
+read, 5, 1, 0, 171478413, 53762
+circular-read-start, 5, 1, 17147841300, 53786
+read-wait, 6, 1, 54203
+read, 6, 1, 0, 171478413, 54203
+circular-read-start, 6, 1, 17147841300, 54227
+read-wait, 7, 1, 54207
+read, 7, 1, 0, 171478413, 54207
+circular-read-start, 7, 1, 17147841300, 54230
+read-wait, 8, 1, 54547
+read, 8, 1, 0, 171478413, 54547
+circular-read-start, 8, 1, 17147841300, 54570
+read-wait, 9, 1, 54551
+read, 9, 1, 0, 171478413, 54551
+circular-read-start, 9, 1, 17147841300, 54575
+read-start, 6, 2, 171478413, 38236787, 1041648
+circular-read-total, 6, 1, 17147841300, 885981, 987421
+read-start, 8, 2, 171478413, 38236787, 1043140
+circular-read-total, 8, 1, 17147841300, 917977, 988569
+read-start, 5, 2, 171478413, 38236787, 1044086
+circular-read-total, 5, 1, 17147841300, 909114, 990300
+read-start, 9, 2, 171478413, 38236787, 1044629
+circular-read-total, 9, 1, 17147841300, 919292, 990054
+read-start, 7, 2, 171478413, 38236787, 1045903
+circular-read-total, 7, 1, 17147841300, 935020, 991673
+read-wait, 5, 2, 1835
+read, 5, 2, 171478413, 38236787, 43623
+circular-read-start, 5, 2, 3823678700, 1087710
+read-wait, 7, 2, 42126
+read, 7, 2, 171478413, 38236787, 43416
+circular-read-start, 7, 2, 3823678700, 1089320
+read-wait, 9, 2, 45080
+read, 9, 2, 171478413, 38236787, 45080
+circular-read-start, 9, 2, 3823678700, 1089709
+read-wait, 6, 2, 48064
+read, 6, 2, 171478413, 38236787, 48064
+circular-read-start, 6, 2, 3823678700, 1089712
+read-wait, 8, 2, 46576
+read, 8, 2, 171478413, 38236787, 46576
+circular-read-start, 8, 2, 3823678700, 1089717
+circular-read-total, 5, 2, 3823678700, 204277, 215800
+circular-read-total, 8, 2, 3823678700, 205629, 214287
+circular-read-total, 9, 2, 3823678700, 203030, 215922
+circular-read-total, 7, 2, 3823678700, 201461, 216318
+circular-read-total, 6, 2, 3823678700, 207646, 216761
+
+cmd-read, 1306527

@@ -1,0 +1,76 @@
+# Thu Sep 10 01:55:09 PDT 2015
+record-value, 96
+seek-chunk, 192300792
+file, 4, 1048576000
+
+read-start, 1, 0, 171478413, 1637
+circular-read-start, 4, 1, 104857600000, 3209
+circular-read-total, 4, 1, 104857600000, 232604, 238085
+linear-scan, 239064
+-sort , 37471, 41
+-merge, 38374, 41
+-last , 976
+read, 1, 171478413, 240636
+network, 1, 195709
+
+read-start, 2, 171478413, 171478413, 438026
+circular-read-start, 4, 2, 104857600000, 438373
+circular-read-total, 4, 2, 104857600000, 210839, 216622
+linear-scan, 218009
+-sort , 35154, 38
+-merge, 35622, 38
+-last , 1384
+read, 2, 171478413, 218357
+network, 2, 195327
+
+read-start, 3, 342956826, 171478413, 851983
+circular-read-start, 4, 3, 104857600000, 852332
+circular-read-total, 4, 3, 104857600000, 210762, 216538
+linear-scan, 217780
+-sort , 27653, 35
+-merge, 32625, 35
+-last , 1239
+read, 3, 171478413, 218129
+network, 3, 195381
+
+read-start, 4, 514435239, 171478413, 1265742
+circular-read-start, 4, 4, 104857600000, 1266091
+circular-read-total, 4, 4, 104857600000, 210696, 216447
+linear-scan, 217652
+-sort , 24173, 31
+-merge, 28700, 31
+-last , 1202
+read, 4, 171478413, 218000
+network, 4, 195404
+
+read-start, 5, 685913652, 171478413, 1679426
+circular-read-start, 4, 5, 104857600000, 1679777
+circular-read-total, 4, 5, 104857600000, 210709, 216411
+linear-scan, 217990
+-sort , 19535, 25
+-merge, 22799, 25
+-last , 1576
+read, 5, 171478413, 218341
+network, 5, 195519
+
+read-start, 6, 857392065, 171478413, 2093353
+circular-read-start, 4, 6, 104857600000, 2093704
+circular-read-total, 4, 6, 104857600000, 210642, 216381
+linear-scan, 217689
+-sort , 11587, 16
+-merge, 13724, 16
+-last , 1305
+read, 6, 171478413, 218040
+network, 6, 195663
+
+read-start, 7, 1028870478, 19705522, 2507094
+circular-read-start, 4, 7, 104857600000, 2507134
+circular-read-total, 4, 7, 104857600000, 211043, 217080
+linear-scan, 217220
+-sort , 1110, 7
+-merge, 850, 7
+-last , 139
+read, 7, 19705522, 217260
+network, 7, 19085
+
+exit, 2743710
