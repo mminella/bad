@@ -46,7 +46,7 @@ public:
     , io_{&io}
   {
   }
-  
+
   /* no copy */
   BufferedIO( const BufferedIO & ) = delete;
   BufferedIO & operator=( const BufferedIO & ) = delete;
@@ -83,6 +83,9 @@ public:
 
   /* destructor */
   ~BufferedIO() { flush( true ); }
+
+  /* using O_DIRECT? never, since using a buffer */
+  bool is_odirect( void ) const noexcept override { return false; }
 
   /* buffer read method */
   std::pair<const char *, size_t> read_buf( size_t limit = 0 );

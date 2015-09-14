@@ -10,8 +10,8 @@ class File : public FileDescriptor
 {
 public:
   /* construct by opening file at path given */
-  File( const std::string & path, int flags );
-  File( const std::string & path, int flags, mode_t mode );
+  File( const std::string & path, int flags, odirect_t od = CACHED );
+  File( const std::string & path, int flags, mode_t m, odirect_t od = CACHED );
 
   /* rewind to begging of file */
   void rewind( void );

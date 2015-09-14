@@ -1,3 +1,4 @@
+#include <netinet/tcp.h>
 #include <sys/socket.h>
 
 #include "socket.hh"
@@ -65,6 +66,24 @@ Address Socket::local_address( void ) const
 void Socket::set_reuseaddr( void )
 {
   setsockopt( SOL_SOCKET, SO_REUSEADDR, int( true ) );
+}
+
+/* enable underlying protocol sending periodic keep-alive messages */
+void Socket::set_keepalive( void )
+{
+  setsockopt( SOL_SOCKET, SO_KEEPALIVE, int( true ) );
+}
+
+/* set the kernel side send buffer size */
+void Socket::set_send_buffer( size_t size )
+{
+  setsockopt( SOL_SOCKET, SO_SNDBUF, size );
+}
+
+/* set the kernel side receive buffer size */
+void Socket::set_recv_buffer( size_t size )
+{
+  setsockopt( SOL_SOCKET, SO_RCVBUF, size );
 }
 
 /* get the peer address the socket is connected to */
@@ -197,6 +216,11 @@ void UDPSocket::set_timestamps( void )
 #elif defined( SO_TIMESTAMP )
   setsockopt( SOL_SOCKET, SO_TIMESTAMP, int( true ) );
 #endif
+}
+
+void TCPSocket::set_nodelay( void )
+{
+  setsockopt( IPPROTO_TCP, TCP_NODELAY, int( true ) );
 }
 
 /* mark the socket as listening for incoming connections */

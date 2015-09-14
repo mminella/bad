@@ -9,7 +9,10 @@
 using namespace std;
 
 /* construct from fd number */
-FileDescriptor::FileDescriptor( int fd ) noexcept : fd_{fd} {}
+FileDescriptor::FileDescriptor( int fd, bool odirect ) noexcept
+  : fd_{fd}
+  , odirect_{odirect}
+{}
 
 /* move constructor */
 FileDescriptor::FileDescriptor( FileDescriptor && other ) noexcept
@@ -21,9 +24,11 @@ FileDescriptor::FileDescriptor( FileDescriptor && other ) noexcept
 FileDescriptor & FileDescriptor::operator=( FileDescriptor && other ) noexcept
 {
   if ( this != &other ) {
-    IODevice::operator=( move( other ) );
     close();
+    IODevice::operator=( move( other ) );
     swap( fd_, other.fd_ );
+    swap( eof_, other.eof_ );
+    swap( odirect_, other.odirect_ );
   }
   return *this;
 }

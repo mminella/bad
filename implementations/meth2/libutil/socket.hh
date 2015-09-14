@@ -28,6 +28,13 @@ public:
   /* allow local address to be reused sooner, at the cost of some robustness */
   void set_reuseaddr( void );
 
+  /* enable underlying protocol sending periodic keep-alive messages */
+  void set_keepalive( void );
+
+  /* set the snd & rcv kernel buffer sizes */
+  void set_send_buffer( size_t );
+  void set_recv_buffer( size_t );
+
   /* bind socket to a specified local address (usually to listen/accept) */
   void bind( const Address & addr );
 
@@ -80,6 +87,9 @@ public:
     : Socket( ipv, SOCK_STREAM )
   {
   }
+
+  /* disable nagle's algorithm */
+  void set_nodelay( void );
 
   /* mark the socket as listening for incoming connections */
   void listen( int backlog = 16 );

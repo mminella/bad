@@ -17,6 +17,7 @@
 #include "timestamp.hh" 
 #include "threadpool.hh"
 #include "util.hh"
+#include "merge.hh"
 
 #include "record.hh"
 
@@ -77,7 +78,7 @@ RR * scan( OverlappedRecordIO<Rec::SIZE> & rio, size_t size )
   tsort += fsort1.get();
 
   // external merge the 75%, 25% file chunks.
-  copy_merge( r1, r1 + split_at1, r1 + split_at1, r1 + size, r2, r2 + size );
+  merge_copy( r1, r1 + split_at1, r1 + split_at1, r1 + size, r2, r2 + size );
 
   // ALTERNATIVE: n-way merge the three chunks.
   // RawVector<RR> * rv = new RawVector<RR>[3];

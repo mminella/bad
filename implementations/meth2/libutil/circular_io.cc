@@ -80,14 +80,10 @@ void CircularIO::read_loop( void )
     size_t rbytes = 0;
     while ( true ) {
       auto t0 = time_now();
-      size_t blkSize = min( BLOCK, nbytes - rbytes );
-      size_t n = io_.read_all( wptr_, blkSize );
+      // should only issue disk block size reads when using O_DIRECT
+      size_t blkSize = io_.is_odirect() ? BLOCK : min( BLOCK, nbytes - rbytes );
+      size_t n = io_.read( wptr_, blkSize );
       tt += time_diff<ms>( t0 );
-
-      if ( n != blkSize ) {
-        throw runtime_error( "read didn't read amount requeststed( "
-          + to_string( blkSize ) + " vs " + to_string( n ) + " )" );
-      }
 
       if ( n > 0 ) {
         rbytes += n;
