@@ -90,32 +90,34 @@ Address::Address( const string & node, const string & service,
 }
 
 /* construct by resolving host name and service name */
-Address::Address( const std::string & hostname, const std::string & service )
+Address::Address( const std::string & hostname, const std::string & service,
+                  const IPVersion ipv )
   : Address()
 {
   addrinfo hints;
   zero( hints );
-  hints.ai_family = AF_UNSPEC;
+  hints.ai_family = ipv;
   hints.ai_flags = AI_V4MAPPED | AI_ALL;
 
   *this = Address( hostname, service, &hints );
 }
 
 /* construct with numerical IP address and numeral port number */
-Address::Address( const std::string & ip, const uint16_t port )
+Address::Address( const std::string & ip, const uint16_t port,
+                  const IPVersion ipv )
   : Address()
 {
   /* tell getaddrinfo that we don't want to resolve anything */
   addrinfo hints;
   zero( hints );
-  hints.ai_family = AF_UNSPEC;
+  hints.ai_family = ipv;
   hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV | AI_V4MAPPED;
 
   *this = Address( ip, ::to_string( port ), &hints );
 }
 
 /* construct from an IP string with port -- i.e., "192.168.0.3:800" */
-Address::Address( std::string ip )
+Address::Address( std::string ip, const IPVersion ipv )
   : Address()
 {
   string port = "0";
@@ -126,7 +128,7 @@ Address::Address( std::string ip )
     ip = ip.substr( 0, i );
   }
 
-  *this = Address( ip, port );
+  *this = Address( ip, port, ipv );
 }
 
 /* accessors */

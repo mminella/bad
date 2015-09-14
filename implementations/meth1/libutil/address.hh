@@ -8,7 +8,9 @@
 #include <netdb.h>
 
 /* IP Vesion a socket should use */
-enum IPVersion : unsigned short { IPV4 = AF_INET, IPV6 = AF_INET6 };
+enum IPVersion : unsigned short { IPV4 = AF_INET,
+                                  IPV6 = AF_INET6,
+                                  IPVX = AF_UNSPEC };
 
 /* Address class for IPv4/IPv6 addresses */
 class Address
@@ -36,15 +38,17 @@ public:
   Address( const sockaddr & addr, const size_t size );
 
   /* construct by resolving host name and service name */
-  Address( const std::string & hostname, const std::string & service );
+  Address( const std::string & hostname, const std::string & service,
+           const IPVersion ipv = IPVX );
 
   /* construct with numerical IP address and numeral port number */
-  Address( const std::string & ip, const uint16_t port );
+  Address( const std::string & ip, const uint16_t port,
+           const IPVersion ipv = IPVX );
 
   /* construct from an IP string with port -- i.e., "192.168.0.3:800" */
-  Address( std::string ip );
-  Address( const char * ip )
-    : Address{std::string( ip )} {};
+  Address( std::string ip, const IPVersion ipv = IPVX );
+  Address( const char * ip, const IPVersion ipv = IPVX )
+    : Address{std::string( ip ), ipv} {};
 
   /* accessors */
   sa_family_t domain( void ) const { return addr_.as_sockaddr.sa_family; }
