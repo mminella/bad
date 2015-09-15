@@ -140,5 +140,5 @@ totalO <- mutate(cmdRead, total=total/MS, type="observed")
 totalAll <- rbind(totalP, totalO) %>%
   select(xv=id, yv=total, type)
 
-mkGraph("total.pdf", totalAll, "Time to Read all Records",
-        "I2.xlarge Cluster Size (# nodes)", "Time (s)")
+mkGraph("total.pdf", totalAll, "Linear Scan: Read all Records",
+        "I2.8xlarge Cluster Size (# nodes)", "Time (s)")

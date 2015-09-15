@@ -152,7 +152,7 @@ total <-
   melt(id.vars=c("i2"), variable.name="type", value.name="yv") %>%
   rename(xv=i2)
 
-mkGraph("total.pdf", total, "Time to Read all Records",
+mkGraph("total.pdf", total, "Linear Scan: Read all Records",
         "I2 Instance Type", "Time (s)")
 
 # i2.xN
