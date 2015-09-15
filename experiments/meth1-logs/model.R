@@ -72,7 +72,7 @@ nthModel <- function(machine, nodes, data, n) {
   scans       <- max(ceiling(n*REC_SIZE/chunk/nodes), 1)
 
   timeNet   <- n*REC_SIZE / machine$netio
-  timeDisk  <- dataPerNode / (machine$diskio * machine$disks) * scans
+  timeDisk  <- round(dataPerNode / (machine$diskio * machine$disks) * scans)
   timeTotal <- timeNet + timeDisk
   cost      <- ceiling(timeTotal / HR) * machine$cost * nodes
 
@@ -86,8 +86,8 @@ allModel <- function(machine, nodes, data) {
   dataPerNode <- dataAtNode(machine, nodes, data)
   scans       <- ceiling(dataPerNode/chunk)
 
-  timeNet   <- data / machine$netio
-  timeDisk  <- dataPerNode / (machine$diskio * machine$disks) * scans
+  timeNet   <- round(data / machine$netio)
+  timeDisk  <- round(dataPerNode / (machine$diskio * machine$disks) * scans)
   timeTotal <- timeNet + timeDisk
   cost      <- ceiling(timeTotal / HR) * machine$cost * nodes
 
@@ -98,7 +98,7 @@ allModel <- function(machine, nodes, data) {
 
 firstModel <- function(machine, nodes, data) {
   dataPerNode <- dataAtNode(machine, nodes, data)
-  timeDisk    <- dataPerNode / (machine$diskio * machine$disks)
+  timeDisk    <- round(dataPerNode / (machine$diskio * machine$disks))
   cost        <- ceiling(timeDisk / HR) * machine$cost * nodes
 
   data.frame(operation="first", start=0, length=1,
