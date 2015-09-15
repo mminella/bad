@@ -12,10 +12,12 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "lib.hh"
+
 constexpr size_t TRANSFER = size_t( 1024 ) * 1024 * 1024 * 20;
 constexpr size_t BLKSIZE = size_t( 1024 ) * 1024 * 10;
 constexpr unsigned long long NS = 1000000000;
-constexpr size_t MB = size_t( 1024 ) * 1024;
+constexpr size_t MEGABYTE = size_t( 1024 ) * 1024;
 constexpr size_t TCPBUF = size_t( 1024 ) * 1024 * 2;
 
 int main( int argc, char * argv[] )
@@ -72,7 +74,7 @@ int main( int argc, char * argv[] )
   }
 
   // send the data
-  clock_gettime( CLOCK_MONOTONIC, &ts );
+  get_timespec( &ts );
   nsec1 = ts.tv_sec * NS + ts.tv_nsec;
   for ( sent = 0; sent < TRANSFER; ) {
     n = write( cfd, buf, BLKSIZE );
@@ -83,14 +85,14 @@ int main( int argc, char * argv[] )
     }
     sent += n;
   }
-  clock_gettime( CLOCK_MONOTONIC, &ts );
+  get_timespec( &ts );
   nsec2 = ts.tv_sec * NS + ts.tv_nsec;
 
   // calculate bandwidth
   nsec2 -= nsec1;
-  printf( "Transferred: %lu MBs\n", TRANSFER / MB );
+  printf( "Transferred: %lu MBs\n", TRANSFER / MEGABYTE );
   printf( "Time: %.2f s\n", (double)( nsec2 ) / NS );
-  printf( "Bandwidth: %llu MB/s\n", TRANSFER / MB / ( nsec2 / NS ) );
+  printf( "Bandwidth: %llu MB/s\n", TRANSFER / MEGABYTE / ( nsec2 / NS ) );
 
   // free dynamic memory
   freeaddrinfo( addr );

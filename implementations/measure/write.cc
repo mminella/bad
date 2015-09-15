@@ -28,14 +28,17 @@ int main(int argc, char* argv[]) {
   }
 
   // setup data to write
-  char * data = (char *) aligned_alloc(ALIGN, block_size);
+  char * data;
+  if (posix_memalign((void **)&data, ALIGN, block_size) != 0) {
+      return EXIT_FAILURE;
+  }
   for (size_t i = 0; i < block_size; ++i) {
     data[i] = i % 256;
   }
 
   // write data
   struct timespec time_start, time_end;
-  clock_gettime(CLOCK_MONOTONIC, &time_start);
+  get_timespec(&time_start);
   for (size_t i = 0; i < num_block; ++i) {
     ssize_t r = pwrite(fd, data, block_size, i * block_size);
     if (r == -1 || (size_t) r != block_size) {
@@ -54,7 +57,7 @@ int main(int argc, char* argv[]) {
   }
 
   // time took?
-  clock_gettime(CLOCK_MONOTONIC, &time_end);
+  get_timespec(&time_end);
   double dur = time_diff(time_start, time_end);
   double mbs = file_size / dur / MB;
   // read?, sync?, random?, block, depth, odirect, MB/s

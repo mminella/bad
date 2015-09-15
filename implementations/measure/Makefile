@@ -1,17 +1,21 @@
 CXX=c++
-CXXFLAGS=-O3 -lrt -std=c++11 -ltbb
+CXXFLAGS=-O3 -std=c++11 -ltbb
 BINARIES= \
 	read \
 	random_read \
 	write \
 	random_write \
-	async_random_read \
-	async_read \
 	memalloc_speed \
 	memcpy_speed \
 	memcmp_speed \
 	network_recv \
 	network_send
+
+ifeq ($(UNAME_S),linux)
+    CXXFLAGS += -lrt
+    BINARIES += async_random_read \
+		async_read
+endif
 
 all: $(BINARIES)
 

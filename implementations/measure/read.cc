@@ -32,9 +32,13 @@ int main(int argc, char* argv[]) {
   size_t block_size = atol(argv[2]);
 
   struct timespec time_start, time_end;
-  clock_gettime(CLOCK_MONOTONIC, &time_start);
+  get_timespec(&time_start);
 
-  void * data = aligned_alloc(ALIGN, block_size);
+  void * data;
+
+  if (posix_memalign(&data, ALIGN, block_size) != 0) {
+      return EXIT_FAILURE;
+  }
   for (size_t i = 0; i * block_size < file_size; ++i) {
     ssize_t r = pread(fd, data, block_size, i * block_size);
     if (r == -1) {
@@ -44,7 +48,7 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  clock_gettime(CLOCK_MONOTONIC, &time_end);
+  get_timespec(&time_end);
 
   double dur = time_diff(time_start, time_end);
   double mbs = file_size / dur / MB;

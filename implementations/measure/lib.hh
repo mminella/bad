@@ -5,8 +5,15 @@
 #include <time.h>
 #include <unistd.h>
 
+#if defined(__linux__)
 #include <sys/syscall.h>
 #include <linux/aio_abi.h>
+#endif
+
+#if defined(__MACH__)
+#include <mach/mach.h>
+#include <mach/clock.h>
+#endif
 
 #include <algorithm>
 #include <sstream>
@@ -14,6 +21,30 @@
 
 const size_t MB = 1024 * 1024;
 const size_t ALIGN = 4096;
+
+#ifndef O_DIRECT
+#define O_DIRECT 0
+#endif
+
+#ifndef __linux__
+#define fdatasync fsync
+#endif
+
+void
+get_timespec(struct timespec *ts)
+{
+#ifdef __MACH__
+    clock_serv_t clk;
+    mach_timespec_t mts;
+    host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &clk);
+    clock_get_time(clk, &mts);
+    mach_port_deallocate(mach_task_self(), clk);
+    ts->tv_sec = mts.tv_sec;
+    ts->tv_nsec = mts.tv_nsec;
+#else
+    clock_gettime(CLOCK_MONOTONIC , ts);
+#endif
+}
 
 inline double time_diff( const struct timespec& start,
                          const struct timespec& end ) {
@@ -34,6 +65,8 @@ inline void FillRandomPermutation(size_t index_array[], size_t max_index) {
   }
 }
 
+#if defined(__linux__)
+
 inline int io_setup(unsigned nr, aio_context_t *ctxp) {
   return syscall(__NR_io_setup, nr, ctxp);
 }
@@ -50,5 +83,7 @@ inline int io_getevents(aio_context_t ctx, long min_nr, long max_nr,
                         struct io_event *events, struct timespec *timeout) {
   return syscall(__NR_io_getevents, ctx, min_nr, max_nr, events, timeout);
 }
+
+#endif
 
 #endif /* LIB_HH */

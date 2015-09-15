@@ -52,8 +52,10 @@ int main( int argc, char ** argv )
   
   size_t splits = atoll( argv[1] );
 
-  char * rbuf = (char *) aligned_alloc( ALIGN, COPY_SIZE );
-  char * wbuf = (char *) aligned_alloc( ALIGN, COPY_SIZE );
+  char * rbuf;
+  char * wbuf;
+  posix_memalign((void **)&rbuf, ALIGN, COPY_SIZE); 
+  posix_memalign((void **)&wbuf, ALIGN, COPY_SIZE); 
   memset( rbuf, 0, COPY_SIZE );
 
   parallel_unpinned( rbuf, wbuf, splits );

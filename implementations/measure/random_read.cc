@@ -1,6 +1,7 @@
 #include <fcntl.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -35,9 +36,13 @@ int main(int argc, char* argv[]) {
   FillRandomPermutation(random_block, num_block);
 
   struct timespec time_start, time_end;
-  clock_gettime(CLOCK_MONOTONIC, &time_start);
+  get_timespec(&time_start);
 
-  void * data = aligned_alloc(ALIGN, block_size);
+  void * data;
+  if (posix_memalign((void **)&data, ALIGN, block_size) != 0) {
+      return EXIT_FAILURE;
+  }
+
   for (size_t i = 0; i < num_block; ++i) {
     ssize_t r = pread(fd, data, block_size, random_block[i] * block_size);
     if (r == -1) {
@@ -47,7 +52,7 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  clock_gettime(CLOCK_MONOTONIC, &time_end);
+  get_timespec(&time_end);
 
   double dur = time_diff(time_start, time_end);
   double mbs = file_size / dur / MB;
