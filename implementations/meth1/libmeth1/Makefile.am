@@ -13,8 +13,7 @@ libmeth1_la_SOURCES = \
 libmeth1_la_CPPFLAGS = \
 	-I$(srcdir)/.. \
 	-I$(srcdir)/../libutil \
-	-I$(srcdir)/../libsort \
-	-I$(srcdir)/../contrib
+	-I$(srcdir)/../libsort
 
 libmeth1_la_LIBADD = \
 	../libutil/libbasicrts.la \

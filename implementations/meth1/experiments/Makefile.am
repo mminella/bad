@@ -22,8 +22,7 @@ AM_CPPFLAGS = \
 	-D_REENTRANT \
 	-I$(srcdir)/.. \
 	-I$(srcdir)/../libutil \
-	-I$(srcdir)/../libsort \
-	-I$(srcdir)/../contrib
+	-I$(srcdir)/../libsort
 
 LDADD = \
 	../libutil/libbasicrts.la \

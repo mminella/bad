@@ -12,8 +12,7 @@ AM_CPPFLAGS = \
 	-I$(srcdir)/.. \
 	-I$(srcdir)/../libutil \
 	-I$(srcdir)/../libsort \
-	-I$(srcdir)/../libmeth1 \
-	-I$(srcdir)/../contrib
+	-I$(srcdir)/../libmeth1
 
 LDADD = \
 	../libutil/libbasicrts.la \
