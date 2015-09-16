@@ -16,6 +16,7 @@
 #ifdef HAVE_TBB_PARALLEL_SORT_H
 #include "tbb/parallel_sort.h"
 #endif
+
 #ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
 #include <boost/sort/spreadsort/string_sort.hpp>
 #endif
@@ -38,26 +39,44 @@ inline void rec_sort( R first, R last )
 }
 
 inline int
-compare( const uint8_t * k1, uint64_t loc1,
-         const uint8_t * k2, uint64_t loc2 ) noexcept
+own_memcmp( const uint8_t * k1, const uint8_t * k2 ) noexcept
 {
-  // we compare on key first, and then on loc
   for ( size_t i = 0; i < Rec::KEY_LEN; i++ ) {
     if ( k1[i] != k2[i] ) {
       return k1[i] - k2[i];
     }
   }
-#if WITHLOC == 1
-  if ( loc1 < loc2 ) {
-    return -1;
-  }
-  if ( loc1 > loc2 ) {
-    return 1;
-  }
-#else
-  (void) loc1; (void) loc2;
-#endif
   return 0;
+}
+
+inline int
+compare( const uint8_t * k1, uint64_t loc1,
+         const uint8_t * k2, uint64_t loc2 ) noexcept
+{
+  // we compare on key first, and then on loc
+  int cmp;
+
+  if ( Knobs::USE_OWN_MEMCMP ) {
+    cmp = own_memcmp( k1, k2 );
+  } else {
+    cmp = memcmp( k1, k2, Rec::KEY_LEN );
+  }
+
+  if ( cmp != 0 ) {
+    return cmp;
+  } else {
+#if WITHLOC == 1
+    if ( loc1 < loc2 ) {
+      return -1;
+    }
+    if ( loc1 > loc2 ) {
+      return 1;
+    }
+#else
+    (void) loc1; (void) loc2;
+#endif
+    return 0;
+  }
 }
 
 

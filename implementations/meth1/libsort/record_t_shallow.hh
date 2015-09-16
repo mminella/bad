@@ -11,6 +11,7 @@
 #include "alloc.hh"
 #include "record_common.hh"
 #include "record_ptr.hh"
+#include "record_loc.hh"
 
 /**
  * Version of Record that only performs a shallow copy on copy construction or
@@ -86,6 +87,10 @@ public:
   RecordS( const RecordPtr & rptr )
   {
     copy( rptr.key(), rptr.val(), rptr.loc() );
+  }
+  RecordS( const RecordLoc &rloc, const uint8_t * v )
+  {
+      copy(rloc.key(), v, rloc.loc());
   }
 
   /* Copy constructor. WARNING: This only does a shallow copy! */

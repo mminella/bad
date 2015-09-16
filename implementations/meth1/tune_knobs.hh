@@ -51,6 +51,9 @@ namespace Knobs {
   /* Use parallel sort? */
   static constexpr bool PARALLEL_SORT = true;
 
+  /* Use hand-rolled memcmp? */
+  static constexpr bool USE_OWN_MEMCMP = true;
+
   /* Record -- use packed data structure? */
   #define PACKED 1
 

@@ -13,7 +13,7 @@
 class RecordLoc
 {
 public:
-  uint64_t loc_; // File Offset
+  uint64_t loc_;  // File Offset
   uint32_t host_; // Host
   uint32_t disk_; // Disk
   uint8_t key_[Rec::KEY_LEN];

@@ -79,10 +79,11 @@ public:
   {
     copy( rptr.key(), rptr.val(), rptr.loc() );
   }
-  Record( const RecordLoc & rloc, uint8_t *buf)
+  Record( const RecordLoc & rloc, const uint8_t *v)
   {
-    copy( rloc.key(), buf, rloc.loc() );
+    copy( rloc.key(), v, rloc.loc() );
   }
+
   Record( const Record & other )
 #if WITHLOC == 1
     : loc_{other.loc_}
@@ -117,6 +118,7 @@ public:
     : loc_{other.loc_}
 #endif
   {
+    // swap values
     uint8_t * v = val_;
     val_ = other.val_;
     other.val_ = v;
@@ -129,6 +131,7 @@ public:
 #if WITHLOC == 1
       loc_ = other.loc_;
 #endif
+      // swap values
       uint8_t * v = val_;
       val_ = other.val_;
       other.val_ = v;
@@ -172,12 +175,11 @@ public:
   /* Write to IO device */
   void write( IODevice & io, Rec::loc_t locinfo = Rec::NO_LOC ) const
   {
-    io.write_all( (char *) key_, Rec::KEY_LEN );
-    io.write_all( (char *) val_, Rec::VAL_LEN );
+    io.write_all( (const char *) key_, Rec::KEY_LEN );
+    io.write_all( (const char *) val_, Rec::VAL_LEN );
     if ( locinfo == Rec::WITH_LOC ) {
       uint64_t l = loc();
-      io.write_all( reinterpret_cast<const char *>( &l ),
-                    sizeof( uint64_t ) );
+      io.write_all( (const char *) &l, Rec::LOC_LEN );
     }
   }
 #if PACKED == 1

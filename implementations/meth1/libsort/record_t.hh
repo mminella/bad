@@ -11,6 +11,7 @@
 #include "alloc.hh"
 #include "record_common.hh"
 #include "record_ptr.hh"
+#include "record_loc.hh"
 #include "record_t_shallow.hh"
 
 /**
@@ -77,6 +78,10 @@ public:
   Record( const RecordPtr & rptr )
   {
     copy( rptr.key(), rptr.val(), rptr.loc() );
+  }
+  Record( const RecordLoc & rloc, uint8_t *v)
+  {
+    copy( rloc.key(), v, rloc.loc() );
   }
 
   Record( const Record & other )

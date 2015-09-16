@@ -27,6 +27,7 @@ namespace Rec {
       delete []v;
     }
   }
+
 }
 
 #endif /* ALLOC_HH */
