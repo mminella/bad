@@ -21,7 +21,7 @@ KB <- 1024 * B
 MB <- 1024 * KB
 GB <- 1024 * MB
 
-# Annoy 1024 vs 1000 business
+# The whole 1024 vs 1000 business
 HD_GB <- 1000 * 1000 * 1000
 
 S  <- 1
@@ -89,8 +89,9 @@ nthModel <- function(client, machine, nodes, data, n) {
   timeTotal  <- timeNet + timeDisk
   timeTotalH <- round(timeTotal / HR, 2)
   cost       <- ceiling(timeTotal / HR) * machine$cost * nodes
-  clientCost <- ceiling(timeTotal / HR) * client$cost
-  costTotal  <- cost + clientCost
+  # clientCost <- ceiling(timeTotal / HR) * client$cost
+  # costTotal  <- cost + clientCost
+  costTotal  <- cost
 
   data.frame(operation="nth", nodes=nodes, start=n, length=1,
              time.total=timeTotal, time.disk=timeDisk,
@@ -108,8 +109,9 @@ allModel <- function(client, machine, nodes, data) {
   timeTotal  <- timeNet + timeDisk
   timeTotalH <- round(timeTotal / HR, 2)
   cost       <- ceiling(timeTotal / HR) * machine$cost * nodes
-  clientCost <- ceiling(timeTotal / HR) * client$cost
-  costTotal  <- cost + clientCost
+  # clientCost <- ceiling(timeTotal / HR) * client$cost
+  # costTotal  <- cost + clientCost
+  costTotal  <- cost
 
   data.frame(operation="all", nodes=nodes, start=0, length=data/REC_SIZE,
              time.total=timeTotal, time.disk=timeDisk,
