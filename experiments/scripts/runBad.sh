@@ -15,8 +15,8 @@ CMDD=$7
 TARF=$8
 PG=${9}
 ZONE=${10}
-SIZE_B=$( calc "$SIZE * 1024 * 1024 * 1000 / 100" )
-CHUNK_B=$( calc "$CHUNK * 1024 * 1024 * 1000 / 100" )
+SIZE_B=$( calc "round( $SIZE * 1024 * 1024 * 1000 / 100 )" )
+CHUNK_B=$( calc "round( $CHUNK * 1024 * 1024 * 1000 / 100 )" )
 
 # Args
 if [ $# != 10 ]; then
