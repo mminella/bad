@@ -16,5 +16,5 @@ libmeth1_la_CPPFLAGS = \
 	-I$(srcdir)/../libsort
 
 libmeth1_la_LIBADD = \
-	../libutil/libbasicrts.la \
+	../libutil/libutil.la \
 	../libsort/libsort.la

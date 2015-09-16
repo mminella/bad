@@ -15,7 +15,7 @@ AM_CPPFLAGS = \
 	-I$(srcdir)/../libmeth1
 
 LDADD = \
-	../libutil/libbasicrts.la \
+	../libutil/libutil.la \
 	../libsort/libsort.la \
 	../libmeth1/libmeth1.la \
 	-lpthread \

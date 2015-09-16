@@ -25,7 +25,7 @@ AM_CPPFLAGS = \
 	-I$(srcdir)/../libsort
 
 LDADD = \
-	../libutil/libbasicrts.la \
+	../libutil/libutil.la \
 	../libsort/libsort.la \
 	-lpthread \
 	$(TBB_LIBS)

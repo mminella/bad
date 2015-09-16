@@ -14,4 +14,4 @@ libsort_la_CPPFLAGS = \
 	-I$(srcdir)/../libutil
 
 libsort_la_LIBADD = \
-	../libutil/libbasicrts.la
+	../libutil/libutil.la
