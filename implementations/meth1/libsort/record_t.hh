@@ -79,7 +79,7 @@ public:
   {
     copy( rptr.key(), rptr.val(), rptr.loc() );
   }
-  Record( const RecordLoc & rloc, uint8_t *v)
+  Record( const RecordLoc & rloc, const uint8_t *v)
   {
     copy( rloc.key(), v, rloc.loc() );
   }
@@ -168,6 +168,7 @@ public:
   comp_op( >, RecordPtr )
 
   int compare( const uint8_t * k, uint64_t l ) const noexcept;
+  int compare( const char * k, uint64_t l ) const noexcept;
   int compare( const Record & b ) const noexcept;
   int compare( const RecordS & b ) const noexcept;
   int compare( const RecordPtr & b ) const noexcept;

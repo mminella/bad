@@ -43,12 +43,10 @@ public:
 
   RecordPtr & operator=( const RecordPtr & rptr )
   {
-    if ( this != &rptr ) {
 #if WITHLOC == 1
-      loc_ = rptr.loc_;
+    loc_ = rptr.loc_;
 #endif
-      r_ = rptr.r_;
-    }
+    r_ = rptr.r_;
     return *this;
   }
 
@@ -75,6 +73,7 @@ public:
   comp_op( >, RecordPtr )
 
   int compare( const uint8_t * k, uint64_t l ) const noexcept;
+  int compare( const char * k, uint64_t l ) const noexcept;
   int compare( const Record & b ) const noexcept;
   int compare( const RecordS & b ) const noexcept;
   int compare( const RecordPtr & b ) const noexcept;
