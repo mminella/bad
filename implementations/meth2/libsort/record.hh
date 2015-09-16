@@ -86,7 +86,7 @@ inline int RecordS::compare( const uint8_t * k, uint64_t l ) const noexcept
   return ::compare( key(), loc(), k, l );
 }
 
-inline int RecordPtr::compare( const char * k, uint64_t l ) const noexcept
+inline int RecordS::compare( const char * k, uint64_t l ) const noexcept
 {
   return ::compare( key(), loc(), (const uint8_t *) k, l );
 }
@@ -113,7 +113,7 @@ inline int Record::compare( const uint8_t * k, uint64_t l ) const noexcept
   return ::compare( key(), loc(), k, l );
 }
 
-inline int RecordPtr::compare( const char * k, uint64_t l ) const noexcept
+inline int Record::compare( const char * k, uint64_t l ) const noexcept
 {
   return ::compare( key(), loc(), (const uint8_t *) k, l );
 }
