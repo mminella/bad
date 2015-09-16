@@ -148,48 +148,48 @@ if ( nth >= nrecs ) {
   stop("N'th record is outside the data size")
 }
 
-# # Whole model
-# rbind(
-#   allModel(client, machine, nodes, data),
-#   firstModel(client, machine, nodes, data),
-#   nthModel(client, machine, nodes, data, nth)
-# )
+# Whole model
+rbind(
+  allModel(client, machine, nodes, data),
+  firstModel(client, machine, nodes, data),
+  nthModel(client, machine, nodes, data, nth)
+)
 
-# ===========================================
-# Graphing
-
-# for color scheme list -- https://github.com/cttobin/ggthemr
-ggthemr('fresh')
-
-mkGraph <- function(file, data, title, xl, yl) {
-  if (is.data.frame(data) & nrow(data) > 0) {
-    pdf(file)
-    g <- ggplot(data, aes(clarity, x=xv, y=yv, group=variable, colour=variable))
-    g <- g + geom_line()
-    g <- g + ggtitle(title)
-    g <- g + xlab(xl)
-    g <- g + ylab(yl)
-    print(g)
-    dev.off()
-  }
-}
-
-start <- ceiling(data / (machine$disk.size * machine$disks))
-
-range <- start:(start+45)
-preds <- do.call("rbind",
-                 lapply(range, function(x) allModel(client, machine, x, data)))
-
-# read all vs cost
-title <- paste(client$type, "Client <->", machine$type, "Cluster: ReadAll -",
-               data / HD_GB, "GB")
-points <-
-  select(preds, nodes, time=time.total, cost) %>%
-  mutate(time=time / HR) %>%
-  melt(id.vars=c("nodes"), variable.name="variable", value.name="yv") %>%
-  select(xv=nodes, variable, yv)
-mkGraph("total.pdf", points, title, "Machines", "Time (hr) / Cost ($)")
-
+# # ===========================================
+# # Graphing
+#
+# # for color scheme list -- https://github.com/cttobin/ggthemr
+# ggthemr('fresh')
+#
+# mkGraph <- function(file, data, title, xl, yl) {
+#   if (is.data.frame(data) & nrow(data) > 0) {
+#     pdf(file)
+#     g <- ggplot(data, aes(clarity, x=xv, y=yv, group=variable, colour=variable))
+#     g <- g + geom_line()
+#     g <- g + ggtitle(title)
+#     g <- g + xlab(xl)
+#     g <- g + ylab(yl)
+#     print(g)
+#     dev.off()
+#   }
+# }
+#
+# start <- ceiling(data / (machine$disk.size * machine$disks))
+#
+# range <- start:(start+45)
+# preds <- do.call("rbind",
+#                  lapply(range, function(x) allModel(client, machine, x, data)))
+#
+# # read all vs cost
+# title <- paste(client$type, "Client <->", machine$type, "Cluster: ReadAll -",
+#                data / HD_GB, "GB")
+# points <-
+#   select(preds, nodes, time=time.total, cost) %>%
+#   mutate(time=time / HR) %>%
+#   melt(id.vars=c("nodes"), variable.name="variable", value.name="yv") %>%
+#   select(xv=nodes, variable, yv)
+# mkGraph("total.pdf", points, title, "Machines", "Time (hr) / Cost ($)")
+#
 # # disk vs network
 # points <-
 #   select(preds, nodes, time.disk, time.net) %>%
