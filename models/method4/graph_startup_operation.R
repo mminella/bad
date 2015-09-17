@@ -1,5 +1,5 @@
 #!/usr/bin/Rscript
-source('./libmethod1.R')
+source('./libmethod4.R')
 library(ggplot2)
 library(ggthemr)
 library(reshape2)
@@ -7,28 +7,25 @@ library(reshape2)
 # ===========================================
 # Main
 
-USEAGE <- strwrap("Useage: [machines file] [operation] [client i2 type]
+USEAGE <- strwrap("Useage: [machines file] [operation]
                    [i2 type] [data size (GB)] [data points] <nth record>")
 # check args
 args <- commandArgs(trailingOnly = T)
-if (length(args) != 6 && length(args) != 7) {
+if (length(args) != 5 && length(args) != 6) {
   stop(USEAGE)
-} else if (length(args) == 7 && args[2] != "nth") {
+} else if (length(args) == 6 && args[2] != "nth") {
   stop(USEAGE)
 }
 
 machines  <- loadMachines(args[1])
 operation <- args[2]
-client    <- filter(machines, type==args[3])
-machine   <- filter(machines, type==args[4])
-data      <- as.numeric(args[5]) * HD_GB
-points    <- as.numeric(args[6])
+machine   <- filter(machines, type==args[3])
+data      <- as.numeric(args[4]) * HD_GB
+points    <- as.numeric(args[5])
 
 # Validate arguments
-if (nrow(client) == 0) {
-  stop("Unknown client machine type")
-} else if (nrow(machine) == 0) {
-  stop("Unknown node machine type")
+if (nrow(machine) == 0) {
+  stop("Unknown machine type")
 }
 
 # ===========================================
@@ -57,12 +54,12 @@ if (operation == "readall") {
   operation <- "ReadAll"
   preds <- do.call("rbind",
                    lapply(range,
-                          function(x) allModel(client, machine, x, data)))
+                          function(x) allModel(machine, x, data)))
 } else if (operation == "first") {
   operation <- "FirstRecord"
   preds <- do.call("rbind",
                    lapply(range,
-                          function(x) firstModel(client, machine, x, data)))
+                          function(x) firstModel(machine, x, data)))
 } else if (operation == "nth") {
   operation <- "NthRecord"
   nrecs <- data / REC_SIZE
@@ -72,20 +69,19 @@ if (operation == "readall") {
   }
   preds <- do.call("rbind",
                    lapply(range,
-                          function(x) nthModel(client, machine, x, data, nth)))
+                          function(x) nthModel(machine, x, data, nth)))
 } else if (operation == "cdf") {
   operation <- "CDF"
   preds <- do.call("rbind",
                    lapply(range,
-                          function(x) cdfModel(client, machine, x, data)))
+                          function(x) cdfModel(machine, x, data)))
 }
 
 # read all vs cost
-title <- paste(client$type, "Client <->", machine$type, "Cluster:",
-               operation, "-", data / HD_GB, "GB")
+title <- paste(machine$type, "Cluster:", operation, "-", data / HD_GB, "GB")
 points <-
-  select(preds, nodes, time=time.total, cost) %>%
-  mutate(time=time / HR) %>%
+  select(preds, nodes, startup=time.startup, operations=time.op) %>%
+  mutate(startup=startup/HR, operations=operations/HR) %>%
   melt(id.vars=c("nodes"), variable.name="variable", value.name="yv") %>%
   select(xv=nodes, variable, yv)
-mkGraph("graph.pdf", points, title, "Cluster Size", "Time (hr) / Cost ($)")
+mkGraph("graph.pdf", points, title, "Cluster Size", "Time (hr)")

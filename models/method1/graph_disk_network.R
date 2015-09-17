@@ -73,6 +73,11 @@ if (operation == "readall") {
   preds <- do.call("rbind",
                    lapply(range,
                           function(x) nthModel(client, machine, x, data, nth)))
+} else if (operation == "cdf") {
+  operation <- "CDF"
+  preds <- do.call("rbind",
+                   lapply(range,
+                          function(x) cdfModel(client, machine, x, data)))
 }
 
 # disk vs network
@@ -82,4 +87,4 @@ points <-
   select(preds, nodes, time.disk, time.net) %>%
   melt(id.vars=c("nodes"), variable.name="variable", value.name="yv") %>%
   select(xv=nodes, variable, yv)
-mkGraph("graph.pdf", points, title, "Machines", "Time (hr) / Cost ($)")
+mkGraph("graph.pdf", points, title, "Cluster Size", "Time (hr)")

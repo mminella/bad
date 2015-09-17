@@ -21,13 +21,14 @@ nrecs    <- data / REC_SIZE
 if (nth >= nrecs) {
   stop("N'th record is outside the data size")
 } else if (nrow(machine) == 0) {
-  stop("Unknown node machine type")
+  stop("Unknown machine type")
 }
 
 # Whole model
 rbind(
   allModel(machine, nodes, data),
   firstModel(machine, nodes, data),
-  nthModel(machine, nodes, data, nth)
+  nthModel(machine, nodes, data, nth),
+  cdfModel(machine, nodes, data)
 )
 

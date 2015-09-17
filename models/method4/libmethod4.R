@@ -50,16 +50,20 @@ REC_SIZE    <- 100
 MEM_RESERVE <- 500 * MB
 BUCKETS_N   <- 1
 
-bucketSize <- function(machine) {
-  (machine$mem - MEM_RESERVE) / machine$disks / BUCKETS_N
-}
-
 dataAtNode <- function(machine, nodes, data) {
   perNode <- ceiling(data / nodes)
   if (perNode > (machine$disk.size * machine$disks)) {
     stop("Not enough disk space for data set")
   }
   perNode
+}
+
+bucketSize <- function(machine, nodes, data) {
+  perNode  <- dataAtNode(machine, nodes, data)
+  perDisk  <- perNode / machine$disks
+  bcktSize <- (machine$mem - MEM_RESERVE) / machine$disks / BUCKETS_N
+  perBckt  <- min(bcktSize, perDisk / BUCKETS_N)
+  perBckt
 }
 
 startupModel <- function(machine, nodes, data) {
@@ -102,11 +106,11 @@ firstModel <- function(machine, nodes, data) {
     mutate(model, operation="first", length=1)
   } else {
     # Only need to sort one bucket, so cheaper than ReadAll
-    nodeData <- dataAtNode(machine, nodes, data)
+    bktSize  <- bucketSize(machine, nodes, data)
     startup  <- startupModel(machine, nodes, data)$time.startup
 
-    bktSize  <- bucketSize(machine)
     p2DiskR  <- ceiling(bktSize / machine$diskio.r)
+    # XXX: There is a design choice here, we could not write back to disk
     p2DiskW  <- ceiling(bktSize / machine$diskio.w)
     p2Time   <- p2DiskR + p2DiskW
 
@@ -118,7 +122,7 @@ firstModel <- function(machine, nodes, data) {
     cost     <- ceiling(costTime / machine$billing.granularity) *
                   machine$cost * nodes
 
-    data.frame(operation="fist", nodes=nodes, start=0, length=1,
+    data.frame(operation="first", nodes=nodes, start=0, length=1,
                time.total=time, time.min=timeM, time.hr=timeH,
                time.startup=startup, time.op=p2Time,
                cost=cost)
@@ -134,5 +138,41 @@ nthModel <- function(machine, nodes, data, n) {
     # Same cost as First
     model <- firstModel(machine, nodes, data)
     mutate(model, operation="nth", start=n, length=1)
+  }
+}
+
+cdfModel <- function(machine, nodes, data) {
+  if (!LAZY) {
+    model <- allModel(client, machine, x, data)
+    mutate(model, operation="cdf", start=NA, length=100)
+  } else {
+    # Only need to sort buckets that contain needed points
+    bktSize  <- bucketSize(machine, nodes, data)
+    buckets  <- data / bktSize
+    touched  <- min(100, buckets)
+
+    # How many buckets on a single disk do we need to touch?
+    tPerDisk <- max(1, touched / nodes / machine$disks)
+    bktData  <- tPerDisk * bktSize
+
+    startup  <- startupModel(machine, nodes, data)$time.startup
+
+    p2DiskR  <- ceiling(bktData / machine$diskio.r)
+    # XXX: There is a design choice here, we could not write back to disk
+    p2DiskW  <- ceiling(bktData / machine$diskio.w)
+    p2Time   <- p2DiskR + p2DiskW
+
+    time     <- startup + p2Time
+    timeM    <- ceiling(time / M)
+    timeH    <- round(time / HR, 2)
+
+    costTime <- max(timeM, machine$billing.mintime)
+    cost     <- ceiling(costTime / machine$billing.granularity) *
+                  machine$cost * nodes
+
+    data.frame(operation="cdf", nodes=nodes, start=NA, length=100,
+               time.total=time, time.min=timeM, time.hr=timeH,
+               time.startup=startup, time.op=p2Time,
+               cost=cost)
   }
 }

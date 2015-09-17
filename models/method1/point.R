@@ -32,6 +32,6 @@ if (nth >= nrecs) {
 rbind(
   allModel(client, machine, nodes, data),
   firstModel(client, machine, nodes, data),
-  nthModel(client, machine, nodes, data, nth)
+  nthModel(client, machine, nodes, data, nth),
+  cdfModel(client, machine, nodes, data)
 )
-

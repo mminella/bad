@@ -140,3 +140,7 @@ nthModel <- function(client, machine, nodes, data, n) {
              cost=cost)
 }
 
+cdfModel <- function(client, machine, nodes, data) {
+  model <- allModel(client, machine, nodes, data)
+  mutate(model, operation="cdf", start=NA, length=100)
+}
