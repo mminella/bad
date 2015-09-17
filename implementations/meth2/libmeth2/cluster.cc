@@ -215,32 +215,29 @@ Record Cluster::ReadFirst( void )
   return min;
 }
 
-
-
-void Cluster::Read( uint64_t pos, uint64_t size )
+void Cluster::Read( uint64_t pos, uint64_t len )
 {
-  assert(false);
   if ( clients_.size() == 1 ) {
     // optimize for 1 node
     auto & c = clients_.front();
-    uint64_t totalSize = Size();
-    if ( pos < totalSize ) {
-      size = min( totalSize - pos, size );
-      for ( uint64_t i = pos; i < pos + size; i += chunkSize_ ) {
-        uint64_t n = min( chunkSize_, pos + size - i );
-        c.sendRead( i, n );
-        auto nrecs = c.recvRead();
-        for ( uint64_t j = 0; j < nrecs; j++ ) {
-          c.readRecord();
-        }
+    uint64_t size = Size();
+    for ( uint64_t i = pos; i < size && i < (pos + len); i += chunkSize_ ) {
+      c.sendRead( i, chunkSize_ );
+      auto nrecs = c.recvRead();
+      for ( uint64_t j = 0; j < nrecs; j++ ) {
+        c.readRecord();
       }
     }
   } else {
     // general n node case
+    vector<NodeSplit> ns = GetSplit(pos);
     vector<RemoteFile> files;
     mystl::priority_queue_min<RemoteFile> pq{clients_.size()};
-    uint64_t totalSize = Size();
-    uint64_t end = min( totalSize, pos + size );
+    uint64_t size = Size() - pos;
+
+    // Ensure we read the correct number of records
+    if (size > len)
+	size = len;
 
     // prep -- size
     for ( auto & c : clients_ ) {
@@ -249,24 +246,28 @@ void Cluster::Read( uint64_t pos, uint64_t size )
       files.push_back( f );
     }
 
+    // prep -- seek to n-th record
+    for ( uint64_t i = 0; i < ns.size(); i++)
+      files[i].seek(ns[i].n);
+
     // prep -- 1st chunk
     for ( auto & f : files ) {
       f.recvSize();
-      f.nextChunk( size );
+      f.nextChunk();
     }
 
     // prep -- 1st record
     for ( auto & f : files ) {
-      f.nextRecord( size );
+      f.nextRecord();
       pq.push( f );
     }
 
-    // read to end records
-    for ( uint64_t i = 0; i < end; i++ ) {
+    // read all records
+    for ( uint64_t i = 0; i < size; i++ ) {
       RemoteFile f = pq.top();
       pq.pop();
       if ( !f.eof() ) {
-        f.nextRecord( size - i );
+        f.nextRecord();
         pq.push( f );
       }
     }

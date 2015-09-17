@@ -41,6 +41,12 @@ public:
     : c_{&c}, chunkSize_{chunkSize}, head_{(const char *) nullptr}
   {};
 
+  uint64_t seek(uint64_t newOffset) {
+    uint64_t oldOffset = offset_;
+    offset_ = newOffset;
+    return oldOffset;
+  }
+
   void sendSize( void ) { c_->sendSize(); }
   void recvSize( void ) { size_ = c_->recvSize(); }
 

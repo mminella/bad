@@ -86,6 +86,11 @@ void Socket::set_recv_buffer( size_t size )
   setsockopt( SOL_SOCKET, SO_RCVBUF, size );
 }
 
+void Socket::set_nosigpipe( void )
+{
+  setsockopt( SOL_SOCKET, SO_NOSIGPIPE, int( true ) );
+}
+
 /* get the peer address the socket is connected to */
 Address Socket::peer_address( void ) const
 {

@@ -82,7 +82,13 @@ public:
   }
 
   /* destructor */
-  ~BufferedIO() { flush( true ); }
+  ~BufferedIO() { 
+      try {
+	  flush( true );
+      } catch (std::exception &e) {
+	  std::cout << "Caught while flushing IO: " << e.what() << std::endl;
+      }
+  }
 
   /* using O_DIRECT? never, since using a buffer */
   bool is_odirect( void ) const noexcept override { return false; }

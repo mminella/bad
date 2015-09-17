@@ -31,6 +31,9 @@ public:
   /* enable underlying protocol sending periodic keep-alive messages */
   void set_keepalive( void );
 
+  /* disable sigpipe */
+  void set_nosigpipe( void );
+
   /* set the snd & rcv kernel buffer sizes */
   void set_send_buffer( size_t );
   void set_recv_buffer( size_t );

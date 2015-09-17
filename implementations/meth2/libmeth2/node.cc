@@ -69,6 +69,7 @@ void Node::Run( void )
 {
   TCPSocket sock{IPV4};
   sock.set_reuseaddr();
+  sock.set_nosigpipe();
   sock.bind( {"0.0.0.0", port_} );
   sock.listen();
 
@@ -160,7 +161,8 @@ Node::RecV Node::Read( uint64_t pos, uint64_t size )
   auto t0 = time_now();
   Node::RecV recs;
 
-  if (size < 100) {
+  //if (size < 100) {
+  if (true) {
     recs = linear_scan( pos , size );
   } else {
     if (pos + size > recs_.size()) {
