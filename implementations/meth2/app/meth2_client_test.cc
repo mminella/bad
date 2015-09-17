@@ -57,7 +57,8 @@ int run( int argc, char * argv[] )
   c.GetSplit(500);
   c.GetSplit(1000);
   c.GetSplit(5000);
-  //c.ReadAll();
+  c.Read(5, 10);
+  c.ReadAll();
 
   //c.WriteAll( move( out ) );
 

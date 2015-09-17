@@ -41,6 +41,8 @@ public:
     : c_{&c}, chunkSize_{chunkSize}, head_{(const char *) nullptr}
   {};
 
+  void drain();
+
   uint64_t seek(uint64_t newOffset) {
     uint64_t oldOffset = offset_;
     offset_ = newOffset;

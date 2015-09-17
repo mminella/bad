@@ -6,6 +6,23 @@
 using namespace std;
 using namespace meth2;
 
+void
+RemoteFile::drain()
+{
+    if (readRPC_) {
+	readRPC_ = false;
+	onWire_ = c_->recvRead();
+    }
+    
+    if (onWire_ > 0) {
+	cout << "Draining " << onWire_ << endl;
+	do {
+	    onWire_--;
+	    c_->readRecord();
+	} while (onWire_ > 0);
+    }
+}
+
 void RemoteFile::nextChunk( uint64_t chunkN )
 {
 

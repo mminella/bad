@@ -241,7 +241,7 @@ void Cluster::Read( uint64_t pos, uint64_t len )
 
     // prep -- size
     for ( auto & c : clients_ ) {
-      RemoteFile f( c, chunkSize_ );
+      RemoteFile f( c, (chunkSize_ > len) ? len : chunkSize_ );
       f.sendSize();
       files.push_back( f );
     }
@@ -270,6 +270,11 @@ void Cluster::Read( uint64_t pos, uint64_t len )
         f.nextRecord();
         pq.push( f );
       }
+    }
+
+    // Drain any remaining data in the file
+    for ( auto &f : files ) {
+	f.drain();
     }
   }
 }
