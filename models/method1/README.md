@@ -1,5 +1,7 @@
 # Model 1
 
+Operation can be one of: `readall`, `first`, `nth` or `cdf`.
+
 ## point.R
 
 Outputs the predicted performance for the three supported operations for a

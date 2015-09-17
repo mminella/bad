@@ -23,7 +23,6 @@ client    <- filter(machines, type==args[3])
 machine   <- filter(machines, type==args[4])
 data      <- as.numeric(args[5]) * HD_GB
 points    <- as.numeric(args[6])
-nrecs     <- data / REC_SIZE
 
 # Validate arguments
 if (nrow(client) == 0) {
@@ -66,13 +65,20 @@ if (operation == "readall") {
                           function(x) firstModel(client, machine, x, data)))
 } else if (operation == "nth") {
   operation <- "NthRecord"
-  nth <- as.numeric(args[7])
+  nrecs <- data / REC_SIZE
+  nth   <- as.numeric(args[7])
   if (nth >= nrecs) {
     stop("N'th record is outside the data size")
   }
   preds <- do.call("rbind",
                    lapply(range,
                           function(x) nthModel(client, machine, x, data, nth)))
+} else if (operation == "cdf") {
+  operation <- "CDF"
+  preds <- do.call("rbind",
+                   lapply(range,
+                          function(x) allModel(client, machine, x, data)))
+  preds <- mutate(preds, operation="cdf")
 }
 
 # read all vs cost

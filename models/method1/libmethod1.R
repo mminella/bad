@@ -53,7 +53,7 @@ MEM_RESERVE <- 500 * MB
 NET_BUFFER  <- 500 * MB
 DISK_BUFFER <- 4000 * MB
 
-SORT_RATIO   <- 14
+SORT_RATIO  <- 14
 
 # We copy across the dynamic chunk sizing from the meth1 code.
 chunkSize <- function(mem, disks) {
