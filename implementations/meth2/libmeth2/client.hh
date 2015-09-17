@@ -37,6 +37,11 @@ public:
   uint64_t recvRead( void );
   RecordPtr readRecord( void );
 
+  /* Perform an index read. */
+  void sendIRead( uint64_t pos, uint64_t size );
+  uint64_t recvIRead( void );
+  RecordLoc readIRecord( void );
+
   /* Return the number of records available at this server */
   void sendSize( void );
   uint64_t recvSize( void );

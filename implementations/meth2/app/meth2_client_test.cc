@@ -54,9 +54,12 @@ int run( int argc, char * argv[] )
   Record r = c.ReadFirst();
   cout << "Record: " << r << endl;
 
-  c.ReadAll();
+  c.GetSplit(500);
+  c.GetSplit(1000);
+  c.GetSplit(5000);
+  //c.ReadAll();
 
-  c.WriteAll( move( out ) );
+  //c.WriteAll( move( out ) );
 
   return EXIT_SUCCESS;
 }

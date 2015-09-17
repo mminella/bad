@@ -5,6 +5,8 @@
 #include <iostream>
 #include <utility>
 
+#include "io_device.hh"
+
 #include "record_common.hh"
 
 /**
@@ -74,6 +76,26 @@ public:
 
   int compare( const uint8_t * k, uint64_t l ) const noexcept;
   int compare( const RecordLoc & b ) const noexcept;
+  void write( IODevice &io ) const
+  {
+      io.write_all((char *)key_, Rec::KEY_LEN);
+      io.write_all( reinterpret_cast<const char *>( &loc_ ),
+                    sizeof( uint64_t ) );
+      io.write_all( reinterpret_cast<const char *>( &host_ ),
+                    sizeof( uint32_t ) );
+      io.write_all( reinterpret_cast<const char *>( &disk_ ),
+                    sizeof( uint32_t ) );
+  }
+  void read( IODevice &io )
+  {
+      io.read_all((char *)key_, Rec::KEY_LEN);
+      io.read_all( reinterpret_cast<char *>( &loc_ ),
+                   sizeof( uint64_t ) );
+      io.read_all( reinterpret_cast<char *>( &host_ ),
+                   sizeof( uint32_t ) );
+      io.read_all( reinterpret_cast<char *>( &disk_ ),
+                   sizeof( uint32_t ) );
+  }
 };
 
 std::ostream & operator<<( std::ostream & o, const RecordLoc & r );

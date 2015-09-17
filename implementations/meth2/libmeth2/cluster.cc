@@ -26,6 +26,10 @@ Cluster::Cluster( vector<Address> nodes, uint64_t chunkSize )
   }
 }
 
+Cluster::~Cluster()
+{
+}
+
 uint64_t Cluster::Size( void )
 {
   for ( auto & c : clients_ ) {
@@ -38,6 +42,157 @@ uint64_t Cluster::Size( void )
   }
 
   return size;
+}
+
+uint64_t
+GetLargest(std::vector<Cluster::NodeSplit> &ns)
+{
+    uint64_t n = 0;
+
+    for (uint64_t i = 0; i < ns.size(); i++) {
+	if (ns[n].key.compare(ns[i].key) <= 0) {
+	    n = i;
+	}
+    }
+
+    return n;
+}
+
+uint64_t
+GetSmallest(std::vector<Cluster::NodeSplit> &ns)
+{
+    uint64_t n = 0;
+
+    for (uint64_t i = 0; i < ns.size(); i++) {
+	if (ns[n].key.compare(ns[i].key) > 0) {
+	    n = i;
+	}
+    }
+
+    return n;
+}
+
+bool
+SplitDone(std::vector<Cluster::NodeSplit> &ns)
+{
+    for (uint64_t i = 0; i < ns.size(); i++) {
+	for (uint64_t j = 0; j < ns.size(); j++) {
+	    //cout << i << "IJ" << j << endl;
+	    if (ns[i].key.compare(ns[j].nextKey) > 0)
+		return false;
+	}
+    }
+
+    return true;
+}
+
+std::vector<Cluster::NodeSplit>
+Cluster::GetSplit(uint64_t n)
+{
+    uint64_t i;
+    std::vector<NodeSplit> ns;
+
+    //auto rmid = IRead(clients_[0], Size(clients_[0]) / 2, 1);
+    //auto rsrch = IBSearch(clients_[0], rmid[0]);
+
+    for (i = 0; i < clients_.size(); i++) {
+	ns.emplace_back();
+	ns[i].clientNo = i;
+	ns[i].size = Size(clients_[i]);
+	ns[i].start = 0;
+	ns[i].end = n - 1;
+	ns[i].n = n / clients_.size();
+    }
+    // Adjust ns[0].n to account for rounding
+    ns[0].n += n - (ns[0].n * clients_.size());
+
+    for (i = 0; i < clients_.size(); i++) {
+	// Read n and n+1
+	vector<RecordLoc> rl = IRead(clients_[i], ns[i].n, 2);
+	ns[i].key = rl[0];
+	ns[i].nextKey = rl[1];
+    }
+
+    /*for (auto &n : ns)
+	n.dump();*/
+
+    while (!SplitDone(ns)) {
+	uint64_t largest, smallest, step;
+	uint64_t newStart, newEnd;
+
+	largest = GetLargest(ns);
+	smallest = GetSmallest(ns);
+
+	newStart = IBSearch(clients_[ns[largest].clientNo],
+			    ns[smallest].key);
+	newEnd = ns[largest].n;
+	if (newStart > ns[largest].start)
+	    ns[largest].start = newStart;
+	if (newEnd < ns[largest].end)
+	    ns[largest].end = newEnd;
+
+	newStart = ns[smallest].n;
+	newEnd = IBSearch(clients_[ns[smallest].clientNo],
+			  ns[largest].key);
+	if (newStart > ns[smallest].start)
+	    ns[smallest].start = newStart;
+	if (newEnd < ns[smallest].end)
+	    ns[smallest].end = newEnd;
+
+	uint64_t largestStep = ns[largest].end - ns[largest].start;
+	uint64_t smallestStep = ns[smallest].end - ns[smallest].start;
+	step = (largestStep > smallestStep) ? smallestStep : largestStep;
+    
+	step /= 2;
+	if (step == 0)
+	    step = 1;
+
+	ns[largest].n -= step;
+	ns[smallest].n += step;
+
+	for (i = 0; i < clients_.size(); i++) {
+	    // Read n and n+1
+	    vector<RecordLoc> rl = IRead(clients_[i], ns[i].n, 2);
+	    ns[i].key = rl[0];
+	    ns[i].nextKey = rl[1];
+	}
+
+	/*for (auto &n : ns)
+	    n.dump();*/
+    }
+
+    for (auto &n : ns)
+	n.dump();
+
+    return ns;
+}
+
+uint64_t
+Cluster::IBSearch( Client &c, RecordLoc &rl )
+{
+    vector<RecordLoc> tmp;
+    uint64_t start = 0;
+    uint64_t end = Size(c);
+    uint64_t pos = end / 2;
+
+    //cout << "IBSearch" << endl;
+    while (start < end) {
+	//cout << start << ", " << end << ", " << pos << endl;
+	tmp = IRead(c, pos, 1);
+	int val = tmp[0].compare(rl);
+	if (val > 0) {
+	    end = pos;
+	    pos = (start + end) / 2;
+	} else if (val < 0) {
+	    start = pos + 1;
+	    pos = (start + end) / 2;
+	} else {
+	    return pos;
+	}
+    }
+    //cout << "IBSearch" << endl;
+
+    return pos;
 }
 
 Record Cluster::ReadFirst( void )
@@ -59,6 +214,8 @@ Record Cluster::ReadFirst( void )
 
   return min;
 }
+
+
 
 void Cluster::Read( uint64_t pos, uint64_t size )
 {
@@ -261,5 +418,30 @@ void Cluster::WriteAll( File out )
     chn.close();
     twriter.join();
   }
+}
+
+uint64_t
+Cluster::Size( Client &c )
+{
+    c.sendSize();
+    return c.recvSize();
+}
+
+std::vector<RecordLoc>
+Cluster::IRead( Client &c, uint64_t pos, uint64_t size )
+{
+    uint64_t nrecs;
+    std::vector<RecordLoc> rl;
+
+    c.sendIRead( pos, size );
+    nrecs = c.recvIRead();
+
+    rl.reserve(nrecs);
+
+    for ( uint64_t i = 0; i < nrecs; i++ ) {
+        rl.emplace_back(c.readIRecord());
+    }
+
+    return rl;
 }
 

@@ -85,7 +85,10 @@ void Node::Run( void )
         case 0:
           RPC_Read( client );
           break;
-        case 1:
+	case 1:
+          RPC_IRead( client );
+          break;
+        case 2:
           RPC_Size( client );
           break;
         default:
@@ -119,6 +122,25 @@ void Node::RPC_Read( BufferedIO_O<TCPSocket> & client )
   client.write_all( reinterpret_cast<const char *>( &siz ), sizeof( uint64_t ) );
   for ( auto const & r : recs ) {
     r.write( client );
+  }
+  client.flush( true );
+}
+
+void Node::RPC_IRead( BufferedIO_O<TCPSocket> & client )
+{
+  const char * str = client.read_buf_all( 2 * sizeof( uint64_t ) ).first;
+  uint64_t pos = *( reinterpret_cast<const uint64_t *>( str ) );
+  uint64_t amt = *( reinterpret_cast<const uint64_t *>( str ) + 1 );
+
+  if (pos > Size()) {
+      amt = 0;
+  } else if ((pos + amt) > Size()) {
+      amt = Size() - pos;
+  }
+
+  client.write_all( reinterpret_cast<const char *>( &amt ), sizeof( uint64_t ) );
+  for (uint64_t i = 0; i < amt; i++) {
+    recs_[pos + i].write(client);
   }
   client.flush( true );
 }

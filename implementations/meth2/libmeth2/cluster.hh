@@ -25,13 +25,35 @@ private:
   uint64_t chunkSize_;
 
 public:
-  Cluster( std::vector<Address> nodes, uint64_t chunkSize );
+  struct NodeSplit {
+      NodeSplit() : clientNo(0), size(0),
+		    start(0), end(0), n(0) {}
+      void dump() {
+	  std::cout << "start=" << start <<
+		       ", end=" << end <<
+		       ", n=" << n << std::endl;
+      }
+      uint32_t clientNo;
+      uint64_t size;
+      uint64_t start;
+      uint64_t end;
+      uint64_t n;
+      RecordLoc key;
+      RecordLoc nextKey;
+  };
 
+  Cluster( std::vector<Address> nodes, uint64_t chunkSize );
+  ~Cluster();
   uint64_t Size( void );
+  std::vector<NodeSplit> GetSplit(uint64_t n);
   Record ReadFirst( void );
   void Read( uint64_t pos, uint64_t size );
   void ReadAll( void );
   void WriteAll( File out );
+private:
+  uint64_t Size( Client &c );
+  std::vector<RecordLoc> IRead( Client &c, uint64_t pos, uint64_t size );
+  uint64_t IBSearch( Client &c, RecordLoc &rl);
 };
 }
 

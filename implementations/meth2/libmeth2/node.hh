@@ -74,6 +74,7 @@ private:
   RecV linear_scan( uint64_t pos , uint64_t size );
 
   void RPC_Read( BufferedIO_O<TCPSocket> & client );
+  void RPC_IRead( BufferedIO_O<TCPSocket> & client );
   void RPC_Size( BufferedIO_O<TCPSocket> & client );
 };
 }
