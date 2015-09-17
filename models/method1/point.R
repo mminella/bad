@@ -16,8 +16,8 @@ client   <- filter(machines, type==args[2])
 machine  <- filter(machines, type==args[3])
 nodes    <- as.numeric(args[4])
 data     <- as.numeric(args[5]) * HD_GB
-nrecs    <- data / REC_SIZE
 nth      <- as.numeric(args[6])
+nrecs    <- data / REC_SIZE
 
 # Validate arguments
 if (nth >= nrecs) {
