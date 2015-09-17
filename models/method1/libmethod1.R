@@ -1,8 +1,5 @@
 #!/usr/bin/Rscript
 suppressMessages(library(dplyr))
-# library(ggplot2)
-# library(ggthemr)
-# library(reshape2)
 
 # LIMITATIONS:
 # - We assume reads at backends will perfectly overlap. While not too
@@ -134,78 +131,3 @@ firstModel <- function(client, machine, nodes, data) {
              cost=cost)
 }
 
-# ===========================================
-# Main
-
-# check args
-args <- commandArgs(trailingOnly = T)
-if (length(args) != 6) {
-  stop(strwrap("Usage: [machines file] [client i2 type]
-               [i2 type] [nodes] [data size (GB)] [nth record]"))
-}
-
-machines  <- loadMachines(args[1])
-client    <- filter(machines, type==args[2])
-machine   <- filter(machines, type==args[3])
-nodes     <- as.numeric(args[4])
-data      <- as.numeric(args[5]) * HD_GB
-nrecs     <- data / REC_SIZE
-nth       <- as.numeric(args[6])
-
-# Validate arguments
-if (nth >= nrecs) {
-  stop("N'th record is outside the data size")
-} else if (nrow(client) == 0) {
-  stop("Unknown client machine type")
-} else if (nrow(machine) == 0) {
-  stop("Unknown node machine type")
-}
-
-# Whole model
-rbind(
-  allModel(client, machine, nodes, data),
-  firstModel(client, machine, nodes, data),
-  nthModel(client, machine, nodes, data, nth)
-)
-
-# # ===========================================
-# # Graphing
-#
-# # for color scheme list -- https://github.com/cttobin/ggthemr
-# ggthemr('fresh')
-#
-# mkGraph <- function(file, data, title, xl, yl) {
-#   if (is.data.frame(data) & nrow(data) > 0) {
-#     pdf(file)
-#     g <- ggplot(data, aes(clarity, x=xv, y=yv, group=variable, colour=variable))
-#     g <- g + geom_line()
-#     g <- g + ggtitle(title)
-#     g <- g + xlab(xl)
-#     g <- g + ylab(yl)
-#     print(g)
-#     dev.off()
-#   }
-# }
-#
-# start <- ceiling(data / (machine$disk.size * machine$disks))
-#
-# range <- start:(start+45)
-# preds <- do.call("rbind",
-#                  lapply(range, function(x) allModel(client, machine, x, data)))
-#
-# # read all vs cost
-# title <- paste(client$type, "Client <->", machine$type, "Cluster: ReadAll -",
-#                data / HD_GB, "GB")
-# points <-
-#   select(preds, nodes, time=time.total, cost) %>%
-#   mutate(time=time / HR) %>%
-#   melt(id.vars=c("nodes"), variable.name="variable", value.name="yv") %>%
-#   select(xv=nodes, variable, yv)
-# mkGraph("total.pdf", points, title, "Machines", "Time (hr) / Cost ($)")
-#
-# # disk vs network
-# points <-
-#   select(preds, nodes, time.disk, time.net) %>%
-#   melt(id.vars=c("nodes"), variable.name="variable", value.name="yv") %>%
-#   select(xv=nodes, variable, yv)
-# mkGraph("total.pdf", points, title, "Machines", "Time (hr) / Cost ($)")
