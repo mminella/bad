@@ -1,0 +1,2 @@
+type, mem, disk.size, disks, diskio.r, diskio.w, netio, cost, billing.granularity, billing.mintime
+?, ?, ?, ?, ?, ?, ?, ?, 1, 10
