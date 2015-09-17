@@ -1,8 +1,8 @@
 #!/usr/bin/Rscript
-library(dplyr)
-library(ggplot2)
-library(ggthemr)
-library(reshape2)
+suppressMessages(library(dplyr))
+# library(ggplot2)
+# library(ggthemr)
+# library(reshape2)
 
 # LIMITATIONS:
 # - We assume reads at backends will perfectly overlap. While not too
@@ -39,7 +39,8 @@ loadMachines <- function(f) {
   mutate(machines,
     mem = mem * GB,
     disk.size = disk.size * HD_GB,
-    diskio = diskio * MB,
+    diskio.r = diskio.r * MB,
+    diskio.w = diskio.w * MB,
     netio = netio * MB)
 }
 
@@ -79,54 +80,58 @@ dataAtNode <- function(machine, nodes, data) {
 }
 
 nthModel <- function(client, machine, nodes, data, n) {
-  chunk       <- chunkSize(machine$mem, machine$disks)
-  dataPerNode <- dataAtNode(machine, nodes, data)
-  scans       <- max(ceiling(n*REC_SIZE/chunk/nodes), 1)
+  chunk    <- chunkSize(machine$mem, machine$disks)
+  nodeData <- dataAtNode(machine, nodes, data)
+  scans    <- max(ceiling(n * REC_SIZE / chunk / nodes), 1)
 
-  netio      <- min(client$netio, machine$netio * nodes)
-  timeNet    <- n*REC_SIZE / netio
-  timeDisk   <- round(dataPerNode / (machine$diskio * machine$disks) * scans)
-  timeTotal  <- timeNet + timeDisk
-  timeTotalH <- round(timeTotal / HR, 2)
-  cost       <- ceiling(timeTotal / HR) * machine$cost * nodes
-  # clientCost <- ceiling(timeTotal / HR) * client$cost
-  # costTotal  <- cost + clientCost
-  costTotal  <- cost
+  netio    <- min(client$netio, machine$netio * nodes)
+  timeNet  <- n*REC_SIZE / netio
+  timeDisk <- round(nodeData / (machine$diskio.r * machine$disks) * scans)
+  time     <- timeNet + timeDisk
+
+  timeM    <- ceiling(time / M)
+  timeH    <- round(time / HR, 2)
+  cost     <- ceiling(time / HR) * machine$cost * nodes
 
   data.frame(operation="nth", nodes=nodes, start=n, length=1,
-             time.total=timeTotal, time.disk=timeDisk,
-             time.net=timeNet, cost=cost, time.hours=timeTotalH)
+             time.total=time, time.min=timeM, time.hr=timeH,
+             time.disk=timeDisk, time.net=timeNet,
+             cost=cost)
 }
 
 allModel <- function(client, machine, nodes, data) {
-  chunk       <- chunkSize(machine$mem, machine$disks)
-  dataPerNode <- dataAtNode(machine, nodes, data)
-  scans       <- ceiling(dataPerNode/chunk)
+  chunk    <- chunkSize(machine$mem, machine$disks)
+  nodeData <- dataAtNode(machine, nodes, data)
+  scans    <- ceiling(nodeData / chunk)
 
-  netio      <- min(client$netio, machine$netio * nodes)
-  timeNet    <- round(data / netio)
-  timeDisk   <- round(dataPerNode / (machine$diskio * machine$disks) * scans)
-  timeTotal  <- timeNet + timeDisk
-  timeTotalH <- round(timeTotal / HR, 2)
-  cost       <- ceiling(timeTotal / HR) * machine$cost * nodes
-  # clientCost <- ceiling(timeTotal / HR) * client$cost
-  # costTotal  <- cost + clientCost
-  costTotal  <- cost
+  netio    <- min(client$netio, machine$netio * nodes)
+  timeNet  <- round(data / netio)
+  timeDisk <- round(nodeData / (machine$diskio.r * machine$disks) * scans)
+  time     <- timeNet + timeDisk
+
+  timeM    <- ceiling(time / M)
+  timeH    <- round(time / HR, 2)
+  cost     <- ceiling(time / HR) * machine$cost * nodes
 
   data.frame(operation="all", nodes=nodes, start=0, length=data/REC_SIZE,
-             time.total=timeTotal, time.disk=timeDisk,
-             time.net=timeNet, cost=costTotal, time.hours=timeTotalH)
+             time.total=time, time.min=timeM, time.hr=timeH,
+             time.disk=timeDisk, time.net=timeNet,
+             cost=cost)
 }
 
 firstModel <- function(client, machine, nodes, data) {
-  dataPerNode <- dataAtNode(machine, nodes, data)
-  timeDisk    <- round(dataPerNode / (machine$diskio * machine$disks))
-  timeTotalH  <- round(timeDisk / HR, 2)
-  cost        <- ceiling(timeDisk / HR) * machine$cost * nodes
+  nodeData <- dataAtNode(machine, nodes, data)
+  timeDisk <- round(nodeData / (machine$diskio.r * machine$disks))
+  time     <- timeDisk
+
+  timeM    <- ceiling(time / M)
+  timeH    <- round(time / HR, 2)
+  cost     <- ceiling(time / HR) * machine$cost * nodes
 
   data.frame(operation="first", nodes=nodes, start=0, length=1,
-             time.total=timeDisk, time.disk=timeDisk,
-             time.net=0, cost=cost, time.hours=timeTotalH)
+             time.total=timeDisk, time.min=timeM, time.hr=timeH,
+             time.disk=timeDisk, time.net=0,
+             cost=cost)
 }
 
 # ===========================================
@@ -146,8 +151,14 @@ nodes     <- as.numeric(args[4])
 data      <- as.numeric(args[5]) * HD_GB
 nrecs     <- data / REC_SIZE
 nth       <- as.numeric(args[6])
-if ( nth >= nrecs ) {
+
+# Validate arguments
+if (nth >= nrecs) {
   stop("N'th record is outside the data size")
+} else if (nrow(client) == 0) {
+  stop("Unknown client machine type")
+} else if (nrow(machine) == 0) {
+  stop("Unknown node machine type")
 }
 
 # Whole model
