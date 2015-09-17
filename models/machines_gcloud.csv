@@ -1,2 +1,6 @@
 type, mem, disk.size, disks, diskio.r, diskio.w, netio, cost, billing.granularity, billing.mintime
-?, ?, ?, ?, ?, ?, ?, ?, 1, 10
+n1-highmem-2,   13, 375,  1, ?, ?, ?, ?, 1, 10
+n1-highmem-4,   26, 375,  2, ?, ?, ?, ?, 1, 10
+n1-highmem-8,   52, 375,  4, ?, ?, ?, ?, 1, 10
+n1-highmem-16, 104, 375,  8, ?, ?, ?, ?, 1, 10
+n1-highmem-32, 208, 375, 16, ?, ?, ?, ?, 1, 10
