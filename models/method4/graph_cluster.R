@@ -47,7 +47,8 @@ mkGraph <- function(file, data, title, xl, yl) {
   }
 }
 
-start <- ceiling(data / (machine$disk.size * machine$disks))
+start <- ceiling((data * DATA_MULTIPLIER) /
+                 (machine$disk.size * machine$disks))
 range <- start:(start+points)
 
 if (operation == "readall") {

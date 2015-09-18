@@ -30,6 +30,8 @@ HR <- 60 * M
 # ===========================================
 # Machines
 
+DATA_MULTIPLIER <- 3
+
 loadMachines <- function(f) {
   if (!file.exists(f)) {
     stop("File '", f, "' doesn't exist")
@@ -52,7 +54,7 @@ BUCKETS_N   <- 1
 
 dataAtNode <- function(machine, nodes, data) {
   perNode <- ceiling(data / nodes)
-  if (perNode > (machine$disk.size * machine$disks)) {
+  if (perNode * DATA_MULTIPLIER > (machine$disk.size * machine$disks)) {
     stop("Not enough disk space for data set")
   }
   perNode
