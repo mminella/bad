@@ -79,7 +79,8 @@ if (operation == "readall") {
 }
 
 # read all vs cost
-title <- paste(machine$type, "Cluster:", operation, "-", data / HD_GB, "GB")
+title <- paste("ShuffleAll:", machine$type, "Cluster:",
+               operation, "-", data / HD_GB, "GB")
 points <-
   select(preds, nodes, time=time.total, cost) %>%
   mutate(time=time / HR) %>%

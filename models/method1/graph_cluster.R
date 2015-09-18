@@ -81,8 +81,8 @@ if (operation == "readall") {
 }
 
 # read all vs cost
-title <- paste(client$type, "Client <->", machine$type, "Cluster:",
-               operation, "-", data / HD_GB, "GB")
+title <- paste("LinearScan:", client$type, "Client <->", machine$type,
+               "Cluster:", operation, "-", data / HD_GB, "GB")
 points <-
   select(preds, nodes, time=time.total, cost) %>%
   mutate(time=time / HR) %>%

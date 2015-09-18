@@ -81,8 +81,8 @@ if (operation == "readall") {
 }
 
 # disk vs network
-title <- paste(client$type, "Client <->", machine$type, "Cluster:",
-               operation, "-", data / HD_GB, "GB")
+title <- paste("LinearScan:", client$type, "Client <->", machine$type,
+               "Cluster:", operation, "-", data / HD_GB, "GB")
 points <-
   select(preds, nodes, time.disk, time.net) %>%
   melt(id.vars=c("nodes"), variable.name="variable", value.name="yv") %>%
