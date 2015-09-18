@@ -7,7 +7,8 @@ source('./libmethod4.R')
 # check args
 args <- commandArgs(trailingOnly = T)
 if (length(args) != 5) {
-  stop(strwrap("Usage: [machines file] [i2 type] [nodes] [data size (GB)] [nth record]"))
+  stop(strwrap("Usage: [machines file] [i2 type]
+               [nodes] [data size (GB)] [nth record]"))
 }
 
 machines <- loadMachines(args[1])
@@ -26,9 +27,9 @@ if (nth >= nrecs) {
 
 # Whole model
 rbind(
-  allModel(machine, nodes, data),
-  firstModel(machine, nodes, data),
-  nthModel(machine, nodes, data, nth),
-  cdfModel(machine, nodes, data)
+  m4.allModel(machine, nodes, data),
+  m4.firstModel(machine, nodes, data),
+  m4.nthModel(machine, nodes, data, nth),
+  m4.cdfModel(machine, nodes, data)
 )
 

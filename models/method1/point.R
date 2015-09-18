@@ -30,8 +30,8 @@ if (nth >= nrecs) {
 
 # Whole model
 rbind(
-  allModel(client, machine, nodes, data),
-  firstModel(client, machine, nodes, data),
-  nthModel(client, machine, nodes, data, nth),
-  cdfModel(client, machine, nodes, data)
+  m1.allModel(client, machine, nodes, data),
+  m1.firstModel(client, machine, nodes, data),
+  m1.nthModel(client, machine, nodes, data, nth),
+  m1.cdfModel(client, machine, nodes, data)
 )

@@ -1,4 +1,6 @@
 #!/usr/bin/Rscript
+# We copy the data twice, ending up with three copies: in, intermediate, out
+source('../lib/libmodels.R')
 suppressMessages(library(dplyr))
 
 # ASSUMPTIONS:
@@ -10,66 +12,25 @@ suppressMessages(library(dplyr))
 # Do we sort buckets lazily as needed? This optimization should improve the
 # time for operations that don't touch all buckets, without hurting performance
 # for those that do.
-LAZY <- TRUE
-
-# ===========================================
-# Units
-
-B  <- 1
-KB <- 1024 * B
-MB <- 1024 * KB
-GB <- 1024 * MB
-
-# The whole 1024 vs 1000 business
-HD_GB <- 1000 * 1000 * 1000
-
-S  <- 1
-M  <- 60 * S
-HR <- 60 * M
-
-# ===========================================
-# Machines
-
-DATA_MULTIPLIER <- 3
-
-loadMachines <- function(f) {
-  if (!file.exists(f)) {
-    stop("File '", f, "' doesn't exist")
-  }
-  machines <- read.delim(f, header=T, sep=',', strip.white=TRUE, comment.char="#")
-  mutate(machines,
-    mem = mem * GB,
-    disk.size = disk.size * HD_GB,
-    diskio.r = diskio.r * MB,
-    diskio.w = diskio.w * MB,
-    netio = netio * MB)
-}
+m4.LAZY <- TRUE
 
 # ===========================================
 # Model
 
-REC_SIZE    <- 100
-MEM_RESERVE <- 500 * MB
-BUCKETS_N   <- 1
+m4.DATA_MULT   <- 3
+m4.MEM_RESERVE <- 500 * MB
+m4.BUCKETS_N   <- 1
 
-dataAtNode <- function(machine, nodes, data) {
-  perNode <- data / nodes
-  if (perNode * DATA_MULTIPLIER > (machine$disk.size * machine$disks)) {
-    stop("Not enough disk space for data set")
-  }
-  ceiling(perNode)
-}
-
-bucketSize <- function(machine, nodes, data) {
-  perNode  <- dataAtNode(machine, nodes, data)
+m4.bucketSize <- function(machine, nodes, data) {
+  perNode  <- dataAtNode(machine, nodes, data, m4.DATA_MULT)
   perDisk  <- perNode / machine$disks
-  bcktSize <- (machine$mem - MEM_RESERVE) / machine$disks / BUCKETS_N
-  perBckt  <- min(bcktSize, perDisk / BUCKETS_N)
+  bcktSize <- (machine$mem - m4.MEM_RESERVE) / machine$disks / m4.BUCKETS_N
+  perBckt  <- min(bcktSize, perDisk / m4.BUCKETS_N)
   perBckt
 }
 
-startupModel <- function(machine, nodes, data) {
-  nodeData <- dataAtNode(machine, nodes, data)
+m4.startupModel <- function(machine, nodes, data) {
+  nodeData <- dataAtNode(machine, nodes, data, m4.DATA_MULT)
 
   p1Net    <- ceiling(((nodes - 1) * nodeData) / (nodes * machine$netio))
   p1DiskR  <- ceiling(nodeData / (machine$diskio.r * machine$disks))
@@ -79,9 +40,9 @@ startupModel <- function(machine, nodes, data) {
   data.frame(operation="startup", nodes=nodes, time.startup=p1Time)
 }
 
-allModel <- function(machine, nodes, data) {
-  nodeData <- dataAtNode(machine, nodes, data)
-  startup  <- startupModel(machine, nodes, data)$time.startup
+m4.allModel <- function(machine, nodes, data) {
+  nodeData <- dataAtNode(machine, nodes, data, m4.DATA_MULT)
+  startup  <- m4.startupModel(machine, nodes, data)$time.startup
 
   p2DiskR  <- ceiling(nodeData / (machine$diskio.r * machine$disks))
   p2DiskW  <- ceiling(nodeData / (machine$diskio.w * machine$disks))
@@ -101,15 +62,15 @@ allModel <- function(machine, nodes, data) {
              cost=cost)
 }
 
-firstModel <- function(machine, nodes, data) {
-  if (!LAZY) {
+m4.firstModel <- function(machine, nodes, data) {
+  if (!m4.LAZY) {
     # Same cost as ReadAll
-    model <- allModel(machine, nodes, data)
+    model <- m4.allModel(machine, nodes, data)
     mutate(model, operation="first", length=1)
   } else {
     # Only need to sort one bucket, so cheaper than ReadAll
-    bktSize  <- bucketSize(machine, nodes, data)
-    startup  <- startupModel(machine, nodes, data)$time.startup
+    bktSize  <- m4.bucketSize(machine, nodes, data)
+    startup  <- m4.startupModel(machine, nodes, data)$time.startup
 
     p2DiskR  <- ceiling(bktSize / machine$diskio.r)
     # XXX: There is a design choice here, we could not write back to disk
@@ -131,25 +92,25 @@ firstModel <- function(machine, nodes, data) {
   }
 }
 
-nthModel <- function(machine, nodes, data, n) {
-  if (!LAZY) {
+m4.nthModel <- function(machine, nodes, data, n) {
+  if (!m4.LAZY) {
     # Same cost as ReadAll
-    model <- allModel(machine, nodes, data)
+    model <- m4.allModel(machine, nodes, data)
     mutate(model, operation="nth", start=n, length=1)
   } else {
     # Same cost as First
-    model <- firstModel(machine, nodes, data)
+    model <- m4.firstModel(machine, nodes, data)
     mutate(model, operation="nth", start=n, length=1)
   }
 }
 
-cdfModel <- function(machine, nodes, data) {
-  if (!LAZY) {
-    model <- allModel(client, machine, x, data)
+m4.cdfModel <- function(machine, nodes, data) {
+  if (!m4.LAZY) {
+    model <- m4.allModel(client, machine, x, data)
     mutate(model, operation="cdf", start=NA, length=100)
   } else {
     # Only need to sort buckets that contain needed points
-    bktSize  <- bucketSize(machine, nodes, data)
+    bktSize  <- m4.bucketSize(machine, nodes, data)
     buckets  <- data / bktSize
     touched  <- min(100, buckets)
 
@@ -157,7 +118,7 @@ cdfModel <- function(machine, nodes, data) {
     tPerDisk <- max(1, touched / nodes / machine$disks)
     bktData  <- tPerDisk * bktSize
 
-    startup  <- startupModel(machine, nodes, data)$time.startup
+    startup  <- m4.startupModel(machine, nodes, data)$time.startup
 
     p2DiskR  <- ceiling(bktData / machine$diskio.r)
     # XXX: There is a design choice here, we could not write back to disk
