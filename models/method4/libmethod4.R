@@ -91,15 +91,40 @@ m4.firstModel <- function(machine, nodes, data) {
   }
 }
 
-m4.nthModel <- function(machine, nodes, data, n) {
+m4.nthModel <- function(machine, nodes, data, n, len) {
   if (!m4.LAZY) {
     # Same cost as ReadAll
     model <- m4.allModel(machine, nodes, data)
-    mutate(model, operation="nth", start=n, length=1)
+    mutate(model, operation="nth", start=n, length=len)
   } else {
-    # Same cost as First
-    model <- m4.firstModel(machine, nodes, data)
-    mutate(model, operation="nth", start=n, length=1)
+    # How many buckets do we need to sort?
+    bktSize  <- m4.bucketSize(machine, nodes, data)
+    nBkts    <- max(ceiling(len * REC_SIZE / bktSize), 1)
+
+    # The implementation round-robbins each bucket over the nodes and their
+    # disks to achieve maximum parallel read throughput for a ranged read. So a
+    # 'layer' (before we repeat the same machines disk) is (nodes * disks)
+    # buckets in size.
+    layers   <- max(ceiling(nBkts / (machine$disks * nodes)), 1)
+    dataSize <- bktSize * layers
+    startup  <- m4.startupModel(machine, nodes, data)$time.startup
+
+    p2DiskR  <- ceiling(dataSize / machine$diskio.r)
+    p2DiskW  <- ceiling(dataSize / machine$diskio.w)
+    p2Time   <- p2DiskR + p2DiskW
+
+    time     <- startup + p2Time
+    timeM    <- ceiling(time / M)
+    timeH    <- round(time / HR, 2)
+
+    costTime <- max(timeM, machine$billing.mintime)
+    cost     <- ceiling(costTime / machine$billing.granularity) *
+                  machine$cost * nodes
+
+    data.frame(operation="nth", nodes=nodes, start=n, length=len,
+               time.total=time, time.min=timeM, time.hr=timeH,
+               time.startup=startup, time.op=p2Time,
+               cost=cost)
   }
 }
 
