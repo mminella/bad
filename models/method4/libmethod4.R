@@ -53,11 +53,11 @@ MEM_RESERVE <- 500 * MB
 BUCKETS_N   <- 1
 
 dataAtNode <- function(machine, nodes, data) {
-  perNode <- ceiling(data / nodes)
+  perNode <- data / nodes
   if (perNode * DATA_MULTIPLIER > (machine$disk.size * machine$disks)) {
     stop("Not enough disk space for data set")
   }
-  perNode
+  ceiling(perNode)
 }
 
 bucketSize <- function(machine, nodes, data) {
