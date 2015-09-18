@@ -22,7 +22,7 @@ nthSize  <- as.numeric(args[7])
 nrecs    <- data / REC_SIZE
 
 # Validate arguments
-if (nth >= nrecs) {
+if (nth >= nrecs | nth < 0) {
   stop("N'th record is outside the data size")
 } else if ((nth + nthSize) > nrecs) {
   stop("Subset range is outside the data size")
@@ -32,6 +32,7 @@ if (nth >= nrecs) {
   stop("Unknown machine type")
 } else if ( points < 1 ) {
   stop("Node points must be greater than zero")
+}
 
 genAllModels <- function(n) {
   rbind(

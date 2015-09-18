@@ -7,12 +7,13 @@ source('../lib/libgraph.R')
 # Main
 
 USEAGE <- strwrap("Useage: [machines file] [operation] [client i2 type]
-                   [i2 type] [data size (GB)] [data points] <nth record>")
+                   [i2 type] [data size (GB)] [data points] <nth record>
+                   <subset size>")
 # check args
 args <- commandArgs(trailingOnly = T)
-if (length(args) != 6 && length(args) != 7) {
+if (length(args) != 6 && length(args) != 8) {
   stop(USEAGE)
-} else if (length(args) == 7 && args[2] != "nth") {
+} else if (length(args) == 8 && args[2] != "nth") {
   stop(USEAGE)
 }
 
@@ -41,12 +42,18 @@ if (operation == "readall") {
   preds <- genPoints(range, function(x) m1.firstModel(client, machine, x, data))
 } else if (operation == "nth") {
   operation <- "NthRecord"
-  nrecs <- data / REC_SIZE
-  nth   <- as.numeric(args[7])
-  if (nth >= nrecs) {
+  nrecs   <- data / REC_SIZE
+  nth     <- as.numeric(args[7])
+  nthSize <- as.numeric(args[8])
+  if (nth >= nrecs | nth < 0) {
     stop("N'th record is outside the data size")
+  } else if ((nth + nthSize) > nrecs) {
+    stop("Subset range is outside the data size")
+  } else if (nthSize < 1) {
+    stop("Subset size must be greater than zero")
   }
-  preds <- genPoints(range, function(x) m1.nthModel(client, machine, x, data, nth))
+  preds <- genPoints(range, function(x) m1.nthModel(client, machine, x, data,
+                                                    nth, nthSize))
 } else if (operation == "cdf") {
   operation <- "CDF"
   preds <- genPoints(range, function(x) m1.cdfModel(client, machine, x, data))

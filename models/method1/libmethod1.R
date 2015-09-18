@@ -77,13 +77,15 @@ m1.firstModel <- function(client, machine, nodes, data) {
              cost=cost)
 }
 
-m1.nthModel <- function(client, machine, nodes, data, n) {
+m1.nthModel <- function(client, machine, nodes, data, n, len) {
+  endN     <- n + len
+
   chunk    <- m1.chunkSize(machine$mem, machine$disks)
   nodeData <- dataAtNode(machine, nodes, data, 1)
-  scans    <- max(ceiling(n * REC_SIZE / chunk / nodes), 1)
+  scans    <- max(ceiling(endN * REC_SIZE / chunk / nodes), 1)
 
   netio    <- min(client$netio, machine$netio * nodes)
-  timeNet  <- n*REC_SIZE / netio
+  timeNet  <- endN*REC_SIZE / netio
   timeDisk <- round(nodeData / (machine$diskio.r * machine$disks) * scans)
   time     <- timeNet + timeDisk
 
@@ -94,7 +96,7 @@ m1.nthModel <- function(client, machine, nodes, data, n) {
   cost     <- ceiling(costTime / machine$billing.granularity) *
                 machine$cost * nodes
 
-  data.frame(operation="nth", nodes=nodes, start=n, length=1,
+  data.frame(operation="nth", nodes=nodes, start=n, length=len,
              time.total=time, time.min=timeM, time.hr=timeH,
              time.disk=timeDisk, time.net=timeNet,
              cost=cost)

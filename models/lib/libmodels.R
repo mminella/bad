@@ -46,3 +46,10 @@ dataAtNode <- function(machine, nodes, data, mult) {
 REC_SIZE <- 100
 KEY_SIZE <- 10
 VAL_SIZE <- 90
+
+# ===========================================
+# Helpers
+
+genPoints <- function(range, f) {
+  do.call("rbind", lapply(range, f))
+}
