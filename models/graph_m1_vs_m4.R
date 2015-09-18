@@ -80,6 +80,8 @@ if (operation == "readall") {
   operation <- "FirstRecord"
   m1.preds <- genPoints(m1.range,
                         function(x) m1.firstModel(client, machine, x, data))
+  m4.preds <- genPoints(m4.range,
+                        function(x) m4.firstModel(machine, x, data))
 } else if (operation == "nth") {
   operation <- "NthRecord"
   nrecs <- data / REC_SIZE
@@ -89,10 +91,14 @@ if (operation == "readall") {
   }
   m1.preds <- genPoints(m1.range,
                         function(x) m1.nthModel(client, machine, x, data, nth))
+  m4.preds <- genPoints(m4.range,
+                        function(x) m4.nthModel(machine, x, data, nth))
 } else if (operation == "cdf") {
   operation <- "CDF"
   m1.preds <- genPoints(m1.range,
                         function(x) m1.cdfModel(client, machine, x, data))
+  m4.preds <- genPoints(m4.range,
+                        function(x) m4.cdfModel(machine, x, data))
 }
 
 preparePoints <- function(preds, name) {
