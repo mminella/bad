@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/usr/bin/env Rscript
 suppressMessages(library(dplyr))
 library(ggplot2)
 library(ggthemr)

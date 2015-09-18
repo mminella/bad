@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/usr/bin/env Rscript
 # We copy the data twice, ending up with three copies: in, intermediate, out
 suppressMessages(library(dplyr))
 

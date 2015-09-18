@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/usr/bin/env Rscript
 source('lib/libmodels.R')
 source('method1/libmethod1.R')
 source('method4/libmethod4.R')
