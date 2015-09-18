@@ -1,4 +1,5 @@
 #!/usr/bin/Rscript
+source('../lib/libmodels.R')
 source('./libmethod1.R')
 source('../lib/libgraph.R')
 
@@ -34,14 +35,10 @@ range <- start:(start+points)
 
 if (operation == "readall") {
   operation <- "ReadAll"
-  preds <- do.call("rbind",
-                   lapply(range,
-                          function(x) m1.allModel(client, machine, x, data)))
+  preds <- genPoints(range, function(x) m1.allModel(client, machine, x, data))
 } else if (operation == "first") {
   operation <- "FirstRecord"
-  preds <- do.call("rbind",
-                   lapply(range,
-                          function(x) m1.firstModel(client, machine, x, data)))
+  preds <- genPoints(range, function(x) m1.firstModel(client, machine, x, data))
 } else if (operation == "nth") {
   operation <- "NthRecord"
   nrecs <- data / REC_SIZE
@@ -49,14 +46,10 @@ if (operation == "readall") {
   if (nth >= nrecs) {
     stop("N'th record is outside the data size")
   }
-  preds <- do.call("rbind",
-                   lapply(range,
-                          function(x) m1.nthModel(client, machine, x, data, nth)))
+  preds <- genPoints(range, function(x) m1.nthModel(client, machine, x, data, nth))
 } else if (operation == "cdf") {
   operation <- "CDF"
-  preds <- do.call("rbind",
-                   lapply(range,
-                          function(x) m1.cdfModel(client, machine, x, data)))
+  preds <- genPoints(range, function(x) m1.cdfModel(client, machine, x, data))
 }
 
 # read all vs cost

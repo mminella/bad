@@ -10,6 +10,10 @@ library(reshape2)
 # for color scheme list -- https://github.com/cttobin/ggthemr
 ggthemr('fresh')
 
+genPoints <- function(range, f) {
+  do.call("rbind", lapply(range, f))
+}
+
 mkGraph <- function(d, title, y1) {
   if (is.data.frame(d) & nrow(d) > 0) {
     pdf("graph.pdf")

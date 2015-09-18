@@ -1,4 +1,5 @@
 #!/usr/bin/Rscript
+source('../lib/libmodels.R')
 source('./libmethod4.R')
 source('../lib/libgraph.R')
 
@@ -26,20 +27,15 @@ if (nrow(machine) == 0) {
   stop("Unknown machine type")
 }
 
-start <- ceiling((data * m4.DATA_MULT) /
-                 (machine$disk.size * machine$disks))
+start <- ceiling((data * m4.DATA_MULT) / (machine$disk.size * machine$disks))
 range <- start:(start+points)
 
 if (operation == "readall") {
   operation <- "ReadAll"
-  preds <- do.call("rbind",
-                   lapply(range,
-                          function(x) m4.allModel(machine, x, data)))
+  preds <- genPoints(range, function(x) m4.allModel(machine, x, data))
 } else if (operation == "first") {
   operation <- "FirstRecord"
-  preds <- do.call("rbind",
-                   lapply(range,
-                          function(x) m4.firstModel(machine, x, data)))
+  preds <- genPoints(range, function(x) m4.firstModel(machine, x, data))
 } else if (operation == "nth") {
   operation <- "NthRecord"
   nrecs <- data / REC_SIZE
@@ -47,14 +43,10 @@ if (operation == "readall") {
   if (nth >= nrecs) {
     stop("N'th record is outside the data size")
   }
-  preds <- do.call("rbind",
-                   lapply(range,
-                          function(x) m4.nthModel(machine, x, data, nth)))
+  preds <- genPoints(range, function(x) m4.nthModel(machine, x, data, nth))
 } else if (operation == "cdf") {
   operation <- "CDF"
-  preds <- do.call("rbind",
-                   lapply(range,
-                          function(x) m4.cdfModel(machine, x, data)))
+  preds <- genPoints(range, function(x) m4.cdfModel(machine, x, data))
 }
 
 # read all vs cost

@@ -1,6 +1,5 @@
 #!/usr/bin/Rscript
 # We copy the data twice, ending up with three copies: in, intermediate, out
-source('../lib/libmodels.R')
 suppressMessages(library(dplyr))
 
 # ASSUMPTIONS:

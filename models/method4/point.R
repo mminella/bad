@@ -1,4 +1,5 @@
 #!/usr/bin/Rscript
+source('../lib/libmodels.R')
 source('./libmethod4.R')
 
 # ===========================================
