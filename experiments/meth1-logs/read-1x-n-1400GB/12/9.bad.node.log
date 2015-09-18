@@ -1,0 +1,76 @@
+# Wed Sep 16 09:45:41 PDT 2015
+record-value, 96
+seek-chunk, 188593327
+file, 4, 1166600000
+
+read-start, 1, 0, 168172393, 9276
+circular-read-start, 4, 1, 116660000000, 11014
+circular-read-total, 4, 1, 116660000000, 257996, 264137
+linear-scan, 265028
+-sort , 36365, 43
+-merge, 25774, 43
+-last , 470
+read, 1, 168172393, 266766
+network, 1, 2355549
+
+read-start, 2, 168172393, 168172393, 2631832
+circular-read-start, 4, 2, 116660000000, 2632177
+circular-read-total, 4, 2, 116660000000, 234198, 240896
+linear-scan, 242063
+-sort , 34478, 40
+-merge, 24271, 40
+-last , 1164
+read, 2, 168172393, 242408
+network, 2, 2357260
+
+read-start, 3, 336344786, 168172393, 5231643
+circular-read-start, 4, 3, 116660000000, 5231989
+circular-read-total, 4, 3, 116660000000, 234204, 241087
+linear-scan, 241630
+-sort , 32794, 38
+-merge, 23509, 38
+-last , 541
+read, 3, 168172393, 241975
+network, 3, 2356465
+
+read-start, 4, 504517179, 168172393, 7830088
+circular-read-start, 4, 4, 116660000000, 7830421
+circular-read-total, 4, 4, 116660000000, 237352, 244171
+linear-scan, 245346
+-sort , 29749, 34
+-merge, 21047, 34
+-last , 1173
+read, 4, 168172393, 245679
+network, 4, 2353354
+
+read-start, 5, 672689572, 168172393, 10429904
+circular-read-start, 4, 5, 116660000000, 10430251
+circular-read-total, 4, 5, 116660000000, 234086, 240683
+linear-scan, 241660
+-sort , 25822, 30
+-merge, 18489, 30
+-last , 974
+read, 5, 168172393, 242006
+network, 5, 2355960
+
+read-start, 6, 840861965, 168172393, 13028039
+circular-read-start, 4, 6, 116660000000, 13028390
+circular-read-total, 4, 6, 116660000000, 234159, 240853
+linear-scan, 241807
+-sort , 20777, 24
+-merge, 14637, 24
+-last , 952
+read, 6, 168172393, 242158
+network, 6, 2355956
+
+read-start, 7, 1009034358, 157565642, 15626418
+circular-read-start, 4, 7, 116660000000, 15626742
+circular-read-total, 4, 7, 116660000000, 236230, 242751
+linear-scan, 244292
+-sort , 11687, 15
+-merge, 9125, 15
+-last , 294
+read, 7, 157565642, 244616
+network, 7, 2205908
+
+exit, 18078084
