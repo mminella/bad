@@ -7,17 +7,18 @@ source('./libmethod1.R')
 
 # check args
 args <- commandArgs(trailingOnly = T)
-if (length(args) != 6) {
-  stop(strwrap("Usage: [machines file] [client i2 type]
-               [i2 type] [nodes] [data size (GB)] [nth record]"))
+if (length(args) != 7) {
+  stop(strwrap("Usage: [machines file] [client i2 type] [i2 type]
+               [start nodes] [node points] [data size (GB)] [nth record]"))
 }
 
 machines <- loadMachines(args[1])
 client   <- filter(machines, type==args[2])
 machine  <- filter(machines, type==args[3])
 nodes    <- as.numeric(args[4])
-data     <- as.numeric(args[5]) * HD_GB
-nth      <- as.numeric(args[6])
+points   <- as.numeric(args[5])
+data     <- as.numeric(args[6]) * HD_GB
+nth      <- as.numeric(args[7])
 nrecs    <- data / REC_SIZE
 
 # Validate arguments
@@ -27,12 +28,21 @@ if (nth >= nrecs) {
   stop("Unknown client machine type")
 } else if (nrow(machine) == 0) {
   stop("Unknown node machine type")
+} else if ( points < 1 ) {
+  stop("Node points must be greater than zero")
 }
 
-# Whole model
-rbind(
-  m1.allModel(client, machine, nodes, data),
-  m1.firstModel(client, machine, nodes, data),
-  m1.nthModel(client, machine, nodes, data, nth),
-  m1.cdfModel(client, machine, nodes, data)
-)
+genAllModels <- function(n) {
+  rbind(
+    m1.allModel(client, machine, n, data),
+    m1.firstModel(client, machine, n, data),
+    m1.nthModel(client, machine, n, data, nth),
+    m1.cdfModel(client, machine, n, data)
+  )
+}
+
+options( width=200 )
+print(
+  genPoints(nodes:(nodes + points - 1), genAllModels),
+  row.names=FALSE)
+
