@@ -102,7 +102,7 @@ m1.nthModel <- function(client, machine, nodes, data, n, len) {
              cost=cost)
 }
 
-m1.cdfModel <- function(client, machine, nodes, data) {
+m1.cdfModel <- function(client, machine, nodes, data, points) {
   model <- m1.allModel(client, machine, nodes, data)
-  mutate(model, operation="cdf", start=NA, length=100)
+  mutate(model, operation="cdf", start=NA, length=points)
 }

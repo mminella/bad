@@ -7,20 +7,22 @@ source('./libmethod1.R')
 
 # check args
 args <- commandArgs(trailingOnly = T)
-if (length(args) != 8) {
+if (length(args) != 9) {
   stop(strwrap("Usage: [machines file] [client i2 type] [i2 type] [start nodes]
-               [node points] [data size (GB)] [nth record] [subset size]"))
+               [node points] [data size (GB)] [nth record] [subset size]
+               [cdf points]"))
 }
 
-machines <- loadMachines(args[1])
-client   <- filter(machines, type==args[2])
-machine  <- filter(machines, type==args[3])
-nodes    <- as.numeric(args[4])
-points   <- as.numeric(args[5])
-data     <- as.numeric(args[6]) * HD_GB
-nth      <- as.numeric(args[7])
-nthSize  <- as.numeric(args[8])
-nrecs    <- data / REC_SIZE
+machines  <- loadMachines(args[1])
+client    <- filter(machines, type==args[2])
+machine   <- filter(machines, type==args[3])
+nodes     <- as.numeric(args[4])
+points    <- as.numeric(args[5])
+data      <- as.numeric(args[6]) * HD_GB
+nth       <- as.numeric(args[7])
+nthSize   <- as.numeric(args[8])
+cdfPoints <- as.numeric(args[9])
+nrecs     <- data / REC_SIZE
 
 # Validate arguments
 if (nth >= nrecs | nth < 0) {
@@ -42,7 +44,7 @@ genAllModels <- function(n) {
     m1.allModel(client, machine, n, data),
     m1.firstModel(client, machine, n, data),
     m1.nthModel(client, machine, n, data, nth, nthSize),
-    m1.cdfModel(client, machine, n, data)
+    m1.cdfModel(client, machine, n, data, points)
   )
 }
 
