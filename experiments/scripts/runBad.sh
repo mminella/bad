@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# ===================================================================
+# Arguments
+
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 KEY=$( hostname )
 LOG='~/bad.log'
@@ -9,21 +13,28 @@ FILE=$1
 SAVE=$2
 SIZE=$3
 CHUNK=$4
-MACHINE=$5
-N=$6
-CMDD=$7
-TARF=$8
-PG=${9}
-ZONE=${10}
-SIZE_B=$( calc "round( $SIZE * 1000 * 1000 * 1000 / 100 )" )
-CHUNK_B=$( calc "round( $CHUNK * 1024 * 1024 * 1024 / 100 )" )
+CLIENT=$5
+MACHINE=$6
+N=$7
+CMDD=$8
+TARF=$9
+PG=${10}
+ZONE=${11}
 
 # Args
-if [ $# != 10 ]; then
-  echo "runBad.sh <cluster file> <log path> <size> <chunk> <machine> <nodes>" \
-    "<cmd> <dist_tar> <pgroup> <zone>"
+if [ $# != 11 ]; then
+  echo "runBad.sh <cluster file> <log path> <size> <chunk> <client> <machine>
+            <nodes> <cmd> <dist_tar> <pgroup> <zone>"
   exit 1
 fi
+
+
+# ===================================================================
+# Configuration
+
+NAME=${FILE}
+SIZE_B=$( calc "round( $SIZE * 1000 * 1000 * 1000 / 100 )" )
+CHUNK_B=$( calc "round( $CHUNK * 1024 * 1024 * 1024 / 100 )" )
 
 if [ $MACHINE = "i2.xlarge" ]; then
   FILES_ALL="/mnt/b/recs"
@@ -32,20 +43,44 @@ elif [ $MACHINE = "i2.2xlarge" ]; then
 elif [ $MACHINE = "i2.4xlarge" ]; then
   FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs"
 elif [ $MACHINE = "i2.8xlarge" ]; then
-  FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs /mnt/f/recs /mnt/g/recs /mnt/h/recs /mnt/i/recs"
+  FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs \
+    /mnt/f/recs /mnt/g/recs /mnt/h/recs /mnt/i/recs"
 fi
 
-# Launch
-./launchBAD.rb -f ${FILE} -k ${KEY} -c ${N} -n "${SAVE}-%d" -d ${TARF} -i ${MACHINE} -p ${PG} -z ${ZONE}
-if [ $? -ne 0 ]; then
-  echo "Launching instances failed! (${FILE})"
+
+# ===================================================================
+# Launch Cluster
+
+# Client
+./launchBAD.rb -f ${FILE} -k ${KEY} -c 1 \
+  -n "${SAVE}-client" -d ${TARF} -i ${CLIENT} -p ${PG} -z ${ZONE} &
+PID_CLIENT=$!
+
+# Backends
+./launchBAD.rb -f ${FILE} -a -s 2 -k ${KEY} -c ${N} \
+  -n "${SAVE}-%d" -d ${TARF} -i ${MACHINE} -p ${PG} -z ${ZONE}
+PID_BACKENDS=$!
+
+wait $PID_CLIENT
+EXIT_CLIENT=$?
+wait $PID_BACKENDS
+EXIT_BACKENDS=$?
+
+if [ ${EXIT_CLIENT} -ne 0 -o ${EXIT_BACKENDS} -ne 0 ]; then
+  echo "
+===================================================
+Launching cluster failed! (${NAME})
+==================================================="
   ./shutdown-cluster.sh ${FILE}
   exit 1
 fi
 
-echo "Machines setup! (${FILE})"
-
+echo "Machines setup! (${NAME})"
 source ${FILE}
+
+
+# ===================================================================
+# Experiment Helper Functions
 
 # Get start time
 D=$( date )
@@ -102,9 +137,14 @@ experiment() {
   done
 }
 
+
+# ===================================================================
+# Setup Experiment
+
 # Prepare disks
 all "setup_all_fs 2> /dev/null > /dev/null"
 
+# Generate data files
 START=0
 for i in `seq 2 $MN`; do
   declare MV="M${i}"
@@ -112,8 +152,11 @@ for i in `seq 2 $MN`; do
   START=$(( ${START} + ${SIZE_B} ))
 done
 wait
-
 all "sudo clear_buffers"
+
+
+# ===================================================================
+# Run Experiment & Copy Logs
 
 # Run experiment
 experiment ${CMDD}
@@ -129,6 +172,10 @@ done
 
 # Copy bad.log
 scp ubuntu@$M1:~/bad.log $SAVE/1.bad.log
+
+
+# ===================================================================
+# Finish Experiment
 
 # Kill cluster
 ./shutdown-cluster.sh ${FILE}

@@ -41,6 +41,17 @@ optparse = OptionParser.new do |opts|
   options[:store] = 0
   options[:terminate] = 0
 
+  options[:start_id] = 1
+  opts.on("-s", "--start-id NUMBER",
+          "Starting ID of machines in cluster file") do |i|
+    options[:start_id] = i.to_i
+  end
+
+  options[:append_config] = false
+  opts.on("-a", "--append-config", "Append to cluster config file") do
+    options[:append_config] = true
+  end
+
   options[:zone] = "ap-southeast-1a"
   opts.on("-z", "--zone ZONE", "AWS region to deploy in") do |zone|
     options[:zone] = zone.strip
@@ -101,21 +112,20 @@ end
 $stdout.sync = true
 
 # move any old cluster info files
-if File.exists? options[:file]
+if File.exists? options[:file] and !options[:append_config]
   now = Time.now.strftime("%Y%m%d_%H%M")
   `mv -f #{options[:file]} ./.old_clusters/#{now}.cluster.conf`
 end
 
 # start new cluster config
-`echo "# #{Time.now}" > #{options[:file]}`
+`echo "# #{Time.now}" >> #{options[:file]}`
 `echo "export MREGION=#{options[:zone][0..-2]}" >> #{options[:file]}`
-`echo "export MN=#{options[:count]}" >> #{options[:file]}`
+`echo "export MN=#{options[:start_id] + options[:count]}" >> #{options[:file]}`
 
 # launch instance
-i = 0
+i = options[:start_id]
 instances = []
 Launcher.new(options).launch! do |instance|
-  i += 1
   instances += [instance]
   puts "New instance (#{i}) at: #{instance.dns_name}"
 
@@ -123,13 +133,16 @@ Launcher.new(options).launch! do |instance|
   `echo "export M#{i}=#{instance.dns_name}" >> #{options[:file]}`
   `echo "export M#{i}_ID=#{instance.id}" >> #{options[:file]}`
   `echo "alias m#{i}=\\"ssh ubuntu@\\$M#{i}\\"" >> #{options[:file]}`
+  i += 1
 end
 
 # configure instances
-i = 0
+i = options[:start_id]
 Parallel.map(instances, :in_threads => instances.size) { |instance|
-  i += 1
+  # copy since running in parallel
   j = i
+  i += 1
+
   # wait for instance to be ready and SSH up
   puts "Waiting for instances to become ready..."
   timeout = 120
