@@ -6,24 +6,31 @@ source('../lib/libgraph.R')
 # ===========================================
 # Main
 
-USEAGE <- strwrap("Useage: [machines file] [operation] [i2 type]
-                  [data size (GB)] [data points] <nth record> <subset size>")
+USEAGE <- strwrap("Useage: [machines file] [operation] [client i2 type]
+                  [i2 type] [data size (GB)] [one client?] [data points]
+                  (<cdf points> | <nth record> <subset size>)")
 # check args
 args <- commandArgs(trailingOnly = T)
-if (length(args) != 5 && length(args) != 7) {
+if (length(args) != 7 && length(args) != 8 && length(args) != 9) {
   stop(USEAGE)
-} else if (length(args) == 7 && args[2] != "nth") {
+} else if (length(args) == 9 && args[2] != "nth") {
+  stop(USEAGE)
+} else if (length(args) == 8 && args[2] != "cdf") {
   stop(USEAGE)
 }
 
 machines  <- loadMachines(args[1])
 operation <- args[2]
-machine   <- filter(machines, type==args[3])
-data      <- as.numeric(args[4]) * HD_GB
-points    <- as.numeric(args[5])
+client    <- filter(machines, type==args[3])
+machine   <- filter(machines, type==args[4])
+data      <- as.numeric(args[5]) * HD_GB
+oneC      <- as.logical(args[6])
+points    <- as.numeric(args[7])
 
 # Validate arguments
-if (nrow(machine) == 0) {
+if (nrow(client) == 0) {
+  stop("Unknown client machine type")
+} else if (nrow(machine) == 0) {
   stop("Unknown machine type")
 }
 
@@ -32,15 +39,17 @@ range <- start:(start+points)
 
 if (operation == "readall") {
   operation <- "ReadAll"
-  preds <- genPoints(range, function(x) m4.allModel(machine, x, data))
+  preds <- genPoints(range, function(x) m4.allModel(client, machine, x,
+                                                    data, oneC))
 } else if (operation == "first") {
   operation <- "FirstRecord"
-  preds <- genPoints(range, function(x) m4.firstModel(machine, x, data))
+  preds <- genPoints(range, function(x) m4.firstModel(client, machine, x,
+                                                      data, oneC))
 } else if (operation == "nth") {
   operation <- "NthRecord"
   nrecs   <- data / REC_SIZE
-  nth     <- as.numeric(args[6])
-  nthSize <- as.numeric(args[7])
+  nth     <- as.numeric(args[8])
+  nthSize <- as.numeric(args[9])
   if (nth >= nrecs | nth < 0) {
     stop("N'th record is outside the data size")
   } else if ((nth + nthSize) > nrecs) {
@@ -48,11 +57,13 @@ if (operation == "readall") {
   } else if (nthSize < 1) {
     stop("Subset size must be greater than zero")
   }
-  preds <- genPoints(range, function(x) m4.nthModel(machine, x, data,
-                                                    nth, nthSize))
+  preds <- genPoints(range, function(x) m4.nthModel(client, machine, x,
+                                                    data, oneC, nth, nthSize))
 } else if (operation == "cdf") {
   operation <- "CDF"
-  preds <- genPoints(range, function(x) m4.cdfModel(machine, x, data))
+  points <- as.numeric(args[8])
+  preds  <- genPoints(range, function(x) m4.cdfModel(client, machine, x,
+                                                     data, points, oneC))
 }
 
 # read all vs cost
