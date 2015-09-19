@@ -7,19 +7,23 @@ source('./libmethod4.R')
 
 # check args
 args <- commandArgs(trailingOnly = T)
-if (length(args) != 7) {
-  stop(strwrap("Usage: [machines file] [i2 type] [start nodes] [node points]
-               [data size (GB)] [nth record] [subset size]"))
+if (length(args) != 10) {
+  stop(strwrap("Usage: [machines file] [client i2 type] [i2 type] [start nodes]
+               [node points] [data size (GB)] [one client?] [nth record]
+               [subset size] [cdf points]"))
 }
 
-machines <- loadMachines(args[1])
-machine  <- filter(machines, type==args[2])
-nodes    <- as.numeric(args[3])
-points   <- as.numeric(args[4])
-data     <- as.numeric(args[5]) * HD_GB
-nth      <- as.numeric(args[6])
-nthSize  <- as.numeric(args[7])
-nrecs    <- data / REC_SIZE
+machines  <- loadMachines(args[1])
+client    <- filter(machines, type==args[2])
+machine   <- filter(machines, type==args[3])
+nodes     <- as.numeric(args[4])
+points    <- as.numeric(args[5])
+data      <- as.numeric(args[6]) * HD_GB
+oneC      <- as.logical(args[7])
+nth       <- as.numeric(args[8])
+nthSize   <- as.numeric(args[9])
+cdfPoints <- as.numeric(args[10])
+nrecs     <- data / REC_SIZE
 
 # Validate arguments
 if (nth >= nrecs | nth < 0) {
@@ -28,6 +32,8 @@ if (nth >= nrecs | nth < 0) {
   stop("Subset range is outside the data size")
 } else if (nthSize < 1) {
   stop("Subset size must be greater than zero")
+} else if (nrow(client) == 0) {
+  stop("Unknown client machine type")
 } else if (nrow(machine) == 0) {
   stop("Unknown machine type")
 } else if ( points < 1 ) {
@@ -36,10 +42,10 @@ if (nth >= nrecs | nth < 0) {
 
 genAllModels <- function(n) {
   rbind(
-    m4.allModel(machine, n, data),
-    m4.firstModel(machine, n, data),
-    m4.nthModel(machine, n, data, nth, nthSize),
-    m4.cdfModel(machine, n, data)
+    m4.allModel(client, machine, n, data, oneC),
+    m4.firstModel(client, machine, n, data, oneC),
+    m4.nthModel(client, machine, n, data, oneC, nth, nthSize),
+    m4.cdfModel(client, machine, n, data, cdfPoints, oneC)
   )
 }
 
