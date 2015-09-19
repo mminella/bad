@@ -49,7 +49,13 @@ genAllModels <- function(n) {
   )
 }
 
-options( width=200 )
-print(
-  genPoints(nodes:(nodes + points - 1), genAllModels),
-  row.names=FALSE)
+minNodes <- 
+  ceiling((data * m4.DATA_MULT) / (machine$disk.size * machine$disks))
+
+if (minNodes <= nodes + points - 1) {
+  start <- max(minNodes, nodes)
+  range <- start:(nodes + points - 1)
+
+  options( width=200 )
+  print(genPoints(range, genAllModels), row.names=FALSE)
+}
