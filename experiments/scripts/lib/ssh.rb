@@ -18,7 +18,7 @@ end
 module Net
   module SSH
 
-    DEF_TIMEOUT = 300
+    DEF_TIMEOUT = 420
 
     def self.wait(host, user, options={})
       mytimeout = DEF_TIMEOUT 
