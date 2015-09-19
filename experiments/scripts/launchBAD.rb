@@ -118,9 +118,10 @@ if File.exists? options[:file] and !options[:append_config]
 end
 
 # start new cluster config
+mn=options[:start_id] + options[:count] - 1
 `echo "# #{Time.now}" >> #{options[:file]}`
 `echo "export MREGION=#{options[:zone][0..-2]}" >> #{options[:file]}`
-`echo "export MN=#{options[:start_id] + options[:count]}" >> #{options[:file]}`
+`echo "export MN=#{mn}" >> #{options[:file]}`
 
 # launch instance
 i = options[:start_id]
