@@ -6,6 +6,7 @@
  */
 
 #include <cstdint>
+#include <string>
 
 namespace Knobs {
   /* Network send & receive kernel buffer sizes */
