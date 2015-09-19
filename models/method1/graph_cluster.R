@@ -7,13 +7,15 @@ source('../lib/libgraph.R')
 # Main
 
 USEAGE <- strwrap("Useage: [machines file] [operation] [client i2 type]
-                   [i2 type] [data size (GB)] [data points] <nth record>
-                   <subset size>")
+                   [i2 type] [data size (GB)] [data points]
+                   (<cdf points> | <nth record> <subset size>)")
 # check args
 args <- commandArgs(trailingOnly = T)
-if (length(args) != 6 && length(args) != 8) {
+if (length(args) != 6 && length(args) != 7 && length(args) != 8) {
   stop(USEAGE)
 } else if (length(args) == 8 && args[2] != "nth") {
+  stop(USEAGE)
+} else if (length(args) == 7 && args[2] != "cdf") {
   stop(USEAGE)
 }
 
@@ -56,7 +58,9 @@ if (operation == "readall") {
                                                     nth, nthSize))
 } else if (operation == "cdf") {
   operation <- "CDF"
-  preds <- genPoints(range, function(x) m1.cdfModel(client, machine, x, data))
+  cdfPoints <- as.numeric(args[7])
+  preds <- genPoints(range, function(x) m1.cdfModel(client, machine, x,
+                                                    data, cdfPoints))
 }
 
 # read all vs cost

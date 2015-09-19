@@ -44,7 +44,7 @@ genAllModels <- function(n) {
     m1.allModel(client, machine, n, data),
     m1.firstModel(client, machine, n, data),
     m1.nthModel(client, machine, n, data, nth, nthSize),
-    m1.cdfModel(client, machine, n, data, points)
+    m1.cdfModel(client, machine, n, data, cdfPoints)
   )
 }
 
