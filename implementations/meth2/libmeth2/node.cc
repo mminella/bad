@@ -110,14 +110,14 @@ void Node::RPC_Read( BufferedIO_O<TCPSocket> & client )
   uint64_t pos = *( reinterpret_cast<const uint64_t *>( str ) );
   uint64_t amt = *( reinterpret_cast<const uint64_t *>( str ) + 1 );
 
-  cout << pos << ", " << amt << endl;
+  //cout << pos << ", " << amt << endl;
 
   RecV recs;
   if ( pos < Size() ) {
     recs = Read( pos, amt );
   }
 
-  cout << recs.size() << endl;
+  //cout << recs.size() << endl;
 
   uint64_t siz = recs.size();
   client.write_all( reinterpret_cast<const char *>( &siz ), sizeof( uint64_t ) );
@@ -177,7 +177,8 @@ Node::RecV Node::Read( uint64_t pos, uint64_t size )
     last_.copy( recs.back() );
     fpos_ = pos + recs.size();
   }
-  cout << "do-read, " << ++pass << ", " << time_diff<ms>( t0 ) << endl << endl;
+  //cout << "do-read, " << ++pass << ", " << time_diff<ms>( t0 ) << endl << 
+  //endl;
 
   return recs;
 }
@@ -200,8 +201,8 @@ Node::RecV Node::linear_scan(uint64_t start, uint64_t size )
 
   recV.reserve(size);
 
-  cout << "linear_scan, " << ++lpass_ << ", " << timestamp<ms>()
-    << ", start" << endl;
+  //cout << "linear_scan, " << ++lpass_ << ", " << timestamp<ms>()
+  //  << ", start" << endl;
 
   for ( uint64_t i = 0; i < size; i++ ) {
     size_t len;
@@ -219,7 +220,7 @@ Node::RecV Node::linear_scan(uint64_t start, uint64_t size )
   }
 
   auto tt = time_diff<ms>( t0 );
-  cout << "linear scan, " << lpass_ << ", " << tt << endl;
+  //cout << "linear scan, " << lpass_ << ", " << tt << endl;
 
   return recV;
 }

@@ -15,7 +15,7 @@ RemoteFile::drain()
     }
     
     if (onWire_ > 0) {
-	cout << "Draining " << onWire_ << endl;
+	//cout << "Draining " << onWire_ << endl;
 	do {
 	    onWire_--;
 	    c_->readRecord();

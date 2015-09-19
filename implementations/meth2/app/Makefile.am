@@ -1,6 +1,7 @@
 bin_PROGRAMS = \
 	meth2_client \
 	meth2_client_test \
+	meth2_client_cdf \
 	meth2_node \
 	meth2_node_test_r \
 	meth2_node_test_rw \
@@ -29,6 +30,7 @@ LDADD = \
 meth2_node_test_r_SOURCES = meth2_node_test_r.cc
 meth2_node_test_rw_SOURCES = meth2_node_test_rw.cc
 meth2_client_test_SOURCES = meth2_client_test.cc
+meth2_client_cdf_SOURCES = meth2_client_cdf.cc
 
 meth2_client_SOURCES = meth2_client.cc
 meth2_node_SOURCES = meth2_node.cc

@@ -24,10 +24,10 @@ Client::Client( Address node )
 void Client::sendRead( uint64_t pos, uint64_t siz )
 {
   static int pass = 0;
-  rpcStart_ = time_now();
+  //rpcStart_ = time_now();
   rpcPos_ = pos;
 
-  cout << "start-read, " << pass++ << ", " << pos << ", " << siz << endl;
+  //cout << "start-read, " << pass++ << ", " << pos << ", " << siz << endl;
 
   char data[1 + 2 * sizeof( uint64_t )];
   data[0] = 0;
@@ -41,11 +41,12 @@ uint64_t Client::recvRead( void )
   static int pass = 0;
 
   auto nrecsStr = sock_.read_buf_all( sizeof( uint64_t ) ).first;
-  auto split = time_now();
-  cout << "read, " << pass << ", " << time_diff<ms>( split, rpcStart_ ) << endl;
+  //auto split = time_now();
+  //cout << "read, " << pass << ", " << time_diff<ms>( split, rpcStart_ ) << 
+  //endl;
 
   uint64_t nrecs = *reinterpret_cast<const uint64_t *>( nrecsStr );
-  cout << "recv-read, " << pass << ", " << rpcPos_ << ", " << nrecs << endl;
+  //cout << "recv-read, " << pass << ", " << rpcPos_ << ", " << nrecs << endl;
   return nrecs;
 }
 
@@ -58,7 +59,7 @@ RecordPtr Client::readRecord( void )
 void Client::sendIRead( uint64_t pos, uint64_t siz )
 {
   static int pass = 0;
-  rpcStart_ = time_now();
+  //rpcStart_ = time_now();
   rpcPos_ = pos;
 
   //cout << "start-iread, " << pass++ << ", " << pos << ", " << siz << endl;
@@ -94,7 +95,7 @@ RecordLoc Client::readIRecord( void )
 
 void Client::sendSize( void )
 {
-  rpcStart_ = time_now();
+  //rpcStart_ = time_now();
   int8_t rpc = 2;
   sock_.io().write_all( (char *)&rpc, 1 );
 }

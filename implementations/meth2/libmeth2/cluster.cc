@@ -161,8 +161,8 @@ Cluster::GetSplit(uint64_t n)
 	    n.dump();*/
     }
 
-    for (auto &n : ns)
-	n.dump();
+    //for (auto &n : ns)
+    // n.dump();
 
     return ns;
 }
