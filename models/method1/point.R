@@ -53,8 +53,8 @@ minNodes <-
 
 if (minNodes <= nodes + points - 1) {
   start <- max(minNodes, nodes)
-  range <- start:(start + points - 1)
+  range <- start:(nodes + points - 1)
 
   options( width=200 )
-  print(genPoints(rang, genAllModels))
+  print(genPoints(range, genAllModels))
 }
