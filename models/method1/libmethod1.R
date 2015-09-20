@@ -14,10 +14,10 @@ suppressMessages(library(dplyr))
 # ===========================================
 # Model
 
-REC_ALIGNMENT <- 8
+REC_VAL_ALIGNED <- 112
 REC_PTR_SIZE  <- 18
 
-MEM_RESERVE <- 500 * MB
+MEM_RESERVE <- 0 * MB
 NET_BUFFER  <- 500 * MB
 DISK_BUFFER <- 4000 * MB
 
@@ -29,9 +29,8 @@ m1.chunkSize <- function(mem, disks) {
   mem <- mem -  NET_BUFFER * 2
   mem <- mem -  DISK_BUFFER * disks
 
-  valMem <- ceiling(VAL_SIZE / REC_ALIGNMENT) * REC_ALIGNMENT
-  div1 <- 2 * REC_PTR_SIZE + valMem
-  div2 <- floor((REC_PTR_SIZE + valMem) / SORT_RATIO)
+  div1 <- 2 * REC_PTR_SIZE + REC_VAL_ALIGNED
+  div2 <- floor((REC_PTR_SIZE + REC_VAL_ALIGNED) / SORT_RATIO)
 
   floor( mem /  (div1 + div2) ) * REC_SIZE
 }
