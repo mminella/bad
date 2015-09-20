@@ -65,6 +65,7 @@ uint64_t calc_record_space( void )
   static_assert( sizeof( uint64_t ) >= sizeof( size_t ), "uint64_t >= size_t" );
 
   uint64_t memFree = memory_exists();
+  print( "memory", memFree );
   uint64_t val_len = calc_value_size();
 
   // remove fixed buffers

@@ -70,7 +70,7 @@ void Node::Run( void )
           break;
         case RPC::MAX_CHUNK:
           RPC_MaxChunk( client );
-          return;
+          break;
         case RPC::EXIT:
           print( "\nexit", timestamp<ms>() );
           return;
