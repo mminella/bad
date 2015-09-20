@@ -94,6 +94,7 @@ private:
 
   void RPC_Read( TCPSocket & client );
   void RPC_Size( TCPSocket & client );
+  void RPC_MaxChunk( TCPSocket & client );
 };
 }
 

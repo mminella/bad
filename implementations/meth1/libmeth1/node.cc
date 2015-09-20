@@ -9,6 +9,7 @@
 #include "meth1_memory.hh"
 #include "meth1_merge.hh"
 #include "node.hh"
+#include "rpc.hh"
 
 using namespace std;
 using namespace meth1;
@@ -61,13 +62,16 @@ void Node::Run( void )
           break;
         }
         switch ( str[0] ) {
-        case 0:
+        case RPC::READ:
           RPC_Read( client );
           break;
-        case 1:
+        case RPC::SIZE:
           RPC_Size( client );
           break;
-        case 2:
+        case RPC::MAX_CHUNK:
+          RPC_MaxChunk( client );
+          return;
+        case RPC::EXIT:
           print( "\nexit", timestamp<ms>() );
           return;
         default:
@@ -176,11 +180,22 @@ void Node::RPC_Size( TCPSocket & client )
                     sizeof( uint64_t ) );
 }
 
+void Node::RPC_MaxChunk( TCPSocket & client )
+{
+  client.write_all( reinterpret_cast<const char *>( &seek_chunk_ ),
+                    sizeof( uint64_t ) );
+}
+
 Node::RecV Node::Read( uint64_t pos, uint64_t size )
 {
   static size_t pass = 0;
   if ( pos + size > Size() ) {
     size = Size() - pos;
+  }
+
+  if ( size > seek_chunk_ ) {
+    print( "chunk-too-large", size, seek_chunk_ );
+    throw runtime_error( "Requested read is too large" );
   }
 
   print( "\nread-start", ++pass, pos, size, timestamp<ms>() );

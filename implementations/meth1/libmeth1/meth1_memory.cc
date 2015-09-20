@@ -32,24 +32,29 @@ size_t num_of_disks( void )
 /* Try to figure out how tightly we can allocate values */
 size_t calc_value_size( void )
 {
-  vector <uint8_t *> vals;
-  vector <size_t> diffs;
-  for ( size_t i = 0; i < 6; i++ ) {
-    vals.push_back( Rec::alloc_val() );
-  }
+  // vector <uint8_t *> vals;
+  // vector <size_t> diffs;
+  // for ( size_t i = 0; i < 6; i++ ) {
+  //   vals.push_back( Rec::alloc_val() );
+  // }
+  //
+  // for ( auto v : vals ) {
+  //   Rec::dealloc_val( v );
+  // }
+  //
+  // for ( size_t i = 1; i < vals.size(); i++ ) {
+  //   diffs.push_back( abs( vals[i] - vals[i-1] ) );
+  // }
+  //
+  // size_t val_len = *min_element( diffs.begin(), diffs.end() );
+  // print( "record-value", val_len );
+  //
+  // return min( val_len, 2 * Rec::VAL_LEN );
 
-  for ( auto v : vals ) {
-    Rec::dealloc_val( v );
-  }
-
-  for ( size_t i = 1; i < vals.size(); i++ ) {
-    diffs.push_back( abs( vals[i] - vals[i-1] ) );
-  }
-
-  size_t val_len = *min_element( diffs.begin(), diffs.end() );
+  // XXX: Just hard-code for now due to difference between client & backend
+  size_t val_len = 112;
   print( "record-value", val_len );
-
-  return min( val_len, 2 * Rec::VAL_LEN );
+  return val_len;
 }
 
 /* figure out max chunk size available */

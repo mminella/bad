@@ -27,18 +27,19 @@ Cluster::Cluster( vector<Address> nodes, uint64_t chunkSize )
   , chunkSize_{chunkSize}
   , bufSize_{0}
 {
-  if ( chunkSize_ == 0 ) {
-    chunkSize_ = calc_record_space();
+  for ( auto & n : nodes ) {
+    clients_.push_back( n );
+  }
+
+  if ( chunkSize_ == 0 and clients_.size() >= 1 ) {
+    clients_[0].sendMaxChunk();
+    chunkSize_ = clients_[0].recvMaxChunk();
   }
   bufSize_ = calc_client_buffer( nodes.size() );
 
   print( "chunk-size", chunkSize_, bufSize_ );
   print( "disks", num_of_disks() );
   print( "" );
-
-  for ( auto & n : nodes ) {
-    clients_.push_back( n );
-  }
 }
 
 uint64_t Cluster::Size( void )

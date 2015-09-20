@@ -9,6 +9,7 @@
 #include "record.hh"
 
 #include "client.hh"
+#include "rpc.hh"
 
 using namespace std;
 using namespace meth1;
@@ -36,7 +37,7 @@ void Client::sendRead( uint64_t pos, uint64_t siz )
   print( "read-start", sock_.fd_num(), ++sendPass_, pos, siz, timestamp<ms>() );
 
   char data[1 + 2 * sizeof( uint64_t )];
-  data[0] = 0;
+  data[0] = RPC::READ;
   *reinterpret_cast<uint64_t *>( data + 1 ) = pos;
   *reinterpret_cast<uint64_t *>( data + 1 + sizeof( uint64_t ) ) = siz;
   sock_.write_all( data, sizeof( data ) );
@@ -60,7 +61,7 @@ uint64_t Client::recvRead( void )
 void Client::sendSize( void )
 {
   rpcStart_ = time_now();
-  int8_t rpc = 1;
+  int8_t rpc = RPC::SIZE;
   sock_.write_all( (char *)&rpc, 1 );
 }
 
@@ -77,8 +78,28 @@ uint64_t Client::recvSize( void )
   return size;
 }
 
+void Client::sendMaxChunk( void )
+{
+  rpcStart_ = time_now();
+  int8_t rpc = RPC::MAX_CHUNK;
+  sock_.write_all( (char *)&rpc, 1 );
+}
+
+uint64_t Client::recvMaxChunk( void )
+{
+  char data[sizeof( uint64_t )];
+  char * sizeStr = data;
+  sock_.read_all( sizeStr, sizeof( uint64_t ) );
+  uint64_t size = *reinterpret_cast<const uint64_t *>( sizeStr );
+
+  print( "max-chunk", sock_.fd_num(), ++sizePass_, size,
+    time_diff<ms>( rpcStart_ ) );
+
+  return size;
+}
+
 void Client::sendShutdown( void )
 {
-  int8_t rpc = 2;
+  int8_t rpc = RPC::EXIT;
   sock_.write_all( (char *) &rpc, 1 );
 }

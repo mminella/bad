@@ -50,6 +50,10 @@ public:
   void sendSize( void );
   uint64_t recvSize( void );
 
+  /* Return the maximum chunk size supported by the server */
+  void sendMaxChunk( void );
+  uint64_t recvMaxChunk( void );
+
   /* Shutdown the backend node */
   void sendShutdown( void );
 };
