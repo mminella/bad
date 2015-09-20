@@ -10,17 +10,14 @@ require 'net/ssh'
 require 'net/scp'
 require 'optparse'
 
+USER = 'ubuntu'
+PKEY = {}
 TAR_FILE = 'bad.tar.gz'
 
-options = {:defaults => false}
-
+options = {}
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: #{$0} [options] [hosts]
     \nDeploy a `bad.tar.gz` to a set of machines\n\n"
-
-  opts.on("-d", "--defaults", "Use default settings") do |key|
-    options[:defaults] = true
-  end
 
   options[:tar_file] = TAR_FILE
   opts.on("-t", "--dist-file STRING", "Distribution file to deploy") do |df|
@@ -36,9 +33,9 @@ optparse.parse!
 
 ARGV.each do |host|
   deployer = Deploy.new(hostname: host)
-  if options[:defaults]
-    deployer.set_opts(distfile: options[:tar_file], user: 'ubuntu', skey: {})
-  end
+  deployer.set_opts(distfile: options[:tar_file],
+                    user: USER,
+                    skey: PKEY)
   deployer.deploy!
 end
 

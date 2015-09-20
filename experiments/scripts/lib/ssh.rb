@@ -21,16 +21,18 @@ module Net
     DEF_TIMEOUT = 600
 
     def self.wait(host, user, options={})
+      # copy so can modify
+      myopts = options
       mytimeout = DEF_TIMEOUT 
-      if !options[:timeout] && !options[:timeout].nil?
-        mytimeout = options[:timeout]
+      if !myopts[:timeout] && !myopts[:timeout].nil?
+        mytimeout = myopts[:timeout]
       end
-      options[:timeout] = 5
+      myopts[:timeout] = 5
 
       st = Time.now
       while true
         begin
-          start(host, user, options)
+          start(host, user, myopts)
           return
         rescue
           if (Time.now - st) > mytimeout

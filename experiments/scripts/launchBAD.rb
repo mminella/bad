@@ -13,6 +13,8 @@ SSH_USER = 'ubuntu'
 SSH_PKEY = {} # default
 TAR_FILE = 'bad.tar.gz'
 CLUSTER_CONF = 'cluster.conf'
+MAX_PARALLEL = 20
+LAUNCH_TIMEOUT = 180
 
 nameArg = nil
 options = {}
@@ -104,7 +106,7 @@ end
 optparse.parse!
 
 if options[:key_name].nil?
-  puts "Must set a public key (`-k`) to use!"
+  $stderr.puts "Must set a public key (`-k`) to use!"
   exit 1
 end
 
@@ -128,7 +130,7 @@ i = options[:start_id]
 instances = []
 Launcher.new(options).launch! do |instance|
   instances += [instance]
-  puts "New instance (#{i}) at: #{instance.dns_name}"
+  puts "#{i}: New instance: #{instance.dns_name}"
 
   # store machine
   `echo "export M#{i}=#{instance.dns_name}" >> #{options[:file]}`
@@ -139,42 +141,52 @@ end
 
 # configure instances
 i = options[:start_id]
-Parallel.map(instances, :in_threads => instances.size) { |instance|
+threads = [instances.size, MAX_PARALLEL].min
+Parallel.map(instances, :in_threads => threads) { |instance|
   # copy since running in parallel
   j = i
   i += 1
 
-  # wait for instance to be ready and SSH up
-  puts "Waiting for instances to become ready..."
-  timeout = 120
-  while instance.status != :running && timeout > 0
-    print '.'
-    timeout = timeout - 1
-    sleep 1
+  begin
+    # wait for instance to be ready
+    print "#{j}: Waiting for instance to become ready... #{instance.dns_name}\n"
+    timeout = LAUNCH_TIMEOUT
+    while instance.status == :pending && timeout > 0
+      timeout = timeout - 1
+      sleep 1
+    end
+    if timeout <= 0
+      $stderr.print "#{j}: Timeout waiting on instance to be ready!\n"
+      exit 1
+    end
+
+    # wait for SSH to be ready
+    print "#{j}: Waiting on SSH to become ready...\n"
+    Net::SSH.wait(instance.dns_name, SSH_USER, SSH_PKEY)
+
+    # copy across cluster config
+    print "#{j}: Copy across cluster info...\n"
+    Net::SCP.start(instance.dns_name, SSH_USER, SSH_PKEY)
+      .upload!(options[:file], CLUSTER_CONF)
+
+    # setup instance
+    print "#{j}: Setting up instance...\n"
+    conf = Setup.new(host: instance.dns_name, user: SSH_USER, skey: SSH_PKEY)
+    conf.setup!
+    print "#{j}: Instance setup for B.A.D!\n"
+
+    # deploy bad
+    print "#{j}: Waiting on SSH to become ready...\n"
+    Net::SSH.wait(instance.dns_name, SSH_USER, SSH_PKEY)
+    print "#{j}: Deploying B.A.D distribution...\n"
+    deployer = Deploy.new(hostname: instance.dns_name, user: SSH_USER,
+                          skey: SSH_PKEY, distfile: options[:tar_file])
+    deployer.deploy!
+    print "#{j}: B.A.D deployed and ready!\n"
+  rescue Exception => e
+    $stderr.print
+      "#{j}: Instance failed! [#{instance.dns_name}]\n#{e.message}\n"
+    raise e
   end
-  if timeout <= 0
-    puts "Timeout waiting on instance to be ready!"
-    exit 1
-  end
-  puts "Waiting on SSH to become ready..."
-  sleep 10
-  Net::SSH.wait(instance.dns_name, SSH_USER, SSH_PKEY)
-
-  # copy across cluster config
-  Net::SCP.start(instance.dns_name, SSH_USER, SSH_PKEY)
-    .upload!(options[:file], CLUSTER_CONF)
-
-  # setup instance
-  puts "Setting up instance (#{j})..."
-  conf = Setup.new(host: instance.dns_name, user: SSH_USER, skey: SSH_PKEY)
-  conf.setup!
-  puts "Instance (#{j}) setup for B.A.D!"
-
-  # deploy bad
-  puts "Deploying a B.A.D distribution..."
-  deployer = Deploy.new(hostname: instance.dns_name, user: SSH_USER,
-                        skey: SSH_PKEY, distfile: options[:tar_file])
-  deployer.deploy!
-  puts "B.A.D deployed and ready!"
 }
 
