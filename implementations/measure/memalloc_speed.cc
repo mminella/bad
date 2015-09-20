@@ -18,7 +18,7 @@ size_t time_diff( clk::time_point t )
 {
   return chrono::duration_cast<chrono::milliseconds>(
     clk::now() - t ).count();
-} 
+}
 
 void finish_test( string str, clk::time_point t )
 {
@@ -49,18 +49,24 @@ int main( int argc, char ** argv )
     cout << "Usage: " << argv[0] << " [threads]" << endl;
     return 1;
   }
-  
+
   size_t splits = atoll( argv[1] );
 
   char * rbuf;
   char * wbuf;
-  posix_memalign((void **)&rbuf, ALIGN, COPY_SIZE); 
-  posix_memalign((void **)&wbuf, ALIGN, COPY_SIZE); 
+  if ( posix_memalign((void **)&rbuf, ALIGN, COPY_SIZE) ) {
+    fprintf(stderr, "Error using posix_memalign\n");
+    return EXIT_FAILURE;
+  }
+  if ( posix_memalign((void **)&wbuf, ALIGN, COPY_SIZE) ) {
+    fprintf(stderr, "Error using posix_memalign\n");
+    return EXIT_FAILURE;
+  }
   memset( rbuf, 0, COPY_SIZE );
 
   parallel_unpinned( rbuf, wbuf, splits );
 
   free( rbuf );
-  return 0;
+  return EXIT_SUCCESS;
 }
 

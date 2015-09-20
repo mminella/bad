@@ -70,7 +70,10 @@ void parallel( char * key, char * rbuf, size_t splits )
 int main( int argc, char ** argv )
 {
   char * rbuf;
-  posix_memalign( (void **) &rbuf, ALIGN, DATASIZE );
+  if ( posix_memalign( (void **) &rbuf, ALIGN, DATASIZE ) ) {
+    fprintf(stderr, "Error using posix_memalign\n");
+    exit( EXIT_FAILURE );
+  }
   for ( size_t i = KEYSIZE - 1; i < DATASIZE; i += KEYSIZE ) {
     rbuf[i] = 0;
   }

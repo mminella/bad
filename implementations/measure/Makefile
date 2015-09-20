@@ -1,5 +1,5 @@
 CXX=c++
-CXXFLAGS=-O3 -std=c++11 -ltbb
+CXXFLAGS=-O3 -std=c++11
 BINARIES= \
 	read \
 	random_read \
@@ -11,13 +11,24 @@ BINARIES= \
 	network_recv \
 	network_send
 
-ifeq ($(UNAME_S),linux)
-    CXXFLAGS += -lrt
-    BINARIES += async_random_read \
-		async_read
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+BINARIES += \
+	async_read \
+	async_random_read
+ASYNC := 1
 endif
 
 all: $(BINARIES)
+
+memalloc_speed: memalloc_speed.cc
+	$(CXX) $(CXXFLAGS) -o $@ $< -ltbb -lrt
+
+memcpy_speed: memcpy_speed.cc
+	$(CXX) $(CXXFLAGS) -o $@ $< -ltbb -lrt
+
+memcmp_speed: memcmp_speed.cc
+	$(CXX) $(CXXFLAGS) -o $@ $< -ltbb -lrt
 
 .PHONY: clean dist bin-dist
 
@@ -37,8 +48,10 @@ dist: $(BINARIES)
 	cp random_read dist_root/usr/bin/measure_random_read
 	cp write dist_root/usr/bin/measure_write
 	cp random_write dist_root/usr/bin/measure_random_write
-	cp async_read dist_root/usr/bin/measure_async_read
-	cp async_random_read dist_root/usr/bin/measure_async_random_read
+	if [ ${ASYNC} -eq 1 ]; then \
+	 	cp async_read dist_root/usr/bin/measure_async_read; \
+		cp async_random_read dist_root/usr/bin/measure_async_random_read; \
+	fi
 	cp network_recv dist_root/usr/bin/measure_network_recv
 	cp network_send dist_root/usr/bin/measure_network_send
 	cp test_async.py dist_root/usr/bin

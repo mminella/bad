@@ -18,7 +18,7 @@ size_t time_diff( clk::time_point t )
 {
   return chrono::duration_cast<chrono::milliseconds>(
     clk::now() - t ).count();
-} 
+}
 
 void finish_test( string str, clk::time_point t )
 {
@@ -33,7 +33,7 @@ void serial_pinned( char * rbuf, char * wbuf )
 {
   auto t0 = clk::now();
   memcpy( wbuf, rbuf, COPY_SIZE );
-  finish_test( "serial, pinned, 1, ", t0 ); 
+  finish_test( "serial, pinned, 1, ", t0 );
 }
 
 void parallel_pinned( char * rbuf, char * wbuf, size_t splits )
@@ -54,7 +54,10 @@ void parallel_pinned_n( char * rbuf, size_t splits )
 {
   char ** wbuf_i = new char*[splits];
   for ( size_t i = 0; i < splits; i++ ) {
-    posix_memalign( (void **) &wbuf_i[i], ALIGN, COPY_SIZE / splits );
+    if (posix_memalign( (void **) &wbuf_i[i], ALIGN, COPY_SIZE / splits )) {
+      fprintf(stderr, "Error using posix_memalign\n");
+      exit( EXIT_FAILURE );
+    }
     memset( wbuf_i[i], 0, COPY_SIZE / splits );
   }
 
@@ -77,9 +80,15 @@ void parallel_pinned_n( char * rbuf, size_t splits )
 int main( int argc, char ** argv )
 {
   char * rbuf;
-  posix_memalign( (void **) &rbuf, ALIGN, COPY_SIZE );
+  if ( posix_memalign( (void **) &rbuf, ALIGN, COPY_SIZE ) ) {
+    fprintf(stderr, "Error using posix_memalign\n");
+    exit( EXIT_FAILURE );
+  }
   char * wbuf;
-  posix_memalign( (void **) &wbuf, ALIGN, COPY_SIZE );
+  if ( posix_memalign( (void **) &wbuf, ALIGN, COPY_SIZE ) ) {
+    fprintf(stderr, "Error using posix_memalign\n");
+    exit( EXIT_FAILURE );
+  }
   memset( rbuf, 0, COPY_SIZE );
   memset( wbuf, 0, COPY_SIZE );
 
