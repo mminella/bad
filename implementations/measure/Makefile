@@ -22,13 +22,13 @@ endif
 all: $(BINARIES)
 
 memalloc_speed: memalloc_speed.cc
-	$(CXX) $(CXXFLAGS) -o $@ $< -ltbb -lrt
+	$(CXX) $(CXXFLAGS) -o $@ $< -ltbb
 
 memcpy_speed: memcpy_speed.cc
-	$(CXX) $(CXXFLAGS) -o $@ $< -ltbb -lrt
+	$(CXX) $(CXXFLAGS) -o $@ $< -ltbb
 
 memcmp_speed: memcmp_speed.cc
-	$(CXX) $(CXXFLAGS) -o $@ $< -ltbb -lrt
+	$(CXX) $(CXXFLAGS) -o $@ $< -ltbb
 
 .PHONY: clean dist bin-dist
 
@@ -49,7 +49,7 @@ dist: $(BINARIES)
 	cp write dist_root/usr/bin/measure_write
 	cp random_write dist_root/usr/bin/measure_random_write
 	if [ ${ASYNC} -eq 1 ]; then \
-	 	cp async_read dist_root/usr/bin/measure_async_read; \
+		cp async_read dist_root/usr/bin/measure_async_read; \
 		cp async_random_read dist_root/usr/bin/measure_async_random_read; \
 	fi
 	cp network_recv dist_root/usr/bin/measure_network_recv
