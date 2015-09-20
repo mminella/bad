@@ -3,7 +3,8 @@
 # ===================================================================
 # Arguments
 
-SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+SSH="ssh -o UserKnownHostsFile=/dev/null \
+  -o StrictHostKeyChecking=no -o LogLevel=ERROR"
 KEY=$( hostname )
 LOG='~/bad.log'
 ITERS=1
@@ -55,6 +56,9 @@ fi
 ./launchBAD.rb -f ${FILE} -k ${KEY} -c 1 \
   -n "${SAVE}-client" -d ${TARF} -i ${CLIENT} -p ${PG} -z ${ZONE} &
 PID_CLIENT=$!
+
+# Need to sleep to let backends view the newly created placement-group
+sleep 10
 
 # Backends
 ./launchBAD.rb -f ${FILE} -a -s 2 -k ${KEY} -c ${N} \
