@@ -35,11 +35,20 @@ public:
   void set_send_buffer( size_t );
   void set_recv_buffer( size_t );
 
+  /* set the socket to be non-blocking */
+  void set_non_blocking( void );
+
   /* bind socket to a specified local address (usually to listen/accept) */
   void bind( const Address & addr );
 
   /* connect socket to a specified peer address */
   void connect( const Address & addr );
+
+  /* implement (p)read + (p)write */
+  size_t read( char * buf, size_t limit ) override;
+  size_t write( const char * buf, size_t nbytes ) override;
+  size_t pread( char * buf, size_t limit, off_t offset ) override;
+  size_t pwrite( const char * buf, size_t nbytes, off_t offset ) override;
 };
 
 /* UDP socket */

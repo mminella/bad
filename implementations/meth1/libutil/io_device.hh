@@ -43,6 +43,9 @@ public:
   size_t read_all( char * buf, size_t nbytes );
   std::string read_all( size_t nbytes );
 
+  // XXX: pread & pwrite should perhaps be moved to File since sockets and
+  // other stream IO devices don't support them.
+
   virtual size_t pread( char * buf, size_t limit, off_t offset ) = 0;
   std::string pread( size_t limit, off_t offset );
   size_t pread_all( char * buf, size_t nbytes, off_t offset );

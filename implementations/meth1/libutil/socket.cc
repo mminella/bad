@@ -1,5 +1,7 @@
+#include <fcntl.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 #include "socket.hh"
 #include "exception.hh"
@@ -86,6 +88,14 @@ void Socket::set_recv_buffer( size_t size )
   setsockopt( SOL_SOCKET, SO_RCVBUF, size );
 }
 
+/* set the socket to be non-blocking */
+void Socket::set_non_blocking( void )
+{
+  int flags;
+  flags = SystemCall( "fcntl", fcntl( fd_num(), F_GETFL, 0 ) );
+  SystemCall( "fcntl", fcntl( fd_num(), F_SETFL, flags | O_NONBLOCK ) );
+}
+
 /* get the peer address the socket is connected to */
 Address Socket::peer_address( void ) const
 {
@@ -106,6 +116,63 @@ void Socket::connect( const Address & addr )
 {
   SystemCall(
     "connect", ::connect( fd_num(), &addr.to_sockaddr(), addr.size() ) );
+}
+
+/* overriden base read method */
+size_t Socket::read( char * buf, size_t limit )
+{
+  if ( limit == 0 ) {
+    throw runtime_error( "asked to read 0" );
+  }
+
+  ssize_t n = ::read( fd_num(), buf, limit );
+  if ( n < 0 ) {
+    // FIXME: perhaps should be moved into IODevice?
+    if ( n == EAGAIN or n == EWOULDBLOCK ) {
+      // FIXME: unclear if this is a good interface, but it'll do for now.
+      return 0;
+    } else {
+      throw unix_error( "read", n );
+    }
+  } else {
+    if ( n == 0 ) {
+      set_eof();
+    }
+    register_read();
+  }
+
+  return n;
+}
+
+/* overriden base write method */
+size_t Socket::write( const char * buf, size_t nbytes )
+{
+  // XXX: Handle non-blocking
+  if ( nbytes == 0 ) {
+    throw runtime_error( "nothing to write" );
+  } else if ( buf == nullptr ) {
+    throw runtime_error( "null buffer for write" );
+  }
+
+  size_t n = SystemCall( "write", ::write( fd_num(), buf, nbytes ) );
+  if ( n == 0 ) {
+    throw runtime_error( "write returned 0" );
+  }
+  register_write();
+
+  return n;
+}
+
+/* overriden base read method */
+size_t Socket::pread( char *, size_t, off_t )
+{
+  throw runtime_error( "pread not supported with sockets" );
+}
+
+/* overriden base write method */
+size_t Socket::pwrite( const char *, size_t, off_t )
+{
+  throw runtime_error( "pwrite not supported with sockets" );
 }
 
 /* receive datagram and where it came from */

@@ -10,6 +10,7 @@ using namespace std;
 
 /* virtual to allow performance improvements if io device already has an
  * internal buffer. */
+// XXX: Above is no longer true. Which is now wrong? Comment or implementation?
 string IODevice::read( size_t limit )
 {
   char buf[MAX_READ];
