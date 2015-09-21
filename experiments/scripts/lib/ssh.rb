@@ -22,7 +22,7 @@ module Net
 
     def self.wait(host, user, options={})
       # copy so can modify
-      myopts = options
+      myopts = options.clone
       mytimeout = DEF_TIMEOUT 
       if !myopts[:timeout] && !myopts[:timeout].nil?
         mytimeout = myopts[:timeout]
