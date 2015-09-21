@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Run a B.A.D experiment on an existing cluster (likely launched with
+# `launchCluster.sh`).
+
 # ===================================================================
 # Arguments
 

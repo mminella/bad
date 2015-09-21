@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Launch a B.A.D cluster, a set of backends and a single client.
+# If launching fails, exit code of 1 is returned but the machines are left up
+# in a partial state.
+
 # ===================================================================
 # Arguments
 

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Shutdown a B.A.D cluster.
+
 FILE=$1
 
 if [ -z "${FILE}" ]; then
