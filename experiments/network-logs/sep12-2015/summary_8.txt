@@ -1,0 +1,8 @@
+0 8.20359375 Gbits/sec
+1 9.549140625 Gbits/sec
+2 8.6807421875 Gbits/sec
+3 8.2499609375 Gbits/sec
+4 9.626484375 Gbits/sec
+5 9.82140625 Gbits/sec
+6 8.3575 Gbits/sec
+7 9.8372265625 Gbits/sec
