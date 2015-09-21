@@ -29,7 +29,7 @@ Circular_AIO::Circular_AIO(vector<File> &dev, vector<RecordLoc> &recs_)
       start(0),
       size(0)
 {
-    std::atomic_store(&requestExit, false);
+    requestExit = false;
 
     for (size_t i = 0; i < (dev.size() * AIO_MAX_THREADS_PER_DISK); i++) {
 	threads.emplace_back(&Circular_AIO::ioThread, this);
@@ -40,7 +40,7 @@ Circular_AIO::~Circular_AIO()
 {
     int i;
 
-    std::atomic_store(&requestExit, true);
+    requestExit = true;
 
     for (i = 0; i < (int)threads.size(); i++) {
 	cmd.send(0);

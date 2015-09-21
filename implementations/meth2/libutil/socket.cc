@@ -88,7 +88,9 @@ void Socket::set_recv_buffer( size_t size )
 
 void Socket::set_nosigpipe( void )
 {
+#ifdef SO_NOSIGPIPE
   setsockopt( SOL_SOCKET, SO_NOSIGPIPE, int( true ) );
+#endif
 }
 
 /* get the peer address the socket is connected to */

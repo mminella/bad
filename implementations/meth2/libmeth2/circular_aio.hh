@@ -18,7 +18,7 @@ public:
 private:
     void ioProcess();
     void ioThread();
-    std::atomic<bool> requestExit;
+    bool requestExit;
     Channel<int> cmd;
     Channel<int> result;
     std::vector<std::thread> threads;
