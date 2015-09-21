@@ -1,0 +1,76 @@
+# Wed Sep 16 09:45:41 PDT 2015
+record-value, 96
+seek-chunk, 188593327
+file, 4, 1166600000
+
+read-start, 1, 0, 168172393, 19768
+circular-read-start, 4, 1, 116660000000, 21342
+circular-read-total, 4, 1, 116660000000, 252447, 258803
+linear-scan, 259643
+-sort , 35673, 43
+-merge, 24445, 43
+-last , 465
+read, 1, 168172393, 261217
+network, 1, 2361223
+
+read-start, 2, 168172393, 168172393, 2642516
+circular-read-start, 4, 2, 116660000000, 2642858
+circular-read-total, 4, 2, 116660000000, 234220, 240995
+linear-scan, 242146
+-sort , 34529, 40
+-merge, 24397, 40
+-last , 1149
+read, 2, 168172393, 242488
+network, 2, 2354019
+
+read-start, 3, 336344786, 168172393, 5240060
+circular-read-start, 4, 3, 116660000000, 5240398
+circular-read-total, 4, 3, 116660000000, 233964, 240747
+linear-scan, 241293
+-sort , 32242, 38
+-merge, 22899, 38
+-last , 544
+read, 3, 168172393, 241631
+network, 3, 2359372
+
+read-start, 4, 504517179, 168172393, 7841277
+circular-read-start, 4, 4, 116660000000, 7841618
+circular-read-total, 4, 4, 116660000000, 234163, 240846
+linear-scan, 242042
+-sort , 29170, 34
+-merge, 19977, 34
+-last , 1195
+read, 4, 168172393, 242384
+network, 4, 2358392
+
+read-start, 5, 672689572, 168172393, 10442455
+circular-read-start, 4, 5, 116660000000, 10442791
+circular-read-total, 4, 5, 116660000000, 234121, 240916
+linear-scan, 241894
+-sort , 25790, 30
+-merge, 18008, 30
+-last , 976
+read, 5, 168172393, 242230
+network, 5, 2356039
+
+read-start, 6, 840861965, 168172393, 13040931
+circular-read-start, 4, 6, 116660000000, 13041277
+circular-read-total, 4, 6, 116660000000, 234086, 240790
+linear-scan, 241734
+-sort , 20623, 24
+-merge, 14306, 24
+-last , 942
+read, 6, 168172393, 242081
+network, 6, 2354362
+
+read-start, 7, 1009034358, 157565642, 15637589
+circular-read-start, 4, 7, 116660000000, 15637911
+circular-read-total, 4, 7, 116660000000, 234081, 240767
+linear-scan, 242243
+-sort , 11586, 15
+-merge, 8351, 15
+-last , 256
+read, 7, 157565642, 242564
+network, 7, 2209034
+
+exit, 18089597

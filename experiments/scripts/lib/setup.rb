@@ -64,7 +64,10 @@ class Setup
       interactive!
     end
 
-    @ssh_opts = @opts[:skey].merge({:user_known_hosts_file => '/dev/null', :paranoid => false})
+    @ssh_opts = @opts[:skey].merge({
+      :user_known_hosts_file => '/dev/null',
+      :paranoid => false
+    })
 
     # update libc and kernel
     Net::SSH.start(@opts[:host], @opts[:user], @ssh_opts) do |ssh|
@@ -87,13 +90,7 @@ class Setup
       ssh.root! "reboot"
     end
 
-    sleep 10
-    begin
-      wait_opts = @ssh_opts
-      Net::SSH.wait(@opts[:host], @opts[:user], wait_opts)
-    rescue
-      puts "Ignoring SSH timeout while waiting for machine restart"
-    end
+    Net::SSH.wait(@opts[:host], @opts[:user], @ssh_opts)
 
     # copy across some needed files
     Net::SCP.start(@opts[:host], @opts[:user], @ssh_opts)
@@ -138,13 +135,7 @@ class Setup
       ssh.root! "reboot"
     end
 
-    sleep 10
-    begin
-      wait_opts = @ssh_opts
-      Net::SSH.wait(@opts[:host], @opts[:user], wait_opts)
-    rescue
-      puts "Ignoring SSH timeout while waiting for machine restart"
-    end
+    Net::SSH.wait(@opts[:host], @opts[:user], @ssh_opts)
 
     # tune instance
     Net::SSH.start(@opts[:host], @opts[:user], @ssh_opts) do |ssh|

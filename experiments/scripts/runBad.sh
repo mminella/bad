@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Run a B.A.D experiment on an existing cluster (likely launched with
+# `launchCluster.sh`).
+
 # ===================================================================
 # Arguments
 
@@ -48,40 +51,7 @@ elif [ $MACHINE = "i2.8xlarge" ]; then
     /mnt/f/recs /mnt/g/recs /mnt/h/recs /mnt/i/recs"
 fi
 
-
-# ===================================================================
-# Launch Cluster
-
-# Client
-./launchBAD.rb -f ${FILE} -k ${KEY} -c 1 \
-  -n "${SAVE}-client" -d ${TARF} -i ${CLIENT} -p ${PG} -z ${ZONE} &
-PID_CLIENT=$!
-
-# Need to sleep to let backends view the newly created placement-group
-sleep 10
-
-# Backends
-./launchBAD.rb -f ${FILE} -a -s 2 -k ${KEY} -c ${N} \
-  -n "${SAVE}-%d" -d ${TARF} -i ${MACHINE} -p ${PG} -z ${ZONE}
-PID_BACKENDS=$!
-
-wait $PID_CLIENT
-EXIT_CLIENT=$?
-wait $PID_BACKENDS
-EXIT_BACKENDS=$?
-
-if [ ${EXIT_CLIENT} -ne 0 -o ${EXIT_BACKENDS} -ne 0 ]; then
-  echo "
-===================================================
-Launching cluster failed! (${NAME})
-==================================================="
-  ./shutdown-cluster.sh ${FILE}
-  exit 1
-fi
-
-echo "Machines setup! (${NAME})"
 source ${FILE}
-
 
 # ===================================================================
 # Experiment Helper Functions
@@ -158,6 +128,11 @@ done
 wait
 all "sudo clear_buffers"
 
+echo "
+===================================================
+Experiment setup! (${NAME})
+==================================================="
+
 
 # ===================================================================
 # Run Experiment & Copy Logs
@@ -181,13 +156,9 @@ scp ubuntu@$M1:~/bad.log $SAVE/1.bad.log
 # ===================================================================
 # Finish Experiment
 
-# Kill cluster
-./shutdown-cluster.sh ${FILE}
-
-# Done!
 echo "
-=========================
-Test [${FILE}] done!
-=========================
+===================================================
+Experiment [${FILE}] done!
+===================================================
 "
 

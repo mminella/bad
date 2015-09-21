@@ -1,0 +1,76 @@
+# Wed Sep 16 09:45:41 PDT 2015
+record-value, 96
+seek-chunk, 188593327
+file, 4, 1166600000
+
+read-start, 1, 0, 168172393, 5464
+circular-read-start, 4, 1, 116660000000, 7189
+circular-read-total, 4, 1, 116660000000, 254913, 261144
+linear-scan, 261977
+-sort , 36049, 43
+-merge, 25676, 43
+-last , 466
+read, 1, 168172393, 263702
+network, 1, 2358274
+
+read-start, 2, 168172393, 168172393, 2627752
+circular-read-start, 4, 2, 116660000000, 2628098
+circular-read-total, 4, 2, 116660000000, 234572, 241406
+linear-scan, 242556
+-sort , 34473, 40
+-merge, 24547, 40
+-last , 1148
+read, 2, 168172393, 242902
+network, 2, 2355622
+
+read-start, 3, 336344786, 168172393, 5226785
+circular-read-start, 4, 3, 116660000000, 5227138
+circular-read-total, 4, 3, 116660000000, 234512, 241362
+linear-scan, 241907
+-sort , 32066, 38
+-merge, 23174, 38
+-last , 542
+read, 3, 168172393, 242259
+network, 3, 2354602
+
+read-start, 4, 504517179, 168172393, 7823886
+circular-read-start, 4, 4, 116660000000, 7824220
+circular-read-total, 4, 4, 116660000000, 234491, 241484
+linear-scan, 242673
+-sort , 29262, 34
+-merge, 20567, 34
+-last , 1187
+read, 4, 168172393, 243007
+network, 4, 2361550
+
+read-start, 5, 672689572, 168172393, 10428483
+circular-read-start, 4, 5, 116660000000, 10428821
+circular-read-total, 4, 5, 116660000000, 234423, 241477
+linear-scan, 242450
+-sort , 25858, 30
+-merge, 18522, 30
+-last , 971
+read, 5, 168172393, 242789
+network, 5, 2354058
+
+read-start, 6, 840861965, 168172393, 13025483
+circular-read-start, 4, 6, 116660000000, 13025825
+circular-read-total, 4, 6, 116660000000, 234390, 241047
+linear-scan, 241989
+-sort , 20193, 24
+-merge, 14066, 24
+-last , 939
+read, 6, 168172393, 242331
+network, 6, 2354856
+
+read-start, 7, 1009034358, 157565642, 15623025
+circular-read-start, 4, 7, 116660000000, 15623342
+circular-read-total, 4, 7, 116660000000, 234245, 240750
+linear-scan, 242252
+-sort , 11448, 15
+-merge, 8368, 15
+-last , 285
+read, 7, 157565642, 242569
+network, 7, 2209067
+
+exit, 18075263

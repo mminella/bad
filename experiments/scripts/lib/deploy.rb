@@ -54,7 +54,10 @@ class Deploy
       exit 1
     end
 
-    @ssh_opts = @skey.merge({:user_known_hosts_file => '/dev/null', :paranoid => false})
+    @ssh_opts = @skey.merge({
+      :user_known_hosts_file => '/dev/null',
+      :paranoid => false
+    })
 
     Net::SCP.start(@hostname, @user, @ssh_opts).upload!(@tarfile, HOME)
 

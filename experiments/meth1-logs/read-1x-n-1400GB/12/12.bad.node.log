@@ -1,0 +1,76 @@
+# Wed Sep 16 09:45:41 PDT 2015
+record-value, 96
+seek-chunk, 188593327
+file, 4, 1166600000
+
+read-start, 1, 0, 168172393, 3690
+circular-read-start, 4, 1, 116660000000, 5415
+circular-read-total, 4, 1, 116660000000, 258595, 264735
+linear-scan, 265587
+-sort , 35497, 43
+-merge, 23919, 43
+-last , 466
+read, 1, 168172393, 267311
+network, 1, 2354189
+
+read-start, 2, 168172393, 168172393, 2625289
+circular-read-start, 4, 2, 116660000000, 2625626
+circular-read-total, 4, 2, 116660000000, 234480, 244053
+linear-scan, 245180
+-sort , 34042, 40
+-merge, 22937, 40
+-last , 1124
+read, 2, 168172393, 245517
+network, 2, 2354860
+
+read-start, 3, 336344786, 168172393, 5226076
+circular-read-start, 4, 3, 116660000000, 5226416
+circular-read-total, 4, 3, 116660000000, 234560, 241282
+linear-scan, 241827
+-sort , 31799, 38
+-merge, 21846, 38
+-last , 542
+read, 3, 168172393, 242167
+network, 3, 2355888
+
+read-start, 4, 504517179, 168172393, 7824622
+circular-read-start, 4, 4, 116660000000, 7824963
+circular-read-total, 4, 4, 116660000000, 234477, 240816
+linear-scan, 241990
+-sort , 28659, 34
+-merge, 19651, 34
+-last , 1171
+read, 4, 168172393, 242330
+network, 4, 2358254
+
+read-start, 5, 672689572, 168172393, 10425376
+circular-read-start, 4, 5, 116660000000, 10425715
+circular-read-total, 4, 5, 116660000000, 234588, 241231
+linear-scan, 242194
+-sort , 25504, 30
+-merge, 17424, 30
+-last , 960
+read, 5, 168172393, 242533
+network, 5, 2356254
+
+read-start, 6, 840861965, 168172393, 13024294
+circular-read-start, 4, 6, 116660000000, 13024630
+circular-read-total, 4, 6, 116660000000, 234299, 240559
+linear-scan, 241502
+-sort , 20228, 24
+-merge, 13779, 24
+-last , 940
+read, 6, 168172393, 241838
+network, 6, 2355752
+
+read-start, 7, 1009034358, 157565642, 15621927
+circular-read-start, 4, 7, 116660000000, 15622242
+circular-read-total, 4, 7, 116660000000, 234098, 240267
+linear-scan, 241761
+-sort , 11444, 15
+-merge, 8257, 15
+-last , 258
+read, 7, 157565642, 242076
+network, 7, 2207802
+
+exit, 18072805
