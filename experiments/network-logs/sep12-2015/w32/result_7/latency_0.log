@@ -1,0 +1,15 @@
+PING 172.30.0.105 (172.30.0.105) 56(84) bytes of data.
+64 bytes from 172.30.0.105: icmp_seq=1 ttl=64 time=8.28 ms
+64 bytes from 172.30.0.105: icmp_seq=2 ttl=64 time=8.83 ms
+64 bytes from 172.30.0.105: icmp_seq=3 ttl=64 time=7.57 ms
+64 bytes from 172.30.0.105: icmp_seq=4 ttl=64 time=6.49 ms
+64 bytes from 172.30.0.105: icmp_seq=5 ttl=64 time=7.09 ms
+64 bytes from 172.30.0.105: icmp_seq=6 ttl=64 time=8.42 ms
+64 bytes from 172.30.0.105: icmp_seq=7 ttl=64 time=7.62 ms
+64 bytes from 172.30.0.105: icmp_seq=8 ttl=64 time=7.39 ms
+64 bytes from 172.30.0.105: icmp_seq=9 ttl=64 time=9.85 ms
+64 bytes from 172.30.0.105: icmp_seq=10 ttl=64 time=9.25 ms
+
+--- 172.30.0.105 ping statistics ---
+10 packets transmitted, 10 received, 0% packet loss, time 9014ms
+rtt min/avg/max/mdev = 6.490/8.082/9.851/0.987 ms

@@ -1,0 +1,15 @@
+PING 172.30.0.117 (172.30.0.117) 56(84) bytes of data.
+64 bytes from 172.30.0.117: icmp_seq=1 ttl=64 time=11.7 ms
+64 bytes from 172.30.0.117: icmp_seq=2 ttl=64 time=9.33 ms
+64 bytes from 172.30.0.117: icmp_seq=3 ttl=64 time=12.0 ms
+64 bytes from 172.30.0.117: icmp_seq=4 ttl=64 time=11.9 ms
+64 bytes from 172.30.0.117: icmp_seq=5 ttl=64 time=11.7 ms
+64 bytes from 172.30.0.117: icmp_seq=6 ttl=64 time=8.91 ms
+64 bytes from 172.30.0.117: icmp_seq=7 ttl=64 time=10.9 ms
+64 bytes from 172.30.0.117: icmp_seq=8 ttl=64 time=9.46 ms
+64 bytes from 172.30.0.117: icmp_seq=9 ttl=64 time=8.33 ms
+64 bytes from 172.30.0.117: icmp_seq=10 ttl=64 time=10.5 ms
+
+--- 172.30.0.117 ping statistics ---
+10 packets transmitted, 10 received, 0% packet loss, time 9015ms
+rtt min/avg/max/mdev = 8.331/10.511/12.080/1.327 ms

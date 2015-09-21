@@ -1,0 +1,7 @@
+------------------------------------------------------------
+Client connecting to 172.30.0.115, TCP port 5001
+TCP window size: 64.0 MByte (default)
+------------------------------------------------------------
+[  3] local 172.30.0.123 port 53060 connected with 172.30.0.115 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-100.1 sec  5.97 GBytes   512 Mbits/sec

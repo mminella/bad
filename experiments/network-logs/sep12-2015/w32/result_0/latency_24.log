@@ -1,0 +1,15 @@
+PING 172.30.0.118 (172.30.0.118) 56(84) bytes of data.
+64 bytes from 172.30.0.118: icmp_seq=1 ttl=64 time=7.74 ms
+64 bytes from 172.30.0.118: icmp_seq=2 ttl=64 time=6.67 ms
+64 bytes from 172.30.0.118: icmp_seq=3 ttl=64 time=5.12 ms
+64 bytes from 172.30.0.118: icmp_seq=4 ttl=64 time=5.27 ms
+64 bytes from 172.30.0.118: icmp_seq=5 ttl=64 time=4.29 ms
+64 bytes from 172.30.0.118: icmp_seq=6 ttl=64 time=7.27 ms
+64 bytes from 172.30.0.118: icmp_seq=7 ttl=64 time=5.86 ms
+64 bytes from 172.30.0.118: icmp_seq=8 ttl=64 time=6.83 ms
+64 bytes from 172.30.0.118: icmp_seq=9 ttl=64 time=9.99 ms
+64 bytes from 172.30.0.118: icmp_seq=10 ttl=64 time=8.08 ms
+
+--- 172.30.0.118 ping statistics ---
+10 packets transmitted, 10 received, 0% packet loss, time 9012ms
+rtt min/avg/max/mdev = 4.299/6.717/9.999/1.590 ms

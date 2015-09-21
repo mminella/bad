@@ -1,0 +1,15 @@
+PING 172.30.0.98 (172.30.0.98) 56(84) bytes of data.
+64 bytes from 172.30.0.98: icmp_seq=1 ttl=64 time=8.32 ms
+64 bytes from 172.30.0.98: icmp_seq=2 ttl=64 time=8.81 ms
+64 bytes from 172.30.0.98: icmp_seq=3 ttl=64 time=9.93 ms
+64 bytes from 172.30.0.98: icmp_seq=4 ttl=64 time=10.8 ms
+64 bytes from 172.30.0.98: icmp_seq=5 ttl=64 time=10.1 ms
+64 bytes from 172.30.0.98: icmp_seq=6 ttl=64 time=9.19 ms
+64 bytes from 172.30.0.98: icmp_seq=7 ttl=64 time=6.48 ms
+64 bytes from 172.30.0.98: icmp_seq=8 ttl=64 time=6.63 ms
+64 bytes from 172.30.0.98: icmp_seq=9 ttl=64 time=9.17 ms
+64 bytes from 172.30.0.98: icmp_seq=10 ttl=64 time=9.50 ms
+
+--- 172.30.0.98 ping statistics ---
+10 packets transmitted, 10 received, 0% packet loss, time 9011ms
+rtt min/avg/max/mdev = 6.480/8.905/10.854/1.350 ms

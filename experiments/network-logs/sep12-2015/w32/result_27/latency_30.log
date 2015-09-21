@@ -1,0 +1,15 @@
+PING 172.30.0.116 (172.30.0.116) 56(84) bytes of data.
+64 bytes from 172.30.0.116: icmp_seq=1 ttl=64 time=13.4 ms
+64 bytes from 172.30.0.116: icmp_seq=2 ttl=64 time=14.1 ms
+64 bytes from 172.30.0.116: icmp_seq=3 ttl=64 time=15.1 ms
+64 bytes from 172.30.0.116: icmp_seq=4 ttl=64 time=13.3 ms
+64 bytes from 172.30.0.116: icmp_seq=5 ttl=64 time=15.7 ms
+64 bytes from 172.30.0.116: icmp_seq=6 ttl=64 time=18.0 ms
+64 bytes from 172.30.0.116: icmp_seq=7 ttl=64 time=14.8 ms
+64 bytes from 172.30.0.116: icmp_seq=8 ttl=64 time=11.7 ms
+64 bytes from 172.30.0.116: icmp_seq=9 ttl=64 time=11.7 ms
+64 bytes from 172.30.0.116: icmp_seq=10 ttl=64 time=11.7 ms
+
+--- 172.30.0.116 ping statistics ---
+10 packets transmitted, 10 received, 0% packet loss, time 9013ms
+rtt min/avg/max/mdev = 11.710/14.002/18.021/1.924 ms

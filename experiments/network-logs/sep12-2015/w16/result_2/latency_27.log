@@ -1,0 +1,15 @@
+PING 172.30.0.121 (172.30.0.121) 56(84) bytes of data.
+64 bytes from 172.30.0.121: icmp_seq=1 ttl=64 time=10.0 ms
+64 bytes from 172.30.0.121: icmp_seq=2 ttl=64 time=10.7 ms
+64 bytes from 172.30.0.121: icmp_seq=3 ttl=64 time=10.9 ms
+64 bytes from 172.30.0.121: icmp_seq=4 ttl=64 time=13.6 ms
+64 bytes from 172.30.0.121: icmp_seq=5 ttl=64 time=13.2 ms
+64 bytes from 172.30.0.121: icmp_seq=6 ttl=64 time=13.7 ms
+64 bytes from 172.30.0.121: icmp_seq=7 ttl=64 time=13.8 ms
+64 bytes from 172.30.0.121: icmp_seq=8 ttl=64 time=8.63 ms
+64 bytes from 172.30.0.121: icmp_seq=9 ttl=64 time=10.3 ms
+64 bytes from 172.30.0.121: icmp_seq=10 ttl=64 time=13.1 ms
+
+--- 172.30.0.121 ping statistics ---
+10 packets transmitted, 10 received, 0% packet loss, time 9011ms
+rtt min/avg/max/mdev = 8.634/11.833/13.806/1.805 ms
