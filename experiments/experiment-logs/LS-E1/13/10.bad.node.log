@@ -1,0 +1,77 @@
+# Sun Sep 20 20:49:00 PDT 2015
+memory, 32170233856
+record-value, 112
+seek-chunk, 171511808
+file, 4, 1076900000
+
+read-start, 1, 0, 171511808, 8822
+circular-read-start, 4, 1, 107690000000, 10540
+circular-read-total, 4, 1, 107690000000, 236213, 241902
+linear-scan, 242894
+-sort , 37572, 41
+-merge, 22192, 41
+-last , 991
+read, 1, 171511808, 244612
+network, 1, 199733
+
+read-start, 2, 171511808, 171511808, 453174
+circular-read-start, 4, 2, 107690000000, 453514
+circular-read-total, 4, 2, 107690000000, 216299, 222664
+linear-scan, 223141
+-sort , 35371, 39
+-merge, 20698, 39
+-last , 477
+read, 2, 171511808, 223482
+network, 2, 197633
+
+read-start, 3, 343023616, 171511808, 874306
+circular-read-start, 4, 3, 107690000000, 874645
+circular-read-total, 4, 3, 107690000000, 216315, 222742
+linear-scan, 223697
+-sort , 32752, 36
+-merge, 19434, 36
+-last , 431
+read, 3, 171511808, 224036
+network, 3, 196222
+
+read-start, 4, 514535424, 171511808, 1294582
+circular-read-start, 4, 4, 107690000000, 1294923
+circular-read-total, 4, 4, 107690000000, 216160, 222584
+linear-scan, 223168
+-sort , 29368, 32
+-merge, 17225, 32
+-last , 584
+read, 4, 171511808, 223509
+network, 4, 194381
+
+read-start, 5, 686047232, 171511808, 1712531
+circular-read-start, 4, 5, 107690000000, 1712870
+circular-read-total, 4, 5, 107690000000, 216337, 222996
+linear-scan, 224332
+-sort , 24542, 26
+-merge, 14611, 26
+-last , 1335
+read, 5, 171511808, 224672
+network, 5, 196495
+
+read-start, 6, 857559040, 171511808, 2133732
+circular-read-start, 4, 6, 107690000000, 2134071
+circular-read-total, 4, 6, 107690000000, 216211, 222541
+linear-scan, 223489
+-sort , 16902, 18
+-merge, 10062, 18
+-last , 947
+read, 6, 171511808, 223828
+network, 6, 194670
+
+read-start, 7, 1029070848, 47829152, 2552264
+circular-read-start, 4, 7, 107690000000, 2552359
+circular-read-total, 4, 7, 107690000000, 216201, 222495
+linear-scan, 222879
+-sort , 3596, 14
+-merge, 2174, 14
+-last , 383
+read, 7, 47829152, 222973
+network, 7, 52791
+
+exit, 2833017

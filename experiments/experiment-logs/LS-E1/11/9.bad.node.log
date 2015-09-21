@@ -1,0 +1,87 @@
+# Sun Sep 20 20:16:46 PDT 2015
+memory, 32170233856
+record-value, 112
+seek-chunk, 171511808
+file, 4, 1272700000
+
+read-start, 1, 0, 171511808, 7680
+circular-read-start, 4, 1, 127270000000, 9273
+circular-read-total, 4, 1, 127270000000, 278359, 285313
+linear-scan, 286362
+-sort , 39872, 44
+-merge, 23894, 44
+-last , 413
+read, 1, 171511808, 287955
+network, 1, 196553
+
+read-start, 2, 171511808, 171511808, 492200
+circular-read-start, 4, 2, 127270000000, 492543
+circular-read-total, 4, 2, 127270000000, 255824, 262630
+linear-scan, 263980
+-sort , 38084, 41
+-merge, 22605, 41
+-last , 1348
+read, 2, 171511808, 264323
+network, 2, 196437
+
+read-start, 3, 343023616, 171511808, 952964
+circular-read-start, 4, 3, 127270000000, 953305
+circular-read-total, 4, 3, 127270000000, 255860, 262584
+linear-scan, 263456
+-sort , 35670, 39
+-merge, 21169, 39
+-last , 870
+read, 3, 171511808, 263796
+network, 3, 197894
+
+read-start, 4, 514535424, 171511808, 1414666
+circular-read-start, 4, 4, 127270000000, 1415008
+circular-read-total, 4, 4, 127270000000, 256575, 263302
+linear-scan, 264226
+-sort , 32906, 36
+-merge, 19490, 36
+-last , 923
+read, 4, 171511808, 264568
+network, 4, 196982
+
+read-start, 5, 686047232, 171511808, 1876221
+circular-read-start, 4, 5, 127270000000, 1876562
+circular-read-total, 4, 5, 127270000000, 258349, 265561
+linear-scan, 266853
+-sort , 29842, 32
+-merge, 17869, 32
+-last , 1291
+read, 5, 171511808, 267194
+network, 5, 194877
+
+read-start, 6, 857559040, 171511808, 2338297
+circular-read-start, 4, 6, 127270000000, 2338638
+circular-read-total, 4, 6, 127270000000, 258964, 266307
+linear-scan, 267496
+-sort , 25466, 27
+-merge, 15416, 27
+-last , 1188
+read, 6, 171511808, 267837
+network, 6, 195460
+
+read-start, 7, 1029070848, 171511808, 2801602
+circular-read-start, 4, 7, 127270000000, 2801966
+circular-read-total, 4, 7, 127270000000, 258329, 265730
+linear-scan, 266270
+-sort , 18395, 20
+-merge, 11291, 20
+-last , 449
+read, 7, 171511808, 266634
+network, 7, 194596
+
+read-start, 8, 1200582656, 72117344, 3263074
+circular-read-start, 4, 8, 127270000000, 3263226
+circular-read-total, 4, 8, 127270000000, 256489, 263424
+linear-scan, 264140
+-sort , 5519, 15
+-merge, 3619, 15
+-last , 130
+read, 8, 72117344, 264291
+network, 8, 80264
+
+exit, 3610096

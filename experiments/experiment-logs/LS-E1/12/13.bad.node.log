@@ -1,0 +1,77 @@
+# Sun Sep 20 20:21:35 PDT 2015
+memory, 32170233856
+record-value, 112
+seek-chunk, 171511808
+file, 4, 1166700000
+
+read-start, 1, 0, 171511808, 1629
+circular-read-start, 4, 1, 116670000000, 3459
+circular-read-total, 4, 1, 116670000000, 259150, 265441
+linear-scan, 266615
+-sort , 38028, 42
+-merge, 21924, 42
+-last , 1173
+read, 1, 171511808, 268445
+network, 1, 194473
+
+read-start, 2, 171511808, 171511808, 464552
+circular-read-start, 4, 2, 116670000000, 464892
+circular-read-total, 4, 2, 116670000000, 234338, 241110
+linear-scan, 241972
+-sort , 36191, 40
+-merge, 21117, 40
+-last , 861
+read, 2, 171511808, 242313
+network, 2, 197789
+
+read-start, 3, 343023616, 171511808, 904658
+circular-read-start, 4, 3, 116670000000, 905000
+circular-read-total, 4, 3, 116670000000, 234404, 241089
+linear-scan, 242215
+-sort , 33608, 37
+-merge, 19732, 37
+-last , 1124
+read, 3, 171511808, 242558
+network, 3, 194763
+
+read-start, 4, 514535424, 171511808, 1342011
+circular-read-start, 4, 4, 116670000000, 1342351
+circular-read-total, 4, 4, 116670000000, 234677, 241736
+linear-scan, 242471
+-sort , 30804, 34
+-merge, 18207, 34
+-last , 733
+read, 4, 171511808, 242811
+network, 4, 197268
+
+read-start, 5, 686047232, 171511808, 1782110
+circular-read-start, 4, 5, 116670000000, 1782453
+circular-read-total, 4, 5, 116670000000, 236092, 242493
+linear-scan, 243826
+-sort , 26968, 29
+-merge, 15610, 29
+-last , 1332
+read, 5, 171511808, 244170
+network, 5, 195267
+
+read-start, 6, 857559040, 171511808, 2221792
+circular-read-start, 4, 6, 116670000000, 2222132
+circular-read-total, 4, 6, 116670000000, 236423, 242993
+linear-scan, 243907
+-sort , 21184, 23
+-merge, 12370, 23
+-last , 912
+read, 6, 171511808, 244247
+network, 6, 195001
+
+read-start, 7, 1029070848, 137629152, 2661081
+circular-read-start, 4, 7, 116670000000, 2661355
+circular-read-total, 4, 7, 116670000000, 236181, 242503
+linear-scan, 243872
+-sort , 10596, 15
+-merge, 6364, 15
+-last , 242
+read, 7, 137629152, 244146
+network, 7, 156467
+
+exit, 3062213

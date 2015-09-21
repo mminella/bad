@@ -1,0 +1,77 @@
+# Sun Sep 20 20:21:35 PDT 2015
+memory, 32170233856
+record-value, 112
+seek-chunk, 171511808
+file, 4, 1166700000
+
+read-start, 1, 0, 171511808, 17281
+circular-read-start, 4, 1, 116670000000, 19022
+circular-read-total, 4, 1, 116670000000, 255975, 262000
+linear-scan, 263163
+-sort , 38504, 42
+-merge, 22781, 42
+-last , 1161
+read, 1, 171511808, 264903
+network, 1, 199000
+
+read-start, 2, 171511808, 171511808, 481189
+circular-read-start, 4, 2, 116670000000, 481529
+circular-read-total, 4, 2, 116670000000, 234317, 240695
+linear-scan, 241558
+-sort , 36575, 40
+-merge, 22346, 40
+-last , 861
+read, 2, 171511808, 241898
+network, 2, 196792
+
+read-start, 3, 343023616, 171511808, 919884
+circular-read-start, 4, 3, 116670000000, 920224
+circular-read-total, 4, 3, 116670000000, 234318, 241172
+linear-scan, 242299
+-sort , 34478, 37
+-merge, 20720, 37
+-last , 1125
+read, 3, 171511808, 242639
+network, 3, 195228
+
+read-start, 4, 514535424, 171511808, 1357796
+circular-read-start, 4, 4, 116670000000, 1358137
+circular-read-total, 4, 4, 116670000000, 234206, 240948
+linear-scan, 241686
+-sort , 31055, 34
+-merge, 18615, 34
+-last , 737
+read, 4, 171511808, 242027
+network, 4, 196780
+
+read-start, 5, 686047232, 171511808, 1796638
+circular-read-start, 4, 5, 116670000000, 1796979
+circular-read-total, 4, 5, 116670000000, 234404, 241113
+linear-scan, 242467
+-sort , 27281, 29
+-merge, 16372, 29
+-last , 1352
+read, 5, 171511808, 242808
+network, 5, 196282
+
+read-start, 6, 857559040, 171511808, 2235732
+circular-read-start, 4, 6, 116670000000, 2236076
+circular-read-total, 4, 6, 116670000000, 234369, 241160
+linear-scan, 242085
+-sort , 21419, 23
+-merge, 13008, 23
+-last , 924
+read, 6, 171511808, 242429
+network, 6, 197904
+
+read-start, 7, 1029070848, 137629152, 2676069
+circular-read-start, 4, 7, 116670000000, 2676343
+circular-read-total, 4, 7, 116670000000, 234337, 241081
+linear-scan, 242471
+-sort , 10842, 15
+-merge, 6920, 15
+-last , 248
+read, 7, 137629152, 242745
+network, 7, 156732
+
+exit, 3077731

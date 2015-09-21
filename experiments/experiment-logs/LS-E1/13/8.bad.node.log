@@ -1,0 +1,77 @@
+# Sun Sep 20 20:49:00 PDT 2015
+memory, 32170233856
+record-value, 112
+seek-chunk, 171511808
+file, 4, 1076900000
+
+read-start, 1, 0, 171511808, 12256
+circular-read-start, 4, 1, 107690000000, 13866
+circular-read-total, 4, 1, 107690000000, 238927, 244541
+linear-scan, 245539
+-sort , 37006, 41
+-merge, 21575, 41
+-last , 998
+read, 1, 171511808, 247149
+network, 1, 197002
+
+read-start, 2, 171511808, 171511808, 456467
+circular-read-start, 4, 2, 107690000000, 456811
+circular-read-total, 4, 2, 107690000000, 217055, 223370
+linear-scan, 223846
+-sort , 34833, 39
+-merge, 20621, 39
+-last , 476
+read, 2, 171511808, 224190
+network, 2, 196515
+
+read-start, 3, 343023616, 171511808, 877189
+circular-read-start, 4, 3, 107690000000, 877534
+circular-read-total, 4, 3, 107690000000, 216751, 223089
+linear-scan, 224001
+-sort , 32262, 36
+-merge, 19061, 36
+-last , 433
+read, 3, 171511808, 224346
+network, 3, 197372
+
+read-start, 4, 514535424, 171511808, 1298914
+circular-read-start, 4, 4, 107690000000, 1299268
+circular-read-total, 4, 4, 107690000000, 216480, 222849
+linear-scan, 223429
+-sort , 28840, 32
+-merge, 17055, 32
+-last , 579
+read, 4, 171511808, 223783
+network, 4, 193867
+
+read-start, 5, 686047232, 171511808, 1716617
+circular-read-start, 4, 5, 107690000000, 1716964
+circular-read-total, 4, 5, 107690000000, 216382, 222736
+linear-scan, 224049
+-sort , 23966, 26
+-merge, 13984, 26
+-last , 1312
+read, 5, 171511808, 224396
+network, 5, 195282
+
+read-start, 6, 857559040, 171511808, 2136344
+circular-read-start, 4, 6, 107690000000, 2136686
+circular-read-total, 4, 6, 107690000000, 216235, 222564
+linear-scan, 223498
+-sort , 16481, 18
+-merge, 9605, 18
+-last , 933
+read, 6, 171511808, 223841
+network, 6, 195454
+
+read-start, 7, 1029070848, 47829152, 2555694
+circular-read-start, 4, 7, 107690000000, 2555790
+circular-read-total, 4, 7, 107690000000, 216158, 222686
+linear-scan, 223067
+-sort , 3573, 14
+-merge, 2204, 14
+-last , 380
+read, 7, 47829152, 223163
+network, 7, 52686
+
+exit, 2836400

@@ -1,0 +1,77 @@
+# Sun Sep 20 20:49:00 PDT 2015
+memory, 32170233856
+record-value, 112
+seek-chunk, 171511808
+file, 4, 1076900000
+
+read-start, 1, 0, 171511808, 3592
+circular-read-start, 4, 1, 107690000000, 5155
+circular-read-total, 4, 1, 107690000000, 237786, 243519
+linear-scan, 244521
+-sort , 36936, 41
+-merge, 21551, 41
+-last , 1001
+read, 1, 171511808, 246084
+network, 1, 199118
+
+read-start, 2, 171511808, 171511808, 448845
+circular-read-start, 4, 2, 107690000000, 449185
+circular-read-total, 4, 2, 107690000000, 216589, 223273
+linear-scan, 223754
+-sort , 35047, 39
+-merge, 20706, 39
+-last , 480
+read, 2, 171511808, 224094
+network, 2, 195817
+
+read-start, 3, 343023616, 171511808, 868774
+circular-read-start, 4, 3, 107690000000, 869115
+circular-read-total, 4, 3, 107690000000, 216383, 222988
+linear-scan, 223945
+-sort , 32418, 36
+-merge, 19176, 36
+-last , 433
+read, 3, 171511808, 224285
+network, 3, 196320
+
+read-start, 4, 514535424, 171511808, 1289418
+circular-read-start, 4, 4, 107690000000, 1289759
+circular-read-total, 4, 4, 107690000000, 216329, 222647
+linear-scan, 223227
+-sort , 29047, 32
+-merge, 17187, 32
+-last , 579
+read, 4, 171511808, 223568
+network, 4, 195006
+
+read-start, 5, 686047232, 171511808, 1708040
+circular-read-start, 4, 5, 107690000000, 1708382
+circular-read-total, 4, 5, 107690000000, 216313, 222855
+linear-scan, 224182
+-sort , 24456, 26
+-merge, 14250, 26
+-last , 1326
+read, 5, 171511808, 224524
+network, 5, 196205
+
+read-start, 6, 857559040, 171511808, 2128773
+circular-read-start, 4, 6, 107690000000, 2129114
+circular-read-total, 4, 6, 107690000000, 216465, 223143
+linear-scan, 224088
+-sort , 16932, 18
+-merge, 10227, 18
+-last , 945
+read, 6, 171511808, 224429
+network, 6, 193892
+
+read-start, 7, 1029070848, 47829152, 2547142
+circular-read-start, 4, 7, 107690000000, 2547237
+circular-read-total, 4, 7, 107690000000, 216340, 222948
+linear-scan, 223326
+-sort , 3598, 14
+-merge, 2241, 14
+-last , 377
+read, 7, 47829152, 223421
+network, 7, 52204
+
+exit, 2827385

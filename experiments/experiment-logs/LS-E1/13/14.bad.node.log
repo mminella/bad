@@ -1,0 +1,77 @@
+# Sun Sep 20 20:49:00 PDT 2015
+memory, 32170233856
+record-value, 112
+seek-chunk, 171511808
+file, 4, 1076900000
+
+read-start, 1, 0, 171511808, 1847
+circular-read-start, 4, 1, 107690000000, 3588
+circular-read-total, 4, 1, 107690000000, 237366, 242947
+linear-scan, 243950
+-sort , 37112, 41
+-merge, 21492, 41
+-last , 1002
+read, 1, 171511808, 245692
+network, 1, 201582
+
+read-start, 2, 171511808, 171511808, 449286
+circular-read-start, 4, 2, 107690000000, 449628
+circular-read-total, 4, 2, 107690000000, 216692, 222780
+linear-scan, 223257
+-sort , 34991, 39
+-merge, 20517, 39
+-last , 475
+read, 2, 171511808, 223599
+network, 2, 194039
+
+read-start, 3, 343023616, 171511808, 866965
+circular-read-start, 4, 3, 107690000000, 867305
+circular-read-total, 4, 3, 107690000000, 216654, 222729
+linear-scan, 223677
+-sort , 32341, 36
+-merge, 18891, 36
+-last , 432
+read, 3, 171511808, 224017
+network, 3, 197230
+
+read-start, 4, 514535424, 171511808, 1288247
+circular-read-start, 4, 4, 107690000000, 1288587
+circular-read-total, 4, 4, 107690000000, 216570, 222684
+linear-scan, 223261
+-sort , 28944, 32
+-merge, 16902, 32
+-last , 576
+read, 4, 171511808, 223601
+network, 4, 193958
+
+read-start, 5, 686047232, 171511808, 1705844
+circular-read-start, 4, 5, 107690000000, 1706185
+circular-read-total, 4, 5, 107690000000, 216631, 222751
+linear-scan, 224088
+-sort , 24345, 26
+-merge, 14118, 26
+-last , 1335
+read, 5, 171511808, 224429
+network, 5, 196565
+
+read-start, 6, 857559040, 171511808, 2126850
+circular-read-start, 4, 6, 107690000000, 2127192
+circular-read-total, 4, 6, 107690000000, 216378, 222367
+linear-scan, 223311
+-sort , 16624, 18
+-merge, 9639, 18
+-last , 943
+read, 6, 171511808, 223653
+network, 6, 194871
+
+read-start, 7, 1029070848, 47829152, 2545400
+circular-read-start, 4, 7, 107690000000, 2545495
+circular-read-total, 4, 7, 107690000000, 216394, 222274
+linear-scan, 222658
+-sort , 3562, 14
+-merge, 2136, 14
+-last , 383
+read, 7, 47829152, 222753
+network, 7, 52418
+
+exit, 2825654

@@ -1,0 +1,77 @@
+# Sun Sep 20 20:49:00 PDT 2015
+memory, 32170233856
+record-value, 112
+seek-chunk, 171511808
+file, 4, 1076900000
+
+read-start, 1, 0, 171511808, 6888
+circular-read-start, 4, 1, 107690000000, 8639
+circular-read-total, 4, 1, 107690000000, 236979, 242724
+linear-scan, 243724
+-sort , 37671, 41
+-merge, 21797, 41
+-last , 999
+read, 1, 171511808, 245475
+network, 1, 195606
+
+read-start, 2, 171511808, 171511808, 448010
+circular-read-start, 4, 2, 107690000000, 448349
+circular-read-total, 4, 2, 107690000000, 216381, 223177
+linear-scan, 223655
+-sort , 35720, 39
+-merge, 20894, 39
+-last , 477
+read, 2, 171511808, 223994
+network, 2, 199222
+
+read-start, 3, 343023616, 171511808, 871240
+circular-read-start, 4, 3, 107690000000, 871581
+circular-read-total, 4, 3, 107690000000, 216245, 222804
+linear-scan, 223735
+-sort , 32654, 36
+-merge, 19120, 36
+-last , 433
+read, 3, 171511808, 224076
+network, 3, 197153
+
+read-start, 4, 514535424, 171511808, 1292515
+circular-read-start, 4, 4, 107690000000, 1292855
+circular-read-total, 4, 4, 107690000000, 216311, 222953
+linear-scan, 223539
+-sort , 29210, 32
+-merge, 17154, 32
+-last , 585
+read, 4, 171511808, 223879
+network, 4, 194528
+
+read-start, 5, 686047232, 171511808, 1710961
+circular-read-start, 4, 5, 107690000000, 1711301
+circular-read-total, 4, 5, 107690000000, 216022, 222653
+linear-scan, 223996
+-sort , 24502, 26
+-merge, 14031, 26
+-last , 1342
+read, 5, 171511808, 224335
+network, 5, 196073
+
+read-start, 6, 857559040, 171511808, 2131417
+circular-read-start, 4, 6, 107690000000, 2131756
+circular-read-total, 4, 6, 107690000000, 216182, 222768
+linear-scan, 223704
+-sort , 16807, 18
+-merge, 9759, 18
+-last , 936
+read, 6, 171511808, 224044
+network, 6, 194998
+
+read-start, 7, 1029070848, 47829152, 2550490
+circular-read-start, 4, 7, 107690000000, 2550584
+circular-read-total, 4, 7, 107690000000, 216166, 222660
+linear-scan, 223036
+-sort , 3597, 14
+-merge, 2147, 14
+-last , 375
+read, 7, 47829152, 223131
+network, 7, 52055
+
+exit, 2830727
