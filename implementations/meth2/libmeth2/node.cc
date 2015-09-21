@@ -2,6 +2,7 @@
 #include <cassert>
 #include <system_error>
 #include <vector>
+#include <chrono>
 #include <utility>
 
 #include "address.hh"
@@ -34,12 +35,13 @@ Node::Node( vector<string> files, string port )
   lpass_{0}
 {
     for (string &f : files) {
-	data_.emplace_back(f.c_str(), O_RDONLY | O_DIRECT);
+	data_.emplace_back(f.c_str(), O_RDONLY);
     }
 }
 
 void Node::Initialize( void )
 {
+    auto start = time_now();
     // Load records
     recs_.reserve(Size());
     for (size_t d = 0; d < data_.size(); d++) {
@@ -58,8 +60,16 @@ void Node::Initialize( void )
 	}
     }
 
+    auto loadTime = time_diff<ms>(start);
+    start = time_now();
+
     // Sort
     rec_sort(recs_.begin(), recs_.end());
+
+    auto sortTime = time_diff<ms>(start);
+
+    cout << "load: " << loadTime << "mS" << endl;
+    cout << "sort: " << sortTime << "mS" << endl;
 
     return;
 }
