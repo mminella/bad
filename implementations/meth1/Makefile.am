@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = libutil libsort libmeth1 app experiments
+SUBDIRS = libutil libsort libmeth1 libmeth4 app experiments
 
 .PHONY: format check-all bin-dist recs-1gb recs-10gb recs-30gb
 
@@ -63,4 +63,5 @@ TESTS = \
 	test/sort_node_multi.test \
 	test/sort_node_r.test \
 	test/sort_overlap_channel.test \
-	test/sort_overlap_io.test
+	test/sort_overlap_io.test \
+	test/meth4_node.test

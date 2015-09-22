@@ -1,0 +1,45 @@
+#!/bin/bash
+
+rm -f ${srcdir}/test/buckets/*
+
+${srcdir}/libmeth4/meth4_node "localhost" 9000 \
+  ${srcdir}/test/meth4_node.test.conf \
+  ${srcdir}/test/in.s0000.e1000.recs &
+NODE_PID1=$!
+
+${srcdir}/libmeth4/meth4_node "127.0.0.1" 9001 \
+  ${srcdir}/test/meth4_node.test.conf \
+  ${srcdir}/test/in.s1000.e2000.recs &
+NODE_PID2=$!
+
+${srcdir}/libmeth4/meth4_node "127.0.0.2" 9002 \
+  ${srcdir}/test/meth4_node.test.conf \
+  ${srcdir}/test/in.s2000.e3000.recs &
+NODE_PID3=$!
+
+wait $NODE_PID1 2>/dev/null
+wait $NODE_PID2 2>/dev/null
+wait $NODE_PID3 2>/dev/null
+
+n=0
+for i in `ls ${srcdir}/test/buckets/sorted*`; do
+  ${srcdir}/../../gensort/valsort -o ${srcdir}/test/buckets/${n}.sum $i
+  n=$(( ${n} + 1 ))
+done
+
+ALLSUMS=$( ls ${srcdir}/test/buckets/*.sum )
+cat ${ALLSUMS} > ${srcdir}/test/buckets/all.sum
+OUT=$( ${srcdir}/../../gensort/valsort -s ${srcdir}/test/buckets/all.sum 2>&1 )
+OUTEXIT=$?
+HASH=$( echo ${OUT} | cut -d' ' -f4 )
+
+echo "-----"
+echo $OUT
+echo "-----"
+
+if [ ${HASH} != "5d28248a65f" ]; then
+  echo "Bad hash"
+  exit 1
+fi
+
+exit ${OUTEXIT}

@@ -3,9 +3,7 @@ bad.tar.gz
 dist_root
 
 # generated test files
-test/recs-1gb
-test/recs-5gb
-test/recs-10gb
+test/recs-*
 
 # generated m4 files
 m4/libtool.m4
@@ -41,10 +39,12 @@ missing
 stamp-h1
 
 # test files
+conf
 test-driver
 test-suite.log
 test/*.log
 test/*.trs
+test/buckets
 
 # libraries
 *.la

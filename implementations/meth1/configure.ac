@@ -52,5 +52,6 @@ AC_CONFIG_FILES([
   libutil/Makefile
   libsort/Makefile
   libmeth1/Makefile
+  libmeth4/Makefile
 ])
 AC_OUTPUT
