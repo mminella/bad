@@ -57,7 +57,7 @@ fi
 # Launch Cluster
 
 # Client
-./launchBAD.rb -f ${FILE} -k ${KEY} -c 1 \
+./launch-backends.rb -f ${FILE} -k ${KEY} -c 1 \
   -n "${SAVE}-client" -d ${TARF} -i ${CLIENT} -p ${PG} -z ${ZONE} &
 PID_CLIENT=$!
 
@@ -65,7 +65,7 @@ PID_CLIENT=$!
 sleep 10
 
 # Backends
-./launchBAD.rb -f ${FILE} -a -s 2 -k ${KEY} -c ${N} \
+./launch-backends.rb -f ${FILE} -a -s 2 -k ${KEY} -c ${N} \
   -n "${SAVE}-%d" -d ${TARF} -i ${MACHINE} -p ${PG} -z ${ZONE}
 PID_BACKENDS=$!
 

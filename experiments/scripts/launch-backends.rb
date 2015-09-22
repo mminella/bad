@@ -142,16 +142,16 @@ end
 # configure instances
 i = options[:start_id]
 threads = [instances.size, MAX_PARALLEL].min
-Parallel.map(instances, :in_threads => threads) { |instance|
+Parallel.map(instances, :in_threads => threads) { |inst|
   # copy since running in parallel
   j = i
   i += 1
 
   begin
     # wait for instance to be ready
-    print "#{j}: Waiting for instance to become ready... #{instance.dns_name}\n"
+    print "#{j}: Waiting for instance to become ready... #{inst.dns_name}\n"
     timeout = LAUNCH_TIMEOUT
-    while instance.status == :pending && timeout > 0
+    while inst.status == :pending && timeout > 0
       timeout = timeout - 1
       sleep 1
     end
@@ -162,31 +162,29 @@ Parallel.map(instances, :in_threads => threads) { |instance|
 
     # wait for SSH to be ready
     print "#{j}: Waiting on SSH to become ready...\n"
-    Net::SSH.wait(instance.dns_name, SSH_USER, SSH_PKEY)
+    Net::SSH.wait(inst.dns_name, SSH_USER, SSH_PKEY)
 
     # copy across cluster config
     print "#{j}: Copy across cluster info...\n"
-    Net::SCP.start(instance.dns_name, SSH_USER, SSH_PKEY)
+    Net::SCP.start(inst.dns_name, SSH_USER, SSH_PKEY)
       .upload!(options[:file], CLUSTER_CONF)
 
     # setup instance
     print "#{j}: Setting up instance...\n"
-    conf = Setup.new(host: instance.dns_name, user: SSH_USER, skey: SSH_PKEY)
+    conf = Setup.new(host: inst.dns_name, user: SSH_USER, skey: SSH_PKEY)
     conf.setup!
     print "#{j}: Instance setup for B.A.D!\n"
 
     # deploy bad
     print "#{j}: Waiting on SSH to become ready...\n"
-    Net::SSH.wait(instance.dns_name, SSH_USER, SSH_PKEY)
+    Net::SSH.wait(inst.dns_name, SSH_USER, SSH_PKEY)
     print "#{j}: Deploying B.A.D distribution...\n"
-    deployer = Deploy.new(hostname: instance.dns_name, user: SSH_USER,
+    deployer = Deploy.new(hostname: inst.dns_name, user: SSH_USER,
                           skey: SSH_PKEY, distfile: options[:tar_file])
     deployer.deploy!
     print "#{j}: B.A.D deployed and ready!\n"
   rescue Exception => e
-    $stderr.print
-      "#{j}: Instance failed! [#{instance.dns_name}]\n#{e.message}\n"
+    $stderr.print "#{j}: Instance failed! [#{inst.dns_name}]\n#{e.message}\n"
     raise e
   end
 }
-

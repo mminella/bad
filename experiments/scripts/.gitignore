@@ -1,6 +1,6 @@
-bad.tar.gz*
-measure.tar.gz
-logs/
-logs-*/
 .*
-r*.sh
+bad.tar.gz*
+logs-*/
+logs/
+measure.tar.gz
+runs/

@@ -9,13 +9,13 @@
 FILE=$1
 
 # Launch cluster
-./launchCluster.sh $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11}
+./launch-client-and-backends.sh $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11}
 if [ $? -ne 0 ]; then
   ./shutdown-cluster.sh ${FILE}
 fi
 
 # Run experiment
-./runBad.sh $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11}
+./run-method1.sh $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11}
 
 # Kill cluster
 ./shutdown-cluster.sh ${FILE}
