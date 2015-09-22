@@ -19,7 +19,7 @@ libutil_la_SOURCES = \
 	privs.hh privs.cc \
 	raw_vector.hh \
 	socket.hh socket.cc \
-	sync_print.hh \
+	sync_print.hh sync_print.cc \
 	timestamp.hh timestamp.cc \
 	threadpool.hh \
 	util.hh util.cc

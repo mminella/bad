@@ -7,6 +7,8 @@
 #include <iostream>
 #include <mutex>
 
+extern std::mutex _print_mutex;
+
 inline std::ostream & print_one( std::ostream & os )
 {
   return os << std::endl;
@@ -24,8 +26,7 @@ template <class A0, class ...Args>
 std::ostream &
 print( std::ostream & os, const A0 a0, const Args & ...args )
 {
-  static std::mutex m;
-  std::lock_guard<std::mutex> _(m);
+  std::lock_guard<std::mutex> _(_print_mutex);
   return print_one( os << a0, args... );
 }
 
