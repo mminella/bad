@@ -1,4 +1,8 @@
-log_files = ['log_0.txt', 'log_1.txt', 'log_2.txt', 'log_3.txt']
+# Usage: `python count_total_bandwidth.py path/to/logfile1 path/to/logfile2
+
+import sys
+
+log_files = sys.argv[1:]
 rows = []
 read_logs = []
 write_logs = []
