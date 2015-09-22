@@ -46,6 +46,7 @@ public:
 
 private:
   std::vector<File> data_;
+  std::vector<std::string> files_;
   std::vector<RecordLoc> recs_;
   //OverlappedRecordIO<Rec::SIZE> recio_;
   std::string port_;
