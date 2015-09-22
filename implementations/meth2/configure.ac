@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([bad1],[1.0.0],[dterei@cs.stanford.edu])
+AC_INIT([bad-meth2],[1.0.0],[mashti@cs.stanford.edu])
 
 # Set automake options.
 # `-Wall -Werror` here is for automake warning, nothing to do with src
@@ -32,6 +32,10 @@ LT_INIT([disable-shared])
 # Checks for header files.
 AC_CHECK_HEADERS([boost/sort/spreadsort/string_sort.hpp])
 AC_CHECK_HEADERS([boost/heap/d_ary_heap.hpp])
+AC_CHECK_HEADERS([tbb/parallel_invoke.h], [TBB_LIBS="-ltbb"])
+AC_CHECK_HEADERS([tbb/task_group.h])
+AC_CHECK_HEADERS([tbb/parallel_sort.h])
+AC_SUBST(TBB_LIBS)
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_UINT16_T
