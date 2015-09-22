@@ -1,6 +1,9 @@
 #ifndef UTIL_HH
 #define UTIL_HH
 
+#include <limits.h>
+#include <unistd.h>
+
 #include <cstring>
 #include <string>
 #include <vector>
@@ -27,5 +30,8 @@ size_t memory_exists( void );
 
 /* Physical memory present and free on the machine */
 size_t memory_free( void );
+
+/* Return your hostname */
+std::string my_host_name( void );
 
 #endif /* UTIL_HH */

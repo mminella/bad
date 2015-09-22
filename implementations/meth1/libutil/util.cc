@@ -108,3 +108,19 @@ size_t memory_free( void )
   return pages * pg_sz;
 #endif
 }
+
+/* Return your hostname */
+std::string my_host_name( void )
+{
+  long host_max = sysconf( _SC_HOST_NAME_MAX );
+  if ( host_max <= 0 ) {
+#ifdef HOST_NAME_MAX
+    host_max = HOST_NAME_MAX;
+#else
+    host_max = _POSIX_HOST_NAME_MAX;
+#endif
+  }
+  std::vector<char> hostname( host_max + 1 );
+  gethostname( hostname.data(), host_max + 1 );
+  return {hostname.data()};
+}
