@@ -3,6 +3,7 @@ CXXFLAGS=-O3 -std=c++11
 BINARIES= \
 	read \
 	random_read \
+	random_read_meth2 \
 	write \
 	random_write \
 	memalloc_speed \
