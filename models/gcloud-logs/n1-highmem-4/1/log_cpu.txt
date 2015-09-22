@@ -1,0 +1,16 @@
+allocator, libc
+# memcpy
+# memcmp
+# malloc
+allocator, jemalloc
+# memcpy
+# memcmp
+# malloc
+allocator, tcmalloc
+# memcpy
+# memcmp
+# malloc
+allocator, tbb
+# memcpy
+# memcmp
+# malloc
