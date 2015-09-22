@@ -128,8 +128,8 @@ size_t Socket::read( char * buf, size_t limit )
   ssize_t n = ::read( fd_num(), buf, limit );
   if ( n < 0 ) {
     // FIXME: perhaps should be moved into IODevice?
-    if ( n == EAGAIN or n == EWOULDBLOCK ) {
-      // FIXME: unclear if this is a good interface, but it'll do for now.
+    // FIXME: unclear if this is a good interface, but it'll do for now.
+    if ( errno == EAGAIN or errno == EWOULDBLOCK ) {
       return 0;
     } else {
       throw unix_error( "read", n );
