@@ -106,7 +106,9 @@ void run_inmem( char * fin )
   // 2) READ FILE INTO MEMORY
   auto tr = time_now();
   char * rbuf;
-  posix_memalign( (void **) &rbuf, 4096, st.st_size );
+  if ( posix_memalign( (void **) &rbuf, 4096, st.st_size ) < 0 ) {
+    cerr << "error using posix_memalign" << endl;
+  }
   for ( int nr = 0; nr < st.st_size; ) {
     auto r = fread( rbuf, st.st_size - nr, 1, fdi );
     if ( r <= 0 ) {

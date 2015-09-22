@@ -25,7 +25,10 @@ size_t num_of_disks( void )
     throw runtime_error( "Couldn't count number of disks" );
   }
   char buf[256];
-  fgets( buf, 256, fin );
+  char * n = fgets( buf, 256, fin );
+  if ( n == nullptr ) {
+    throw std::runtime_error( "Couldn't count number of disks" );
+  }
   return max( (size_t) atoll( buf ), (size_t) 1 );
 }
 

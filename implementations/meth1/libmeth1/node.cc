@@ -95,7 +95,7 @@ void Node::RPC_Read( TCPSocket & client )
 
   constexpr size_t rpcSize = 2 * sizeof( uint64_t );
   char strArray[rpcSize];
-  char * rpcData = strArray;
+  char * rpcData = strArray; // work-around strict-aliasing rules
 
   client.read_all( rpcData, rpcSize );
 
