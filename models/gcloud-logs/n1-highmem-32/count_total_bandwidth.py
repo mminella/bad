@@ -34,5 +34,3 @@ else:
     print "No. of readings: ", number_of_readings
     print "Max read bandwidth: ", max_read_bandwidth, " MB/s"
     print "Max write bandwidth: ", max_write_bandwidth, " MB/s"
-
-
