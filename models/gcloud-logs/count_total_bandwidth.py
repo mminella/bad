@@ -19,7 +19,7 @@ def cdf(data):
 
 
 def print_cdf(cdf_dict):
-    for k, v in cdf_dict.iteritems():
+    for k, v in sorted(cdf_dict.iteritems()):
         print "%sth percentile: %f" % (k, v)
 
 if __name__ == '__main__':
