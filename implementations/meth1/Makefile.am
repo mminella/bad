@@ -7,7 +7,7 @@ SUBDIRS = libutil libsort libmeth1 libmeth4 app experiments
 format:
 	@list='$(SUBDIRS)'; for subdir in $$list; do \
      find $$subdir -iregex '.*\.\(cc\|hh\)$$' -exec clang-format -i {} +; \
-	 done
+	done
 
 check-all:
 	@make clean
@@ -27,6 +27,7 @@ bin-dist:
 	cp app/meth1_node_test_first dist_root/usr/bin/meth1_node_test_first
 	cp app/meth1_node_test_r dist_root/usr/bin/meth1_node_test_r
 	cp app/meth1_node_test_rw dist_root/usr/bin/meth1_node_test_rw
+	cp libmeth4/meth4_node dist_root/usr/bin/meth4_node
 	cp scripts/clear_buffers.sh dist_root/usr/bin/clear_buffers
 	cp scripts/setup_fs.sh dist_root/usr/bin/setup_fs
 	cp scripts/setup_all_fs.sh dist_root/usr/bin/setup_all_fs
