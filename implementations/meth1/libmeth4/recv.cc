@@ -163,6 +163,9 @@ Receiver::Receiver( ClusterMap & cluster, Address address )
     buckets_[i] = {newBlock(), 0, cluster_.myBuckets()[i]};
   }
 
+  // FIXME: Hacky that we don't really allow moving, so can't have the vector
+  // be resized.
+  disks_.reserve( cluster_.disk_paths().size() );
   for ( size_t i = 0; i < cluster_.disk_paths().size(); i++) {
     disks_.emplace_back( cluster_, i, cluster_.disk_paths()[i] );
     disks_.back().start();
