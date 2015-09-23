@@ -1,0 +1,27 @@
+------------------------------------------------------------
+Client connecting to 10.240.220.182, TCP port 2000
+TCP window size: 45.0 KByte (default)
+------------------------------------------------------------
+[  3] local 10.240.89.237 port 46152 connected with 10.240.220.182 port 2000
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0- 1.0 sec   966 MBytes  8.10 Gbits/sec
+[  3]  1.0- 2.0 sec   990 MBytes  8.31 Gbits/sec
+[  3]  2.0- 3.0 sec   956 MBytes  8.02 Gbits/sec
+[  3]  3.0- 4.0 sec   928 MBytes  7.78 Gbits/sec
+[  3]  4.0- 5.0 sec   954 MBytes  8.00 Gbits/sec
+[  3]  5.0- 6.0 sec   942 MBytes  7.90 Gbits/sec
+[  3]  6.0- 7.0 sec   988 MBytes  8.29 Gbits/sec
+[  3]  7.0- 8.0 sec   974 MBytes  8.17 Gbits/sec
+[  3]  8.0- 9.0 sec   939 MBytes  7.88 Gbits/sec
+[  3]  9.0-10.0 sec   934 MBytes  7.84 Gbits/sec
+[  3] 10.0-11.0 sec   901 MBytes  7.56 Gbits/sec
+[  3] 11.0-12.0 sec   939 MBytes  7.88 Gbits/sec
+[  3] 12.0-13.0 sec   968 MBytes  8.12 Gbits/sec
+[  3] 13.0-14.0 sec   975 MBytes  8.18 Gbits/sec
+[  3] 14.0-15.0 sec   985 MBytes  8.26 Gbits/sec
+[  3] 15.0-16.0 sec   955 MBytes  8.01 Gbits/sec
+[  3] 16.0-17.0 sec   924 MBytes  7.75 Gbits/sec
+[  3] 17.0-18.0 sec   954 MBytes  8.01 Gbits/sec
+[  3] 18.0-19.0 sec   883 MBytes  7.41 Gbits/sec
+[  3] 19.0-20.0 sec   927 MBytes  7.78 Gbits/sec
+[  3]  0.0-20.0 sec  18.5 GBytes  7.96 Gbits/sec
