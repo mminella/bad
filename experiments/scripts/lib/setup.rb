@@ -142,7 +142,7 @@ class Setup
       # switch to TSC for clock, not Xen
       ssh.exec! "echo tsc | sudo tee /sys/devices/system/clocksource/clocksource0/current_clocksource"
       # switch to longer time slices and batch tune values
-      ssh.root! "schedtool -B PID"
+      # ssh.root! "schedtool -B"
     end
 
   end
