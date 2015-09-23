@@ -34,7 +34,6 @@ if __name__ == '__main__':
         with open(logfile, 'r') as f:
             for line in f:
                 if line[0] not in 'wr':
-                    # print "Not evaluating: ", line
                     pass
                 else:
                     reading = line.split(',')
