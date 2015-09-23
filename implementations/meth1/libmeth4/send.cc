@@ -66,6 +66,10 @@ void sendRPCBody( TCPSocket & sock, uint8_t * buf, size_t len )
 
 void NetOut::sendLoop( void )
 {
+  print( "p1", "netout-start", timestamp<ms>() );
+  auto t0 = time_now();
+  tdiff_t tnet = 0;
+
   size_t activeBuckets = cluster_.buckets() * cluster_.disks();
   try {
     while ( activeBuckets > 0 ) {
@@ -73,20 +77,27 @@ void NetOut::sendLoop( void )
       size_t nodeID = cluster_.bucket_node( block.bucket );
       TCPSocket & sock = sockets_[nodeID];
 
+      // PERF: Overhead of taking this many timestamps?
+      auto t1 = time_now();
       if ( block.buf == nullptr ) {
         activeBuckets--;
         sendRPCHeader( sock, block.bucket, 0 );
+        tnet += time_diff<ns>( t1 );
       } else {
         // PERF: hopefully we won't block so much here to a individual node as
         // to hurt overall network performance.
         sendRPCHeader( sock, block.bucket, block.len );
         sendRPCBody( sock, block.buf, block.len );
+        tnet += time_diff<ns>( t1 );
         freeBlock( block.buf );
       }
     }
   } catch ( const Channel<block_t>::closed_error & e ) {
     // EOF
   }
+
+  tnet /= 1000;
+  print( "p1", "netout-done", timestamp<ms>(), time_diff<ms>( t0 ), tnet );
 }
 
 void NetOut::send( block_t block )
@@ -108,12 +119,13 @@ Sender::Sender( File & file, ClusterMap & cluster, NetOut & net  )
 
 Sender::~Sender( void )
 {
-  if ( sorter_.joinable() ) { sorter_.join(); }
+  waitFinished();
   print( "p1", "send-end", timestamp<ms>(), time_diff<ms>( start_ ) );
 }
 
 void Sender::_start( void )
 {
+  auto t0 = time_now();
   rio_.rewind();
 
   while ( true ) {
@@ -144,6 +156,8 @@ void Sender::_start( void )
     bkt.len = 0;
     net_.send( bkt ); // EOF
   }
+
+  print( "p1", "disk-done", timestamp<ms>(), time_diff<ms>( t0 ) );
 }
 
 void Sender::start( void )
@@ -155,7 +169,7 @@ void Sender::start( void )
 
 void Sender::waitFinished( void )
 {
-  sorter_.join();
+  if ( sorter_.joinable() ) { sorter_.join(); }
 }
 
 // Sanity check: just count how many records go into each bucket, don't send

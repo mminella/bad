@@ -14,6 +14,12 @@ static uint8_t * newBlock( void )
   return (uint8_t *) malloc( Receiver::DISK_BLOCK_SIZE );
 }
 
+// De-allocation helper
+static void freeBlock( uint8_t * buf )
+{
+  free( buf );
+}
+
 NetIn::NetIn( ClusterMap & cluster, vector<DiskWriter> & disks, TCPSocket sock )
   : cluster_{cluster}
   , disks_{disks}
@@ -46,6 +52,7 @@ NetIn::NetIn( NetIn && other )
     throw runtime_error( "Moved unmoveable NetIn" );
   }
 
+  other.cantMove_ = true; // now it's invalid...
   other.bucketsLive_ = 0;
   other.wireState_ = DONE;
   other.headerOnWire_ = 0;
@@ -165,7 +172,7 @@ Receiver::Receiver( ClusterMap & cluster, Address address )
 Receiver::~Receiver( void )
 {
   for ( auto & b : buckets_ ) {
-    free( b.buf );
+    freeBlock( b.buf );
   }
 }
 

@@ -74,8 +74,8 @@ void CircularIO::read_loop( void )
     }
     print( "circular-read-start", id_, ++readPass_, nbytes, timestamp<ms>() );
 
-    auto ts = time_now();
-    tdiff_t tt = 0;
+    auto t0 = time_now();
+    tdiff_t tread = 0;
     char * wptr_ = buf_;
     size_t rbytes = 0;
     while ( true ) {
@@ -83,7 +83,7 @@ void CircularIO::read_loop( void )
       // should only issue disk block size reads when using O_DIRECT
       size_t blkSize = io_.is_odirect() ? BLOCK : min( BLOCK, nbytes - rbytes );
       size_t n = io_.read( wptr_, blkSize );
-      tt += time_diff<ms>( t0 );
+      tread += time_diff<ms>( t0 );
 
       if ( n > 0 ) {
         rbytes += n;
@@ -104,7 +104,7 @@ void CircularIO::read_loop( void )
           to_string( nbytes ) + " )" );
       }
     }
-    auto te = time_diff<ms>( ts );
-    print( "circular-read-total", id_, readPass_, rbytes, tt, te );
+    auto tblocked = time_diff<ms>( t0 );
+    print( "circular-read-total", id_, readPass_, rbytes, tread, tblocked );
   }
 }

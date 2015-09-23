@@ -69,7 +69,7 @@ void DiskWriter::start( void )
 
 DiskWriter::~DiskWriter( void )
 {
-  queue_.waitEmpty();
+  waitDrained( true );
   queue_.close();
   if ( writer_.joinable() ) { writer_.join(); }
   print( "p1", "disk-end", timestamp<ms>(), time_diff<ms>( start_ ) );
@@ -78,12 +78,14 @@ DiskWriter::~DiskWriter( void )
 void DiskWriter::waitDrained( bool fsync )
 {
   queue_.waitEmpty();
+  auto t0 = time_now();
   if ( fsync ) {
     for ( auto & f : files_ ) {
       f.fsync();
     }
   }
-  print( "p1", "disk-drained", timestamp<ms>(), time_diff<ms>( start_ ) );
+  print( "p1", "disk-drained", timestamp<ms>(), time_diff<ms>( start_ ),
+    time_diff<ms>( t0 ));
 }
 
 /* Convert a global bucket ID to a disk local bucket ID */
@@ -101,6 +103,7 @@ void DiskWriter::send( block_t block )
 /* Read from channel and write data to disk */
 void DiskWriter::writeLoop( void )
 {
+  auto t0 = time_now();
   tdiff_t twrite = 0;
   try {
     while ( true ) {
@@ -111,6 +114,7 @@ void DiskWriter::writeLoop( void )
       } else if ( block.len > 0 ) {
         auto t0 = time_now();
         files_[fileID].write_all( (char *) block.buf, block.len );
+        // TODO: Should we be fsync'ing here?
         files_[fileID].fsync();
         twrite += time_diff<ms>( t0 );
       }
@@ -119,5 +123,5 @@ void DiskWriter::writeLoop( void )
   } catch ( const Channel<block_t>::closed_error & e ) {
     // EOF
   }
-  print( "p1", "disk-write", timestamp<ms>(), twrite );
+  print( "p1", "disk-write", timestamp<ms>(), time_diff<ms>( t0 ), twrite );
 }
