@@ -6,20 +6,9 @@
 
 #include "address.hh"
 
-class ConfigFile
-{
-private:
-  uint16_t myID_;
-  std::vector<Address> cluster_;
-
-public:
-  ConfigFile( std::string file, std::string hostname );
-
-  /* My ID (and position in vector) in the cluster. */
-  uint16_t myID( void ) const noexcept;
-
+namespace ConfigFile {
   /* List of addresses (including SELF) in the cluster. */
-  std::vector<Address> cluster( void ) const noexcept;
+  std::vector<Address> parse( std::string file );
 };
 
 #endif /* METH4_CONFIG_FILE_HH */

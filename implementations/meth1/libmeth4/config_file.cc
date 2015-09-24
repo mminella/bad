@@ -6,20 +6,14 @@
 
 using namespace std;
 
-ConfigFile::ConfigFile( string file, string hostname )
-  : myID_{0}
-  , cluster_{}
+vector<Address> ConfigFile::parse( string file )
 {
-  if ( hostname.size() == 0 ) {
-    throw runtime_error( "Hostname to config file can't be empty" );
-  }
-
   FILE *fin = fopen( file.c_str(), "r" );
   if ( fin == nullptr ) {
     throw runtime_error( "Can't open cluster config file" );
   }
 
-  bool myIDset = false;
+  vector<Address> cluster;
   char * line = nullptr;
   size_t llen = 0;
   while ( true ) {
@@ -43,27 +37,11 @@ ConfigFile::ConfigFile( string file, string hostname )
       }
 
       string hname = host.substr( 0, i );
-      if ( hname == hostname ) {
-        myID_ = cluster_.size();
-        myIDset = true;
-      }
-      cluster_.emplace_back( host, IPV4 );
+      cluster.emplace_back( host, IPV4 );
     }
   }
   free( line );
   fclose( fin );
 
-  if ( not myIDset ) {
-    throw runtime_error( "Didn't find own host in configuration file" );
-  }
-}
-
-uint16_t ConfigFile::myID( void ) const noexcept
-{
-  return myID_;
-}
-
-vector<Address> ConfigFile::cluster( void ) const noexcept
-{
-  return cluster_;
+  return cluster;
 }

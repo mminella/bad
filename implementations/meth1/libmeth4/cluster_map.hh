@@ -28,7 +28,8 @@ private:
   using pre_shards_t = std::vector<shards_t>;
 
   /* cluster config */
-  ConfigFile config_;
+  size_t myID_;
+  std::vector<Address> backends_;
   std::vector<File> recFiles_;
   std::vector<std::string> diskPaths_;
   size_t disks_;
@@ -49,7 +50,7 @@ private:
                                        size_t buckets ) const noexcept;
 
 public:
-  ClusterMap( std::string hostname, std::string configFile,
+  ClusterMap( size_t myID, std::string configFile,
     std::vector<std::string> dataFiles );
 
   /* My ID (and position in vector) in the cluster. */

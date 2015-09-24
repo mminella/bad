@@ -73,12 +73,12 @@ void phase_two( ClusterMap & cluster )
   Sorter sorter( cluster );
 }
 
-void run( string hostname, string port, string conffile, vector<string> files )
+void run( size_t nodeID, string port, string conffile, vector<string> files )
 {
   print( "start", timestamp<ms>() );
 
   // configure cluster
-  ClusterMap cluster( hostname, conffile, files );
+  ClusterMap cluster( nodeID, conffile, files );
   debug_cluster_map( cluster );
 
   // shard data into buckets
@@ -94,6 +94,9 @@ void run( string hostname, string port, string conffile, vector<string> files )
   print( "phase-two-end", timestamp<ms>(), time_diff<ms>( t1 ) );
 
   print( "finish", timestamp<ms>(), time_diff<ms>( t0 ) );
+
+  // give chance for other nodes to finish before exit (useful while testing)
+  this_thread::sleep_for( chrono::seconds( 2 ) );
 }
 
 void check_usage( const int argc, const char * const argv[] )
@@ -109,7 +112,7 @@ int main( int argc, char * argv[] )
 {
   try {
     check_usage( argc, argv );
-    run( argv[1], argv[2], argv[3], {argv+4, argv+argc} );
+    run( atoll( argv[1] ), argv[2], argv[3], {argv+4, argv+argc} );
   } catch ( const exception & e ) {
     print_exception( e );
     return EXIT_FAILURE;

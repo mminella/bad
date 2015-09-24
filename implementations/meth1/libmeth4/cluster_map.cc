@@ -66,18 +66,19 @@ size_t bucketsPerNode( size_t recordsPerNode, size_t disksPerNode )
   return disksPerNode * max( minBckts, bucketsPerDisk );
 }
 
-ClusterMap::ClusterMap( string hostname, string configFile,
+ClusterMap::ClusterMap( size_t myID, string configFile,
                         vector<string> dataFiles )
-  : config_{configFile, hostname}
+  : myID_{myID}
+  , backends_{ConfigFile::parse( configFile )}
   , recFiles_{openFiles( dataFiles )}
   , diskPaths_{extractDiskPaths( dataFiles )}
   , disks_{num_of_disks()}
   , recordsLocally_{recordsInFiles( recFiles_ )}
   , bucketsPerNode_{bucketsPerNode( recordsLocally_, disks_ )}
-  , shards_{calculateShards( bucketsPerNode_ * config_.cluster().size() )}
+  , shards_{calculateShards( bucketsPerNode_ * backends_.size() )}
   , preShards_{precomputeFirstByte( shards_ )}
-  , myBuckets_{calcMyBuckets( config_.myID(), config_.cluster().size(), disks_,
-                             bucketsPerNode_ * config_.cluster().size() )}
+  , myBuckets_{calcMyBuckets( myID, backends_.size(), disks_,
+                             bucketsPerNode_ * backends_.size() )}
 {
   if ( ( bucketsPerNode_ * nodes() ) > UINT16_MAX ) {
     throw runtime_error( "Can't have that many buckets" );
@@ -90,7 +91,7 @@ ClusterMap::ClusterMap( string hostname, string configFile,
 
 uint16_t ClusterMap::myID( void ) const noexcept
 {
-  return config_.myID();
+  return myID_;
 }
 
 const vector<uint16_t> & ClusterMap::myBuckets( void ) const noexcept
@@ -152,12 +153,12 @@ size_t ClusterMap::disks( void ) const noexcept
 
 vector<Address> ClusterMap::addresses( void ) const noexcept
 {
-  return config_.cluster();
+  return backends_;
 }
 
 size_t ClusterMap::nodes( void ) const noexcept
 {
-  return config_.cluster().size();
+  return backends_.size();
 }
 
 size_t ClusterMap::buckets( void ) const noexcept
