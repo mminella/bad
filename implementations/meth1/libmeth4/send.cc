@@ -82,13 +82,13 @@ void NetOut::sendLoop( void )
       if ( block.buf == nullptr ) {
         activeBuckets--;
         sendRPCHeader( sock, block.bucket, 0 );
-        tnet += time_diff<ns>( t1 );
+        tnet += time_diff<us>( t1 );
       } else {
         // PERF: hopefully we won't block so much here to a individual node as
         // to hurt overall network performance.
         sendRPCHeader( sock, block.bucket, block.len );
         sendRPCBody( sock, block.buf, block.len );
-        tnet += time_diff<ns>( t1 );
+        tnet += time_diff<us>( t1 );
         freeBlock( block.buf );
       }
     }
