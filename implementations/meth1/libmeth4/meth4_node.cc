@@ -92,7 +92,8 @@ void run( size_t nodeID, string port, string conffile, vector<string> files )
   phase_two( cluster );
   print( "phase-two-end", timestamp<ms>(), time_diff<ms>( t1 ) );
 
-  print( "finish", timestamp<ms>(), time_diff<ms>( t0 ) );
+  print( "finish", timestamp<ms>(),
+    time_diff<ms>( t0 ) - Knobs4::STARTUP_WAIT * 1000 );
 
   // give chance for other nodes to finish before exit (useful while testing)
   this_thread::sleep_for( chrono::seconds( 2 ) );
