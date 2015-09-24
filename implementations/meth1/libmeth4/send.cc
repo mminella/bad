@@ -111,6 +111,7 @@ Sender::Sender( File & file, ClusterMap & cluster, NetOut & net  )
   , net_{net}
   , buckets_{cluster.buckets()}
   , sorter_{}
+  , start_{}
 {
   for ( uint16_t i = 0; i < buckets_.size(); i++ ) {
     buckets_[i] = {newBlock(), 0, i};
