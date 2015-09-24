@@ -34,11 +34,11 @@ namespace Knobs4 {
 
   /* C. Network queue length & block transfer size [* Rec::SIZE] */
   static constexpr size_t NET_QUEUE_LENGTH = 2000; // ~ 4000MB
-  static constexpr size_t NET_BLOCK_SIZE = 10240; // ~ 1MB
+  static constexpr size_t NET_BLOCK_SIZE = 1024 * 102; // ~ 10MB
 
   /* Network send & receive kernel buffer sizes */
-  static constexpr size_t NET_SND_BUF = std::size_t( 1024 ) * 1024 * 2;
-  static constexpr size_t NET_RCV_BUF = std::size_t( 1024 ) * 1024 * 2;
+  static constexpr size_t NET_SND_BUF = size_t( 1024 ) * 1024 * 2;
+  static constexpr size_t NET_RCV_BUF = size_t( 1024 ) * 1024 * 2;
 
   /* Use non-blocking IO on the phase-1 receive side? */
   static constexpr bool NET_NON_BLOCKING = true;
@@ -47,7 +47,7 @@ namespace Knobs4 {
   static constexpr size_t MIN_BUCKETS_PER_DISK = 2;
 
   /* Memory to leave unused for OS and other misc purposes. */
-  static constexpr uint64_t MEM_RESERVE = 1024 * 1024 * uint64_t( 2000 );
+  static constexpr uint64_t MEM_RESERVE = uint64_t( 1024 ) * 1024 * 1024 * 2;
 
   /* Seconds to wait after startup before trying to connect to other nodes */
   static constexpr size_t STARTUP_WAIT = 10;
