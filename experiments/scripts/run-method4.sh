@@ -51,6 +51,8 @@ elif [ $M1_TYPE = "i2.8xlarge" ]; then
     /mnt/f/recs /mnt/g/recs /mnt/h/recs /mnt/i/recs"
 fi
 
+BUCKETS_ALL=$( echo ${FILES_ALL} | sed 's/recs/buckets/g' )
+
 # ===================================================================
 # Experiment Helper Functions
 
@@ -72,6 +74,9 @@ all() {
 
 # Prepare disks
 all "setup_all_fs 2> /dev/null > /dev/null"
+
+# Remove any old files
+all "rm -rf ${BUCKETS_ALL} ${FILES_ALL}"
 
 # Generate data files
 START=0
