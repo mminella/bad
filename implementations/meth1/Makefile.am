@@ -2,7 +2,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = libutil libsort libmeth1 libmeth4 app experiments
 
-.PHONY: format check-all bin-dist recs-1gb recs-10gb recs-30gb
+.PHONY: format check-all cppcheck bin-dist recs-1gb recs-10gb recs-30gb
 
 format:
 	@list='$(SUBDIRS)'; for subdir in $$list; do \
@@ -13,6 +13,17 @@ check-all:
 	@make clean
 	@scan-build ./configure
 	@scan-build make
+
+cppcheck:
+	@cppcheck --std=c++11 \
+		--enable=warning \
+		--enable=performance \
+		--enable=portability \
+		--enable=style \
+		. 2> cppcheck.err 1>/dev/null
+	@echo "Finished! (check cppcheck.err)..."
+	@echo ""
+	@head cppcheck.err
 
 bin-dist:
 	rm -Rf dist_root

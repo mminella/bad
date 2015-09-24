@@ -21,7 +21,7 @@ private:
   struct shard_t {
     uint16_t id_;
     uint8_t k_[Rec::KEY_LEN];
-    shard_t( uint16_t id ) : id_{id} {}
+    explicit shard_t( uint16_t id ) : id_{id}, k_{} {}
   };
 
   using shards_t = std::vector<shard_t>;

@@ -39,7 +39,7 @@ private:
   void sendLoop( void );
 
 public:
-  NetOut( ClusterMap & cluster );
+  explicit NetOut( ClusterMap & cluster );
   ~NetOut( void );
 
   void send( block_t block );

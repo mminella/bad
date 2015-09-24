@@ -132,7 +132,7 @@ RR * scan( vector<RecLoader> & rios, size_t size, const RR & after )
   }
   uint64_t * r1s_i = new uint64_t[rios.size()];
 
-  size_t r1s = 0, r2s = 0;
+  size_t r2s = 0;
   const size_t r1x = max( min( (size_t) 1572864, size / 6 ), (size_t) 1 );
   const size_t r1x_i = r1x / rios.size();
   const RR * curMin = nullptr;
@@ -142,6 +142,7 @@ RR * scan( vector<RecLoader> & rios, size_t size, const RR & after )
 
   while ( true ) {
     // kick of all record loader
+    size_t r1s = 0;
     uint64_t rio_i = 0;
     for ( auto & rio : rios ) {
       if ( not rio.eof() ) {

@@ -27,17 +27,7 @@ vector<Address> ConfigFile::parse( string file )
       } else if ( n > 1 and line[n-1] == '\n' ) {
         n -= 1;
       }
-      string host( line, n );
-
-      size_t i = host.find_last_of( ':' );
-      if ( i == string::npos ) {
-        free( line );
-        fclose( fin );
-        throw runtime_error( "Badly formatted cluster config file" );
-      }
-
-      string hname = host.substr( 0, i );
-      cluster.emplace_back( host, IPV4 );
+      cluster.emplace_back( string( line, n ), IPV4 );
     }
   }
   free( line );

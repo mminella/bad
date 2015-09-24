@@ -37,7 +37,7 @@ public:
   size_t sizePass_;
 
 public:
-  Client( Address node );
+  explicit Client( Address node );
 
   /* accessors */
   TCPSocket & socket( void ) noexcept { return sock_; }

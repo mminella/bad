@@ -225,9 +225,9 @@ Record Node::seek( uint64_t pos )
 {
   // can we continue from last time?
   if ( pos == 0 ) {
-    last_ = Rec::MIN;
+    last_ = Record( Rec::MIN );
   } else if ( pos >= Size() ) {
-    last_ = Rec::MAX;
+    last_ = Record( Rec::MAX );
   } else if ( fpos_ != pos ) {
     // remember, retrieving the record just before `pos`
     for ( uint64_t i = 0; i < pos; i += seek_chunk_ ) {

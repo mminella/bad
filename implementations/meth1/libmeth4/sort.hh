@@ -29,7 +29,7 @@ public:
 class Sorter
 {
 public:
-  Sorter( const ClusterMap & cluster );
+  explicit Sorter( const ClusterMap & cluster );
 };
 
 #endif /* METH4_SORT_HH */

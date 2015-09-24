@@ -26,6 +26,7 @@ NetIn::NetIn( ClusterMap & cluster, vector<DiskWriter> & disks, TCPSocket sock )
   , bucketsLive_{cluster.myBuckets().size()}
   , sock_{move( sock )}
   , wireState_{IDLE}
+  , header_{}
   , headerOnWire_{0}
   , bucketOnWire_{0}
   , bucketLocalID_{0}

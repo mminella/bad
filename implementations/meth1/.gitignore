@@ -37,6 +37,7 @@ libtool
 ltmain.sh
 missing
 stamp-h1
+cppcheck.err
 
 # test files
 Procfile
