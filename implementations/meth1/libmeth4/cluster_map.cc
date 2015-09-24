@@ -98,18 +98,19 @@ const vector<uint16_t> & ClusterMap::myBuckets( void ) const noexcept
   return myBuckets_;
 }
 
-uint8_t ClusterMap::bucket_disk( uint16_t bkt ) const noexcept
-{
-  static const size_t layer  = nodes() * disks_;
-  static const size_t offset = myID() * disks_;
-  return ( bkt % layer ) - offset;
-}
-
 size_t ClusterMap::bucket_local_id( uint16_t bkt ) const noexcept
 {
-  static const size_t layer  = nodes() * disks_;
-  static const size_t offset = myID() * disks_;
-  return ( ( bkt / layer ) * disks_ ) + ( ( bkt % layer ) - offset );
+  return bkt / nodes();
+}
+
+uint8_t ClusterMap::bucket_disk( uint16_t bkt ) const noexcept
+{
+  return ( bkt / nodes() ) % disks_;
+}
+
+uint16_t ClusterMap::bucket_node( uint16_t bkt ) const noexcept
+{
+  return bkt % nodes();
 }
 
 vector<File> & ClusterMap::files( void ) noexcept
@@ -222,16 +223,13 @@ vector<uint16_t> ClusterMap::calcMyBuckets( uint16_t id, size_t nodes,
                                             size_t disks, size_t buckets )
                                             const noexcept
 {
-  size_t layer = nodes * disks;
-  if ( buckets % layer != 0 ) {
+  if ( buckets % nodes != 0 or buckets % ( nodes * disks ) != 0 ) {
     throw runtime_error( "Number of buckets doesn't map cleanly to cluster" );
   }
 
   vector<uint16_t> myBuckets;
-  for ( size_t i = 0; i < buckets; i += layer ) {
-    for ( size_t n = i + id; n < i + id + disks; n++ ) {
-      myBuckets.push_back( n );
-    }
+  for ( size_t i = 0; i < buckets; i += nodes ) {
+    myBuckets.push_back( i + id );
   }
   return myBuckets;
 }
@@ -247,15 +245,4 @@ uint16_t ClusterMap::bucket( const uint8_t * key ) const noexcept
     }
   }
   return shards[b].id_;
-}
-
-uint16_t ClusterMap::bucket_node( uint16_t bkt ) const noexcept
-{
-  static const size_t layer  = nodes() * disks_;
-  return bkt % layer;
-}
-
-uint16_t ClusterMap::bucket_node( const uint8_t * key ) const noexcept
-{
-  return bucket_node( bucket( key ) );
 }

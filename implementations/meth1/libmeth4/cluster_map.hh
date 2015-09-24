@@ -58,12 +58,15 @@ public:
   /* The list of buckets this node is responsible for. */
   const std::vector<uint16_t> & myBuckets( void ) const noexcept;
 
-  /* Map a global bucket number to a disk on the local machine. */
-  uint8_t bucket_disk( uint16_t bkt ) const noexcept;
-
   /* Map a global bucket number to a local number that can be used to offset
    * into an array of all buckets for this node. */
   size_t bucket_local_id( uint16_t bkt ) const noexcept;
+
+  /* Map a global bucket number to a disk on the local machine. */
+  uint8_t bucket_disk( uint16_t bkt ) const noexcept;
+
+  /* map a bucket (or key) to a node. */
+  uint16_t bucket_node( uint16_t bkt ) const noexcept;
 
   /* Files to open. */
   std::vector<File> & files( void ) noexcept;
@@ -94,10 +97,6 @@ public:
 
   /* map a key to a bucket. */
   uint16_t bucket( const uint8_t * key ) const noexcept;
-
-  /* map a bucket (or key) to a node. */
-  uint16_t bucket_node( uint16_t bkt ) const noexcept;
-  uint16_t bucket_node( const uint8_t * key ) const noexcept;
 };
 
 #endif /* METH4_CLUSTER_MAP_HH */
