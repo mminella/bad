@@ -27,18 +27,27 @@ ZONE=${11}
 
 # Args
 if [ $# != 11 ]; then
-  echo "runBad.sh <cluster file> <log path> <size> <chunk> <client> <machine>
-            <nodes> <cmd> <dist_tar> <pgroup> <zone>"
+  echo "runBad.sh <cluster file> <log path> <cluster data size> <chunk>
+            <client> <machine> <nodes> <cmd> <dist_tar> <pgroup> <zone>"
+  exit 1
+fi
+
+NAME=${FILE}
+SIZE_B=$( calc "round( $SIZE * 1000 * 1000 * 1000 / 100 )" )
+CHUNK_B=$( calc "round( $CHUNK * 1024 * 1024 * 1024 / 100 )" )
+
+# Validate
+if [ ! -f ${FILE} ]; then
+  echo "Cluster config (${FILE}) not found!"
+  exit 1
+elif [ ! ${SIZE_B} -gt 0 ]; then
+  echo "Invalid data set size!"
   exit 1
 fi
 
 
 # ===================================================================
 # Configuration
-
-NAME=${FILE}
-SIZE_B=$( calc "round( $SIZE * 1000 * 1000 * 1000 / 100 )" )
-CHUNK_B=$( calc "round( $CHUNK * 1024 * 1024 * 1024 / 100 )" )
 
 if [ $MACHINE = "i2.xlarge" ]; then
   FILES_ALL="/mnt/b/recs"
@@ -52,6 +61,10 @@ elif [ $MACHINE = "i2.8xlarge" ]; then
 fi
 
 source ${FILE}
+
+# per-node data size
+SIZE_B=$( calc "round( ${SIZE_B} / ( ${MN} - 1 ) )" )
+
 
 # ===================================================================
 # Experiment Helper Functions

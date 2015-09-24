@@ -23,11 +23,14 @@ if [ $# != 3 ]; then
   exit 1
 fi
 
+NAME=${FILE}
+SIZE_B=$( calc "round( $SIZE * 1000 * 1000 * 1000 / 100 )" )
+
 # Validate
 if [ ! -f ${FILE} ]; then
   echo "Cluster config (${FILE}) not found!"
   exit 1
-elif [ ! ${SIZE} -gt 0 ]; then
+elif [ ! ${SIZE_B} -gt 0 ]; then
   echo "Invalid data set size!"
   exit 1
 fi
@@ -37,8 +40,8 @@ fi
 
 source ${FILE}
 
-NAME=${FILE}
-SIZE_B=$( calc "round( $SIZE * 1000 * 1000 * 1000 / 100 )" )
+# per-node data size
+SIZE_B=$( calc "round( ${SIZE_B} / ${MN} )" )
 
 if [ $M1_TYPE = "i2.xlarge" ]; then
   FILES_ALL="/mnt/b/recs"
