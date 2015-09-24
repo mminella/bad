@@ -16,7 +16,6 @@ LDADD = \
 meth4_node_SOURCES = \
 	meth4_node.cc \
 	meth4_knobs.hh \
-	meth4_util.hh \
 	send.hh send.cc \
 	recv.hh recv.cc \
 	config_file.hh config_file.cc \

@@ -10,9 +10,22 @@
 #include "cluster_map.hh"
 #include "config_file.hh"
 #include "meth4_knobs.hh"
-#include "meth4_util.hh"
 
 using namespace std;
+
+size_t num_of_disks( void )
+{
+  FILE * fin = popen("ls /dev/xvd[b-z] 2>/dev/null | wc -l", "r");
+  if ( not fin ) {
+    throw std::runtime_error( "Couldn't count number of disks" );
+  }
+  char buf[256];
+  char * n = fgets( buf, 256, fin );
+  if ( n == nullptr ) {
+    throw std::runtime_error( "Couldn't count number of disks" );
+  }
+  return std::max( (size_t) atoll( buf ), (size_t) 1 );
+}
 
 vector<File> openFiles( vector<string> files )
 {
@@ -72,7 +85,7 @@ ClusterMap::ClusterMap( size_t myID, string configFile,
   , backends_{ConfigFile::parse( configFile )}
   , recFiles_{openFiles( dataFiles )}
   , diskPaths_{extractDiskPaths( dataFiles )}
-  , disks_{num_of_disks()}
+  , disks_{min( num_of_disks(), dataFiles.size() )}
   , recordsLocally_{recordsInFiles( recFiles_ )}
   , bucketsPerNode_{bucketsPerNode( recordsLocally_, disks_ )}
   , shards_{calculateShards( bucketsPerNode_ * backends_.size() )}
@@ -172,6 +185,17 @@ uint128_t maxKey( void ) noexcept
 {
   uint128_t max = 1;
   return (max << ( Rec::KEY_LEN * 8) ) - 1;
+}
+
+void reverse_bytes( void * bytes, size_t len )
+{
+  uint8_t * s = (uint8_t *) bytes;
+  uint8_t * e = s + len - 1;
+  while ( s < e ) {
+    uint8_t tmp = *s;
+    *s++ = *e;
+    *e-- = tmp;
+  }
 }
 
 ClusterMap::shards_t ClusterMap::calculateShards( size_t buckets )

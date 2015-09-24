@@ -13,7 +13,6 @@
 #include "cluster_map.hh"
 #include "config_file.hh"
 #include "meth4_knobs.hh"
-#include "meth4_util.hh"
 #include "recv.hh"
 #include "send.hh"
 #include "sort.hh"
@@ -104,7 +103,7 @@ void check_usage( const int argc, const char * const argv[] )
   if ( argc < 5 ) {
     // pass in hostname rather than retrieve to allow easy testing
     throw runtime_error( "Usage: " + string( argv[0] )
-      + " [hostname] [port] [config file] [data files...]" );
+      + " [node id] [port] [config file] [data files...]" );
   }
 }
 
