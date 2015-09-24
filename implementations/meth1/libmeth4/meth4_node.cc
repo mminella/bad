@@ -22,11 +22,20 @@ using namespace std;
 void debug_cluster_map( ClusterMap & cluster )
 {
   print( "myid", cluster.myID() );
+  print( "memory", memory_exists() );
   print( "disks", cluster.disks() );
   for ( auto & d : cluster.disk_paths() ) {
     print( "disk-path", d );
   }
   print( "in-files", cluster.files().size() );
+  size_t total = 0;
+  for ( auto & f : cluster.files() ) {
+    size_t fsize = f.size();
+    total += fsize;
+    print( "file-size", fsize );
+  }
+  print( "total-size", total );
+  print( "bucket-size", cluster.bucketMaxSize() );
   print( "mybuckets", cluster.myBuckets().size() );
   for ( auto & b : cluster.myBuckets() ) {
     print( "local-bucket", b, cluster.bucket_local_id( b ),

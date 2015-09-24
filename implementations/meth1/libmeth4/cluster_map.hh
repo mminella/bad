@@ -35,6 +35,7 @@ private:
   size_t disks_;
   size_t recordsLocally_;
   size_t bucketsPerNode_;
+  size_t bucketMaxSize_;
 
   /* actual cached bucket mapping */
   shards_t shards_;
@@ -98,6 +99,9 @@ public:
 
   /* map a key to a bucket. */
   uint16_t bucket( const uint8_t * key ) const noexcept;
+
+  /* Maximum bucket size in bytes. */
+  size_t bucketMaxSize( void ) const noexcept;
 };
 
 #endif /* METH4_CLUSTER_MAP_HH */

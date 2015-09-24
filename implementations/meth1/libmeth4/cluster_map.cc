@@ -58,6 +58,7 @@ size_t recordsInFiles( vector<File> & files )
   return nrecs;
 }
 
+/* Maximum number of records we can sort in-memory at any one time */
 size_t calcMaxSortSize( size_t disks )
 {
   // By 2 since we want to overlap reading in one bucket while sorting the
@@ -88,6 +89,7 @@ ClusterMap::ClusterMap( size_t myID, string configFile,
   , disks_{min( num_of_disks(), dataFiles.size() )}
   , recordsLocally_{recordsInFiles( recFiles_ )}
   , bucketsPerNode_{bucketsPerNode( recordsLocally_, disks_ )}
+  , bucketMaxSize_{calcMaxSortSize( disks_ )}
   , shards_{calculateShards( bucketsPerNode_ * backends_.size() )}
   , preShards_{precomputeFirstByte( shards_ )}
   , myBuckets_{calcMyBuckets( myID, backends_.size(), disks_,
@@ -177,6 +179,12 @@ size_t ClusterMap::nodes( void ) const noexcept
 size_t ClusterMap::buckets( void ) const noexcept
 {
   return shards_.size();
+}
+
+
+size_t ClusterMap::bucketMaxSize( void ) const noexcept
+{
+  return bucketMaxSize_ * Rec::SIZE;
 }
 
 using uint128_t = __uint128_t;
