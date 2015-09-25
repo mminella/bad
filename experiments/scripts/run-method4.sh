@@ -111,7 +111,7 @@ START=0
 for i in `seq 1 $MN`; do
   declare MV="M${i}"
   ${SSH} ubuntu@${!MV} \
-    "echo ${D} > ~/bad.log; \
+    "echo \"# ${D}\" > ~/bad.log; \
     LD_PRELOAD=/usr/local/lib/libjemalloc.so \
     meth4_node ${START} ${PORT} ${CONFFILE} ${FILES_ALL} \
     >> ~/bad.log" &
