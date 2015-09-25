@@ -2,7 +2,7 @@
 
 # Install R packages needed for models.
 
-MIRRORS <- c('https://cran.cnr.berkeley.edu/')
+MIRRORS <- c('http://cran.cnr.berkeley.edu/')
 
 if ( !require('dplyr') ) {
   install.packages('dplyr', repos=MIRRORS)
@@ -22,6 +22,6 @@ if ( !require('devtools') ) {
 
 if ( !require('ggthemr') ) {
   library('devtools')
-  devtools::install_github('ggthemr', 'cttobin')
+  devtools::install_github('cttobin/ggthemr')
 }
 
