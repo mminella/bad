@@ -93,7 +93,8 @@ void run( size_t nodeID, string port, string conffile, vector<string> files )
   auto t0 = time_now();
   print( "phase-one-start", timestamp<ms>() );
   phase_one( cluster, port );
-  print( "phase-one-end", timestamp<ms>(), time_diff<ms>( t0 ) );
+  print( "phase-one-end", timestamp<ms>(),
+    time_diff<ms>( t0 ) - Knobs4::STARTUP_WAIT * 1000 );
 
   // sort each bucket
   auto t1 = time_now();
