@@ -1,0 +1,95 @@
+# Thu Sep 24 23:18:09 PDT 2015
+start, 0
+myid, 2
+disks, 1
+disk-path, /mnt/b
+in-files, 1
+mybuckets, 14
+local-bucket, 2, 0, 0
+local-bucket, 5, 1, 0
+local-bucket, 8, 2, 0
+local-bucket, 11, 3, 0
+local-bucket, 14, 4, 0
+local-bucket, 17, 5, 0
+local-bucket, 20, 6, 0
+local-bucket, 23, 7, 0
+local-bucket, 26, 8, 0
+local-bucket, 29, 9, 0
+local-bucket, 32, 10, 0
+local-bucket, 35, 11, 0
+local-bucket, 38, 12, 0
+local-bucket, 41, 13, 0
+buckets, 42
+bucket, 0, 0
+bucket, 1, 1
+bucket, 2, 2
+bucket, 3, 0
+bucket, 4, 1
+bucket, 5, 2
+bucket, 6, 0
+bucket, 7, 1
+bucket, 8, 2
+bucket, 9, 0
+bucket, 10, 1
+bucket, 11, 2
+bucket, 12, 0
+bucket, 13, 1
+bucket, 14, 2
+bucket, 15, 0
+bucket, 16, 1
+bucket, 17, 2
+bucket, 18, 0
+bucket, 19, 1
+bucket, 20, 2
+bucket, 21, 0
+bucket, 22, 1
+bucket, 23, 2
+bucket, 24, 0
+bucket, 25, 1
+bucket, 26, 2
+bucket, 27, 0
+bucket, 28, 1
+bucket, 29, 2
+bucket, 30, 0
+bucket, 31, 1
+bucket, 32, 2
+bucket, 33, 0
+bucket, 34, 1
+bucket, 35, 2
+bucket, 36, 0
+bucket, 37, 1
+bucket, 38, 2
+bucket, 39, 0
+bucket, 40, 1
+bucket, 41, 2
+nodes, 3
+backend, 172.30.0.37:9000
+backend, 172.30.0.39:9000
+backend, 172.30.0.38:9000
+phase-one-start, 12
+p0, listen, 0.0.0.0:9000
+disk, 0, /mnt/b, 14
+p1, disk-start, 13
+p0, connect, 172.30.0.37:9000
+p0, connect, 172.30.0.39:9000
+p0, connect, 172.30.0.38:9000
+p1, netout-start, 10014
+p0, new-connection, 172.30.0.37:37023
+p0, new-connection, 172.30.0.38:42102
+p0, new-connection, 172.30.0.39:55272
+p1, send-start, 10021
+p1, recv-start, 10022
+circular-read-start, 3, 1, 200000000000, 10022
+circular-read-total, 3, 1, 200000000000, 549696, 1356931
+p1, disk-done, 1387646, 1377624
+p1, netout-done, 1543294, 1533280, 1530967
+p1, recv-end, 1543295, 1533272
+p1, send-end, 1543295, 1533273
+p1, disk-drained, 1543328, 1543315, 17
+p1, disk-write, 1543328, 1543315, 935416
+p1, disk-end, 1543329, 1543315
+phase-one-end, 1543329, 1543316
+phase-two-start, 1543329
+sort-disk, 2366406, 0, 62004, 381693, 437095
+phase-two-end, 2366407, 823077
+finish, 2366407, 2356394

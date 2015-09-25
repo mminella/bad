@@ -1,0 +1,101 @@
+# Fri Sep 25 01:54:08 PDT 2015
+start, 0
+myid, 4
+memory, 32170233856
+disks, 1
+disk-path, /mnt/b
+in-files, 1
+file-size, 60000000000
+total-size, 60000000000
+bucket-size, 15011375100
+mybuckets, 4
+local-bucket, 4, 0, 0
+local-bucket, 13, 1, 0
+local-bucket, 22, 2, 0
+local-bucket, 31, 3, 0
+buckets, 36
+bucket, 0, 0
+bucket, 1, 1
+bucket, 2, 2
+bucket, 3, 3
+bucket, 4, 4
+bucket, 5, 5
+bucket, 6, 6
+bucket, 7, 7
+bucket, 8, 8
+bucket, 9, 0
+bucket, 10, 1
+bucket, 11, 2
+bucket, 12, 3
+bucket, 13, 4
+bucket, 14, 5
+bucket, 15, 6
+bucket, 16, 7
+bucket, 17, 8
+bucket, 18, 0
+bucket, 19, 1
+bucket, 20, 2
+bucket, 21, 3
+bucket, 22, 4
+bucket, 23, 5
+bucket, 24, 6
+bucket, 25, 7
+bucket, 26, 8
+bucket, 27, 0
+bucket, 28, 1
+bucket, 29, 2
+bucket, 30, 3
+bucket, 31, 4
+bucket, 32, 5
+bucket, 33, 6
+bucket, 34, 7
+bucket, 35, 8
+nodes, 9
+backend, 172.30.0.210:9000
+backend, 172.30.0.211:9000
+backend, 172.30.0.212:9000
+backend, 172.30.0.213:9000
+backend, 172.30.0.208:9000
+backend, 172.30.0.209:9000
+backend, 172.30.0.206:9000
+backend, 172.30.0.207:9000
+backend, 172.30.0.205:9000
+phase-one-start, 19
+p0, listen, 0.0.0.0:9000
+disk, 0, /mnt/b, 4
+p1, disk-start, 19
+p0, connect, 172.30.0.210:9000
+p0, connect, 172.30.0.211:9000
+p0, connect, 172.30.0.212:9000
+p0, connect, 172.30.0.213:9000
+p0, connect, 172.30.0.208:9000
+p0, connect, 172.30.0.209:9000
+p0, connect, 172.30.0.206:9000
+p0, connect, 172.30.0.207:9000
+p0, connect, 172.30.0.205:9000
+p1, netout-start, 10021
+p0, new-connection, 172.30.0.207:37968
+p0, new-connection, 172.30.0.213:52881
+p0, new-connection, 172.30.0.210:37304
+p0, new-connection, 172.30.0.209:53993
+p0, new-connection, 172.30.0.208:41266
+p0, new-connection, 172.30.0.212:36410
+p0, new-connection, 172.30.0.205:34681
+p0, new-connection, 172.30.0.211:50418
+p0, new-connection, 172.30.0.206:37866
+p1, send-start, 12095
+p1, recv-start, 12096
+circular-read-start, 3, 1, 60000000000, 12096
+circular-read-total, 3, 1, 60000000000, 167664, 378941
+p1, disk-done, 419789, 407693
+p1, netout-done, 628943, 618921, 615257
+p1, recv-end, 630129, 618032
+p1, send-end, 630129, 618033
+p1, disk-drained, 630148, 630128, 6
+p1, disk-write, 630148, 630128, 295713
+p1, disk-end, 630148, 630129
+phase-one-end, 630148, 620129
+phase-two-start, 630148
+sort-disk, 852927, 0, 17743, 87695, 130817
+phase-two-end, 852927, 222778
+finish, 852927, 842908

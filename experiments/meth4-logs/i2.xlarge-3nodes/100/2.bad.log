@@ -1,0 +1,50 @@
+start, 0
+myid, 1
+disks, 1
+disk-path, /mnt/b
+in-files, 1
+mybuckets, 3
+local-bucket, 1, 0, 0
+local-bucket, 4, 1, 0
+local-bucket, 7, 2, 0
+buckets, 9
+bucket, 0, 0
+bucket, 1, 1
+bucket, 2, 2
+bucket, 3, 0
+bucket, 4, 1
+bucket, 5, 2
+bucket, 6, 0
+bucket, 7, 1
+bucket, 8, 2
+nodes, 3
+backend, 172.30.0.37:9000
+backend, 172.30.0.39:9000
+backend, 172.30.0.38:9000
+phase-one-start, 11
+p0, listen, 0.0.0.0:9000
+disk, 0, /mnt/b, 3
+p1, disk-start, 12
+p0, connect, 172.30.0.37:9000
+p0, connect, 172.30.0.39:9000
+p0, connect, 172.30.0.38:9000
+p0, new-connection, 172.30.0.38:43322
+p0, new-connection, 172.30.0.39:60668
+p1, netout-start, 10013
+p0, new-connection, 172.30.0.37:34095
+p1, send-start, 10063
+p1, recv-start, 10063
+circular-read-start, 3, 1, 33333333300, 10063
+circular-read-total, 3, 1, 33333333300, 93690, 95361
+p1, disk-done, 119884, 109820
+p1, recv-end, 281211, 271147
+p1, send-end, 281211, 271147
+p1, netout-done, 281219, 271206, 269404
+p1, disk-drained, 281224, 281211, 0
+p1, disk-write, 281224, 281211, 164034
+p1, disk-end, 281224, 281212
+phase-one-end, 281224, 281212
+phase-two-start, 281224
+sort-disk, 418588, 0, 13094, 59884, 73216
+phase-two-end, 418589, 137364
+finish, 418589, 408577
