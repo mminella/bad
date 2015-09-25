@@ -79,7 +79,7 @@ all() {
 all "setup_all_fs 2> /dev/null > /dev/null"
 
 # Remove any old files
-all "rm -rf ${BUCKETS_ALL} ${FILES_ALL}"
+all "rm -rf ${BUCKETS_ALL} ${FILES_ALL} ~/bad.log"
 
 # Generate data files
 START=0
@@ -110,7 +110,10 @@ Experiment setup! (${NAME})
 START=0
 for i in `seq 1 $MN`; do
   declare MV="M${i}"
-  ${SSH} ubuntu@${!MV} "meth4_node ${START} ${PORT} ${CONFFILE} ${FILES_ALL} \
+  ${SSH} ubuntu@${!MV} \
+    "echo ${D} > ~/bad.log; \
+    LD_PRELOAD=/usr/local/lib/libjemalloc.so \
+    meth4_node ${START} ${PORT} ${CONFFILE} ${FILES_ALL} \
     >> ~/bad.log" &
   START=$(( ${START} + 1 ))
 done
