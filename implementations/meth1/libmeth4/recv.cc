@@ -23,7 +23,8 @@ static void freeBlock( uint8_t * buf )
 NetIn::NetIn( ClusterMap & cluster, vector<DiskWriter> & disks, TCPSocket sock )
   : cluster_{cluster}
   , disks_{disks}
-  , bucketsLive_{cluster.myBuckets().size()}
+  // NetIn per-node, so myBuckets * disks EOF notifications...
+  , bucketsLive_{cluster.myBuckets().size() * cluster.disks()}
   , sock_{move( sock )}
   , wireState_{IDLE}
   , header_{}
