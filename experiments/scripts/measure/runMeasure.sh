@@ -15,7 +15,7 @@ if [ -z "${FILE}" -o -z "${SAVE}" -o -z "${N}" -o -z "${MACHINE}" \
 fi
 
 # launch
-./launchBAD.rb -f ${FILE} -k ${KEY} -c ${N} 'Measure-%d' \
+./launch-backends.rb -f ${FILE} -k ${KEY} -c ${N} 'Measure-%d' \
   -d measure.tar.gz -i ${MACHINE} -z ${ZONE}
 
 source ${FILE}
