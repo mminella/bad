@@ -37,9 +37,14 @@ IOWorker()
     idx = offset;
     offset++;
     lk.unlock();
-    if (idx >= num_block)
-	break;
-    pread(fd, data, block_size, random_block[idx] * block_size);
+    if (idx >= num_block) {
+      break;
+    }
+    ssize_t r = pread(fd, data, block_size, random_block[idx] * block_size);
+    if ( r == -1 ) {
+      perror("pread:");
+      exit(EXIT_FAILURE);
+    }
   }
 
   free(data);

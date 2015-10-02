@@ -1,5 +1,6 @@
 CXX=c++
 CXXFLAGS=-O3 -std=c++11
+LDFLAGS=-pthread -lpthread
 BINARIES= \
 	read \
 	random_read \
