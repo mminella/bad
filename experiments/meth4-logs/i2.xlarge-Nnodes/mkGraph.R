@@ -16,11 +16,11 @@ ggthemr('fresh')
 mkGraph <- function(d, fout, geom, title, yl, xl) {
   if (is.data.frame(d) & nrow(d) > 0) {
     pdf(fout)
-    g <- ggplot(d, aes(clarity, x=xv, y=yv, group=variable, colour=variable))
-    g <- g + geom()
-    g <- g + ggtitle(title)
-    g <- g + xlab(xl)
-    g <- g + ylab(yl)
+    g <- ggplot(d, aes(clarity, x=xv, y=yv, group=variable, colour=variable)) +
+      geom() +
+      ggtitle(title) +
+      xlab(xl) +
+      ylab(yl)
     print(g)
     dev.off()
   } else {
@@ -37,7 +37,28 @@ pointGraph <- function(d, fout, title, yl, xl) {
 }
 
 barGraph <- function(d, fout, title, yl, xl) {
-  mkGraph(d, fout, geom_bar(stat='identity', position='dodge'), title, yl, xl)
+  g <- function() { geom_bar(stat='identity', position='dodge') }
+  mkGraph(d, fout, g, title, yl, xl)
+}
+
+lineDotGraph <- function(d, fout, title, yl, xl, lineVar, dotVar) {
+  if (is.data.frame(d) & nrow(d) > 0) {
+    d1 <- filter(d, variable==lineVar)
+    d2 <- filter(d, variable==dotVar)
+    pdf(fout)
+    g <- ggplot(d1, aes(clarity, x=xv, y=yv)) +
+      geom_line(aes(colour=variable)) +
+      ggtitle(title) +
+      xlab(xl) +
+      ylab(yl) +
+      geom_point(data=d2, size=4, aes(colour=variable)) +
+      guides(colour=guide_legend(override.aes=list(shape=c(16,NA),
+                                                   linetype=c(0,1))))
+    print(g)
+    dev.off()
+  } else {
+    stop("invalid data to graph")
+  }
 }
 
 
@@ -56,5 +77,6 @@ df <- read.delim(args[[1]], header=T, sep=',', strip.white=T, comment.char='#')
 df <- select(df, variable=type, xv=size, yv=total)
 df$variable <- revalue(df$variable, c("o"="observed", "p"="predicted"))
 
-pointGraph(df, "graph.pdf", "ShuffleAll: i2.1x Cluster - ReadAll - 600GB",
-           "Total Time (s)", "Cluster Size (nodes)")
+lineDotGraph(df, "graph.pdf", "ShuffleAll: i2.1x Cluster - ReadAll - 600GB",
+                 "Total Time (s)", "Cluster Size (nodes)",
+                 "predicted", "observed")

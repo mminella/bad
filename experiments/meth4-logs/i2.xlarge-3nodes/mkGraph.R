@@ -16,11 +16,11 @@ ggthemr('fresh')
 mkGraph <- function(d, fout, geom, title, yl, xl) {
   if (is.data.frame(d) & nrow(d) > 0) {
     pdf(fout)
-    g <- ggplot(d, aes(clarity, x=xv, y=yv, group=variable, colour=variable))
-    g <- g + geom()
-    g <- g + ggtitle(title)
-    g <- g + xlab(xl)
-    g <- g + ylab(yl)
+    g <- ggplot(d, aes(clarity, x=xv, y=yv, group=variable, colour=variable)) +
+      geom() +
+      ggtitle(title) +
+      xlab(xl) +
+      ylab(yl)
     print(g)
     dev.off()
   } else {
@@ -46,12 +46,14 @@ lineDotGraph <- function(d, fout, title, yl, xl, lineVar, dotVar) {
     d1 <- filter(d, variable==lineVar)
     d2 <- filter(d, variable==dotVar)
     pdf(fout)
-    g <- ggplot(d1, aes(clarity, x=xv, y=yv))
-    g <- g + geom_line(aes(colour=variable))
-    g <- g + ggtitle(title)
-    g <- g + xlab(xl)
-    g <- g + ylab(yl)
-    g <- g + geom_point(data=d2, size=4, aes(colour=variable))
+    g <- ggplot(d1, aes(clarity, x=xv, y=yv)) +
+      geom_line(aes(colour=variable)) +
+      ggtitle(title) +
+      xlab(xl) +
+      ylab(yl) +
+      geom_point(data=d2, size=4, aes(colour=variable)) +
+      guides(colour=guide_legend(override.aes=list(shape=c(16,NA),
+                                                   linetype=c(0,1))))
     print(g)
     dev.off()
   } else {
