@@ -62,7 +62,7 @@ public:
   };
 
   /* constructor, creates UDP socket of specified IP version. */
-  UDPSocket( IPVersion ipv = IPV6 )
+  explicit UDPSocket( IPVersion ipv = IPV6 )
     : Socket( ipv, SOCK_DGRAM )
   {
   }
@@ -92,7 +92,7 @@ private:
 
 public:
   /* constructor, creates TCP socket of specified IP version. */
-  TCPSocket( IPVersion ipv = IPV6 )
+  explicit TCPSocket( IPVersion ipv = IPV6 )
     : Socket( ipv, SOCK_STREAM )
   {
   }

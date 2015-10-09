@@ -11,15 +11,19 @@
 #include <condition_variable>
 #include <mutex>
 
+template<typename T> class Channel;
+
 /* We hide the inner implementation of channel that shouldn't be moved */
-namespace internal {
+namespace _internal {
 
   /* A channel provides a buffered communication pipe.
    */
   template <typename T>
   class Channel_
   {
-  public:
+  private:
+    friend class Channel<T>;
+
     class closed_error : public std::exception
     {
       const char * what( void ) const noexcept override
@@ -28,7 +32,6 @@ namespace internal {
       }
     };
 
-  private:
     std::mutex mtx_;
     std::condition_variable send_cv_;
     std::condition_variable recv_cv_;
@@ -41,9 +44,7 @@ namespace internal {
     size_t send_wait_; // only for synchronous channels
     size_t recv_wait_; // only for synchronous channels
 
-  public:
-
-    Channel_( const size_t buf = 1 )
+    explicit Channel_( const size_t buf = 1 )
       : mtx_{}
       , send_cv_{}
       , recv_cv_{}
@@ -205,12 +206,12 @@ template<typename T>
 class Channel
 {
 private:
-  std::shared_ptr<internal::Channel_<T>> chn;
+  std::shared_ptr<_internal::Channel_<T>> chn;
 
 public:
-    using closed_error = typename internal::Channel_<T>::closed_error;
+    using closed_error = typename _internal::Channel_<T>::closed_error;
 
-    Channel( size_t buf = 1 ) : chn{new internal::Channel_<T>{buf}} {}
+    explicit Channel( size_t buf = 1 ) : chn{new _internal::Channel_<T>{buf}} {}
 
     void close( void ) { chn->close(); }
     void waitEmpty( void ) { chn->waitEmpty(); }

@@ -116,7 +116,7 @@ private:
   IOType owned_io_;
 
 public:
-  BufferedIO_O( IOType && io )
+  explicit BufferedIO_O( IOType && io )
     : BufferedIO{owned_io_}
     , owned_io_{std::move( io )}
   {}

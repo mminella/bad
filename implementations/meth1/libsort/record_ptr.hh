@@ -52,7 +52,6 @@ public:
 
   /* Accessors */
   bool isNull( void ) const noexcept { return r_ == nullptr; }
-  const uint8_t * data( void ) const noexcept { return r_; }
   const uint8_t * key( void ) const noexcept { return r_; }
   const uint8_t * val( void ) const noexcept { return r_ + Rec::KEY_LEN; }
 #if WITHLOC == 1
@@ -60,6 +59,11 @@ public:
 #else
   uint64_t loc( void ) const noexcept { return 0; }
 #endif
+
+  /* methods for boost::sort */
+  const char * data( void ) const noexcept { return (char *) r_; }
+  unsigned char operator[]( size_t i ) const noexcept { return r_[i]; }
+  size_t size( void ) const noexcept { return Rec::KEY_LEN; }
 
   /* comparison */
   comp_op( <, Record )
@@ -89,5 +93,12 @@ public:
     }
   }
 };
+
+std::ostream & operator<<( std::ostream & o, const RecordPtr & r );
+
+inline void iter_swap ( RecordPtr * a, RecordPtr * b ) noexcept
+{
+  std::swap( *a, *b );
+}
 
 #endif /* RECORD_PTR_HH */

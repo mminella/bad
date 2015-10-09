@@ -134,7 +134,7 @@ private:
   RemoteFile * rf_;
 
 public:
-  RemoteFilePtr( RemoteFile * rf )
+  explicit RemoteFilePtr( RemoteFile * rf )
     : rf_{rf}
   {}
 

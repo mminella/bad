@@ -7,6 +7,8 @@
 # ===================================================================
 # Arguments
 
+# We take a bunch of unused arguments to keep the interface between
+# launch-client-and-backend.sh and run-method1.sh the same.
 SSH="ssh -o UserKnownHostsFile=/dev/null \
   -o StrictHostKeyChecking=no -o LogLevel=ERROR"
 KEY=$( hostname )
@@ -38,20 +40,6 @@ fi
 # Configuration
 
 NAME=${FILE}
-SIZE_B=$( calc "round( $SIZE * 1000 * 1000 * 1000 / 100 )" )
-CHUNK_B=$( calc "round( $CHUNK * 1024 * 1024 * 1024 / 100 )" )
-
-if [ $MACHINE = "i2.xlarge" ]; then
-  FILES_ALL="/mnt/b/recs"
-elif [ $MACHINE = "i2.2xlarge" ]; then
-  FILES_ALL="/mnt/b/recs /mnt/c/recs"
-elif [ $MACHINE = "i2.4xlarge" ]; then
-  FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs"
-elif [ $MACHINE = "i2.8xlarge" ]; then
-  FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs \
-    /mnt/f/recs /mnt/g/recs /mnt/h/recs /mnt/i/recs"
-fi
-
 
 # ===================================================================
 # Launch Cluster

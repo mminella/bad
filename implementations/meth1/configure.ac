@@ -9,6 +9,9 @@ AC_INIT([bad1],[1.0.0],[dterei@cs.stanford.edu])
 # compilation.
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
+# Silent build please
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
 # Set sanity check for a source file.
 AC_CONFIG_SRCDIR([libutil/address.hh])
 
@@ -21,6 +24,10 @@ AC_CONFIG_HEADERS([config.h])
 # Set some default CXXFLAGS
 WARN_FLAGS="-pedantic -Wall -Wextra -Weffc++"
 AC_SUBST([AM_CXXFLAGS], ["$WARN_FLAGS"])
+
+# We set directly (default is 'cru' as 'u' option produces a warning since it's
+                   # ignored when using deterministic libraries.
+AC_SUBST([AR_FLAGS], ["cr"])
 
 # Checks for programs.
 AC_PROG_CXX
@@ -52,5 +59,6 @@ AC_CONFIG_FILES([
   libutil/Makefile
   libsort/Makefile
   libmeth1/Makefile
+  libmeth4/Makefile
 ])
 AC_OUTPUT

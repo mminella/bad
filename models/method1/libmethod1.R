@@ -35,73 +35,67 @@ m1.chunkSize <- function(mem, disks) {
   floor( mem /  (div1 + div2) ) * REC_SIZE
 }
 
-m1.allModel <- function(client, machine, nodes, data) {
+m1.readAll <- function(client, machine, nodes, data) {
   chunk    <- m1.chunkSize(machine$mem, machine$disks)
   nodeData <- dataAtNode(machine, nodes, data, 1)
   scans    <- ceiling(nodeData / chunk)
 
-  netio    <- min(client$netio, machine$netio * nodes)
-  timeNet  <- round(data / netio)
-  timeDisk <- round(nodeData / (machine$diskio.r * machine$disks) * scans)
+  timeNet  <- networkSend(machine, nodes, client, 1, data)
+  timeDisk <- sequentialRead(machine, nodeData) * scans
   time     <- timeNet + timeDisk
 
-  timeM    <- ceiling(time / M)
-  timeH    <- round(time / HR, 2)
-
-  costTime <- max(timeM, machine$billing.mintime)
+  costTime <- max(toMin(time), machine$billing.mintime)
   cost     <- ceiling(costTime / machine$billing.granularity) *
                 machine$cost * nodes
 
   data.frame(operation="all", nodes=nodes, start=0, length=data/REC_SIZE,
-             time.total=time, time.min=timeM, time.hr=timeH,
+             time.total=time, time.min=toMin(time), time.hr=toHr(time),
              time.disk=timeDisk, time.net=timeNet,
              cost=cost)
 }
 
-m1.firstModel <- function(client, machine, nodes, data) {
+m1.firstRec <- function(client, machine, nodes, data) {
   nodeData <- dataAtNode(machine, nodes, data, 1)
-  timeDisk <- round(nodeData / (machine$diskio.r * machine$disks))
+  timeDisk <- sequentialRead(machine, nodeData)
   time     <- timeDisk
 
-  timeM    <- ceiling(time / M)
-  timeH    <- round(time / HR, 2)
-
-  costTime <- max(timeM, machine$billing.mintime)
+  costTime <- max(toMin(time), machine$billing.mintime)
   cost     <- ceiling(costTime / machine$billing.granularity) *
                 machine$cost * nodes
 
   data.frame(operation="first", nodes=nodes, start=0, length=1,
-             time.total=timeDisk, time.min=timeM, time.hr=timeH,
+             time.total=timeDisk, time.min=toMin(time), time.hr=toHr(time),
              time.disk=timeDisk, time.net=0,
              cost=cost)
 }
 
-m1.nthModel <- function(client, machine, nodes, data, n, len) {
-  endN     <- n + len
+m1.rangeRead <- function(client, machine, nodes, data, n, len) {
+  dataN    <- (n + len) * REC_SIZE
 
   chunk    <- m1.chunkSize(machine$mem, machine$disks)
   nodeData <- dataAtNode(machine, nodes, data, 1)
-  scans    <- max(ceiling(endN * REC_SIZE / chunk / nodes), 1)
+  scans    <- max(ceiling(dataN / chunk / nodes), 1)
 
-  netio    <- min(client$netio, machine$netio * nodes)
-  timeNet  <- endN*REC_SIZE / netio
-  timeDisk <- round(nodeData / (machine$diskio.r * machine$disks) * scans)
+  timeNet  <- networkSend(machine, nodes, client, 1, dataN)
+  timeDisk <- sequentialRead(machine, nodeData) * scans
   time     <- timeNet + timeDisk
 
-  timeM    <- ceiling(time / M)
-  timeH    <- round(time / HR, 2)
-
-  costTime <- max(timeM, machine$billing.mintime)
+  costTime <- max(toMin(time), machine$billing.mintime)
   cost     <- ceiling(costTime / machine$billing.granularity) *
                 machine$cost * nodes
 
   data.frame(operation="nth", nodes=nodes, start=n, length=len,
-             time.total=time, time.min=timeM, time.hr=timeH,
+             time.total=time, time.min=toMin(time), time.hr=toHr(time),
              time.disk=timeDisk, time.net=timeNet,
              cost=cost)
 }
 
-m1.cdfModel <- function(client, machine, nodes, data, points) {
-  model <- m1.allModel(client, machine, nodes, data)
+m1.cdf <- function(client, machine, nodes, data, points) {
+  model <- m1.readAll(client, machine, nodes, data)
   mutate(model, operation="cdf", start=NA, length=points)
+}
+
+m1.reservoir <- function(client, machine, nodes, data, samples) {
+  model <- m1.rangeRead(client, machine, nodes, data, 0, samples)
+  mutate(model, operation="reservoir", start=NA, length=samples)
 }

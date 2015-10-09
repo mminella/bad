@@ -18,7 +18,7 @@ class priority_queue : public std::priority_queue<T, std::vector<T>, Compare>
 public:
   using size_type = typename std::priority_queue<T>::size_type;
 
-  priority_queue( size_type capacity = 0 )
+  explicit priority_queue( size_type capacity = 0 )
   {
     if ( capacity > 0 ) {
       reserve( capacity );

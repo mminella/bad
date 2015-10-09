@@ -9,7 +9,7 @@
 class UnixDomainSocket : public FileDescriptor
 {
 private:
-  UnixDomainSocket( int fd ) noexcept
+  explicit UnixDomainSocket( int fd ) noexcept
     : FileDescriptor( fd )
   {
   }

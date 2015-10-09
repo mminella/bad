@@ -8,7 +8,7 @@ class IODevice
 {
 public:
   static constexpr size_t MAX_READ = 128 * 1024;
-
+  static constexpr size_t ODIRECT_ALIGN = 4096; 
   enum odirect_t { CACHED, DIRECT };
 
 private:

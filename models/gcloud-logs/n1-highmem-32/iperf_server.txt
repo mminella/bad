@@ -1,0 +1,7 @@
+------------------------------------------------------------
+Server listening on TCP port 2000
+TCP window size: 85.3 KByte (default)
+------------------------------------------------------------
+[  4] local 10.240.72.123 port 2000 connected with 10.240.177.136 port 36262
+[ ID] Interval       Transfer     Bandwidth
+[  4]  0.0-20.0 sec  18.3 GBytes  7.87 Gbits/sec

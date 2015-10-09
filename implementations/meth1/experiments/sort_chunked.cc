@@ -3,10 +3,11 @@
  * array for the storage container.
  */
 #include <sys/stat.h>
+#include <memory>
 #include <iostream>
 
 #include "record.hh"
-#include "timestamp.hh" 
+#include "timestamp.hh"
 #include "util.hh"
 
 #include "config.h"
@@ -40,7 +41,7 @@ filter( const char * const buf, size_t nrecs, RR * r1, size_t size,
   if ( haveMin ) {
     mmin = *curMin;
   }
- 
+
   uint64_t i;
   for ( i = 0; i < size and loc < nrecs; loc++ ) {
     const unsigned char * r = (const unsigned char *) buf + Rec::SIZE * loc;
@@ -61,13 +62,13 @@ RR * scan( const char * const buf, size_t nrecs, size_t size, const RR & after,
 {
   auto t0 = time_now();
   tdiff_t tm = 0, ts = 0, tl = 0;
-  size_t r1s = 0, r2s = 0, considered = 0, sorts = 0, merges = 0;
+  size_t r2s = 0, considered = 0, sorts = 0, merges = 0;
   RR * curMin = nullptr;
 
   for ( uint64_t loc = 0 ; loc < nrecs; ) {
     auto ix = filter( buf, nrecs, r1, r1x, loc, after, curMin );
-    r1s = ix.first; loc = ix.second;
-    
+    size_t r1s = ix.first; loc = ix.second;
+
     if ( r1s > 0 ) {
       considered += r1s;
       // SORT
@@ -111,7 +112,7 @@ RR * scan( const char * const buf, size_t nrecs, size_t size, const RR & after,
   gmergs += merges;
   tss += ts;
   tmm += tm;
-  
+
   return r2;
 }
 
@@ -175,9 +176,9 @@ void run( char * fin )
 
   // read file into memory
   auto t0 = time_now();
-  char * buf = new char[st.st_size];
+  unique_ptr<char> buf( new char[st.st_size] );
   for ( int nr = 0; nr < st.st_size; ) {
-    auto r = fread( buf, st.st_size - nr, 1, fdi );
+    auto r = fread( buf.get(), st.st_size - nr, 1, fdi );
     if ( r <= 0 ) {
       break;
     }
@@ -185,7 +186,7 @@ void run( char * fin )
   }
   cout << "read , " << time_diff<ms>( t0 ) << endl;
   cout << endl;
-  
+
   // stats
   size_t split = 10;
   size_t chunk = nrecs / split;
@@ -199,7 +200,7 @@ void run( char * fin )
   // scan file
   auto t1 = time_now();
   for ( uint64_t i = 0; i < split; i++ ) {
-    auto r = scan( buf, nrecs, chunk, after );
+    auto r = scan( buf.get(), nrecs, chunk, after );
     after.copy( r[chunk - 1] );
     cout << "last: " << after << endl;
 #if REUSE_MEM == 0

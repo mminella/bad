@@ -28,7 +28,7 @@ Cluster::Cluster( vector<Address> nodes, uint64_t chunkSize )
   , bufSize_{0}
 {
   for ( auto & n : nodes ) {
-    clients_.push_back( n );
+    clients_.push_back( Client( n ) );
   }
 
   if ( chunkSize_ == 0 and clients_.size() >= 1 ) {
@@ -125,7 +125,7 @@ void Cluster::Read( uint64_t pos, uint64_t size )
     // prep -- 1st record
     for ( auto f : files ) {
       f->nextRecord();
-      pq.push( {f} );
+      pq.push( RemoteFilePtr( f ) );
     }
 
     // read to end records
@@ -146,10 +146,10 @@ void Cluster::Read( uint64_t pos, uint64_t size )
 
 void Cluster::ReadAll( void )
 {
-  static uint64_t pass = 0;
-
   if ( clients_.size() == 1 ) {
     // optimize for 1 node
+    static uint64_t pass = 0;
+
     auto & c = clients_.front();
     BufferedIO bio( c.socket() );
     uint64_t size = Size();
@@ -189,7 +189,7 @@ void Cluster::ReadAll( void )
     // prep -- 1st record
     for ( auto f : files ) {
       f->nextRecord();
-      pq.push( {f} );
+      pq.push( RemoteFilePtr( f ) );
     }
 
     // read all records
@@ -277,7 +277,7 @@ void Cluster::WriteAll( File out )
     // prep -- 1st record
     for ( auto f : files ) {
       f->nextRecord();
-      pq.push( {f} );
+      pq.push( RemoteFilePtr( f ) );
     }
 
     // read all records

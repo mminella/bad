@@ -27,4 +27,5 @@
 * 26 -- 8/31 -- 3am
 * 27, Mon Aug 31 11:45:24 PDT 2015, ap-southeast-1a, i2.xlarge
 * 28 -- 9/07 -- 7pm
+* 29 -- 10/02 -- 3pm
 

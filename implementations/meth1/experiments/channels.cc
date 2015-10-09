@@ -18,7 +18,7 @@ public:
   int c_;
 
   C(void) : c_{0} {};
-  C(int c) : c_{c} {}
+  explicit C(int c) : c_{c} {}
   C(const C & c) : c_{c.c_} { cout << "C:copy " << c_ << endl; }
 
   C & operator=( const C & c ) {
@@ -129,7 +129,7 @@ void test_vec_records( void )
   using R = string;
   char recStr[Rec::SIZE];
   Channel<vector<R>> chn;
-  vector<R> recs1, recs2;
+  vector<R> recs1;
 
   recs1.emplace_back( recStr );
   recs1.emplace_back( recStr );
@@ -137,7 +137,7 @@ void test_vec_records( void )
   thread t ( [&] {
     chn.send( recs1 );
   } );
-  recs2 = chn.recv();
+  chn.recv();
 
   t.join();
 }

@@ -8,6 +8,7 @@
 #include "record_common.hh"
 #include "record_loc.hh"
 #include "record_ptr.hh"
+#include "record_string.hh"
 #include "record_t.hh"
 #include "record_t_shallow.hh"
 
@@ -170,6 +171,18 @@ inline int RecordLoc::compare( const uint8_t * k, uint64_t l ) const noexcept
 inline int RecordLoc::compare( const RecordLoc & b ) const noexcept
 {
   return ::compare( key(), loc(), b.key(), b.loc() );
+}
+
+
+/* RecordString */
+inline int RecordString::compare( const uint8_t * k ) const noexcept
+{
+  return ::compare( key(), 0, k, 0 );
+}
+
+inline int RecordString::compare( const RecordString &b ) const noexcept
+{
+  return ::compare( key(), 0, b.key(), 0 );
 }
 
 #endif /* RECORD_HH */
