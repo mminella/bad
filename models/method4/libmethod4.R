@@ -40,7 +40,7 @@ m4.startupModel <- function(machine, nodes, data) {
   data.frame(operation="startup", nodes=nodes, time.startup=p1Time)
 }
 
-m4.allModel <- function(client, machine, nodes, data, oneC) {
+m4.readAll <- function(client, machine, nodes, data, oneC) {
   nodeData <- dataAtNode(machine, nodes, data, m4.DATA_MULT)
   startup  <- m4.startupModel(machine, nodes, data)$time.startup
 
@@ -68,10 +68,10 @@ m4.allModel <- function(client, machine, nodes, data, oneC) {
              cost=cost)
 }
 
-m4.firstModel <- function(client, machine, nodes, data, oneC) {
+m4.firstRec <- function(client, machine, nodes, data, oneC) {
   if (!m4.LAZY) {
     # Same cost as ReadAll
-    model <- m4.allModel(client, machine, nodes, data, F)
+    model <- m4.readAll(client, machine, nodes, data, F)
     mutate(model, operation="first", one.spot=oneC, length=1)
   } else {
     # Only need to sort one bucket, so cheaper than ReadAll
@@ -98,10 +98,10 @@ m4.firstModel <- function(client, machine, nodes, data, oneC) {
   }
 }
 
-m4.nthModel <- function(client, machine, nodes, data, oneC, n, len) {
+m4.readRange <- function(client, machine, nodes, data, oneC, n, len) {
   if (!m4.LAZY) {
     # Same cost as ReadAll
-    model <- m4.allModel(client, machine, nodes, data, oneC)
+    model <- m4.readAll(client, machine, nodes, data, oneC)
     model <- mutate(model, operation="nth", start=n, length=len)
 
     # Network for phase 2
@@ -186,13 +186,13 @@ m4.nthModel <- function(client, machine, nodes, data, oneC, n, len) {
   }
 }
 
-m4.cdfModel <- function(client, machine, nodes, data, points, oneC) {
+m4.cdf <- function(client, machine, nodes, data, oneC, points) {
   if (points > data / REC_SIZE) {
     stop("Asked for more data points in CDF than records exist")
   }
 
   if (!m4.LAZY) {
-    model <- m4.allModel(client, machine, nodes, data, oneC)
+    model <- m4.readAll(client, machine, nodes, data, oneC)
     model <- mutate(model, operation="cdf", start=NA, length=points)
     if (oneC) {
       dataOut        <- points * REC_SIZE
@@ -244,4 +244,9 @@ m4.cdfModel <- function(client, machine, nodes, data, points, oneC) {
                time.startup=startup, time.op=p2Time,
                cost=cost)
   }
+}
+
+m4.reservoir <- function(client, machine, nodes, data, oneC, samples) {
+  model <- m4.readRange(client, machine, nodes, data, oneC, 0, samples)
+  mutate(model, operation="reservoir", start=NA, length=samples)
 }

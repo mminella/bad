@@ -41,12 +41,11 @@ mkFacetGraph <- function(d, title) {
 # Main
 
 USEAGE <- strwrap("Useage: [machines file] [operation] [client i2 type]
-                   [i2 type] [data size (GB)] [data points] <nth record>")
+                   [i2 type] [data size (GB)] [data points]
+                   (<nth record> | <cdf points> | <reservoir k>)")
 # check args
 args <- commandArgs(trailingOnly = T)
 if (length(args) != 6 && length(args) != 7) {
-  stop(USEAGE)
-} else if (length(args) == 7 && args[2] != "nth") {
   stop(USEAGE)
 }
 
@@ -73,15 +72,15 @@ m4.range <- m4.start:(m4.start+points)
 if (operation == "readall") {
   operation <- "ReadAll"
   m1.preds <- genPoints(m1.range,
-                        function(x) m1.allModel(client, machine, x, data))
+                        function(x) m1.readAll(client, machine, x, data))
   m4.preds <- genPoints(m4.range,
-                        function(x) m4.allModel(machine, x, data))
+                        function(x) m4.readAll(machine, x, data))
 } else if (operation == "first") {
   operation <- "FirstRecord"
   m1.preds <- genPoints(m1.range,
-                        function(x) m1.firstModel(client, machine, x, data))
+                        function(x) m1.firstRec(client, machine, x, data))
   m4.preds <- genPoints(m4.range,
-                        function(x) m4.firstModel(machine, x, data))
+                        function(x) m4.firstRec(machine, x, data))
 } else if (operation == "nth") {
   operation <- "NthRecord"
   nrecs <- data / REC_SIZE
@@ -90,15 +89,22 @@ if (operation == "readall") {
     stop("N'th record is outside the data size")
   }
   m1.preds <- genPoints(m1.range,
-                        function(x) m1.nthModel(client, machine, x, data, nth))
+                        function(x) m1.readRange(client, machine, x, data, nth))
   m4.preds <- genPoints(m4.range,
-                        function(x) m4.nthModel(machine, x, data, nth))
+                        function(x) m4.readRange(machine, x, data, nth))
 } else if (operation == "cdf") {
   operation <- "CDF"
   m1.preds <- genPoints(m1.range,
-                        function(x) m1.cdfModel(client, machine, x, data))
+                        function(x) m1.cdf(client, machine, x, data))
   m4.preds <- genPoints(m4.range,
-                        function(x) m4.cdfModel(machine, x, data))
+                        function(x) m4.cdf(machine, x, data))
+} else if (operation == "reservoir") {
+  kSamples <- as.numeric(args[7])
+  operation <- "Reservoir Sampling"
+  m1.preds <- genPoints(m1.range,
+                        function(x) m1.reservoir(client, machine, x, data, kSamples))
+  m4.preds <- genPoints(m4.range,
+                        function(x) m4.reservoir(client, machine, x, data, T, kSamples))
 }
 
 preparePoints <- function(preds, name) {

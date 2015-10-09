@@ -7,10 +7,10 @@ source('./libmethod4.R')
 
 # check args
 args <- commandArgs(trailingOnly = T)
-if (length(args) != 10) {
+if (length(args) != 11) {
   stop(strwrap("Usage: [machines file] [client i2 type] [i2 type] [start nodes]
                [node points] [data size (GB)] [one client?] [nth record]
-               [subset size] [cdf points]"))
+               [subset size] [cdf points] [reservoir k]"))
 }
 
 machines  <- loadMachines(args[1])
@@ -23,6 +23,7 @@ oneC      <- as.logical(args[7])
 nth       <- as.numeric(args[8])
 nthSize   <- as.numeric(args[9])
 cdfPoints <- as.numeric(args[10])
+kSamples  <- as.numeric(args[11])
 nrecs     <- data / REC_SIZE
 
 # Validate arguments
@@ -42,10 +43,11 @@ if (nth >= nrecs | nth < 0) {
 
 genAllModels <- function(n) {
   rbind(
-    m4.allModel(client, machine, n, data, oneC),
-    m4.firstModel(client, machine, n, data, oneC),
-    m4.nthModel(client, machine, n, data, oneC, nth, nthSize),
-    m4.cdfModel(client, machine, n, data, cdfPoints, oneC)
+    m4.readAll(client, machine, n, data, oneC),
+    m4.firstRec(client, machine, n, data, oneC),
+    m4.readRange(client, machine, n, data, oneC, nth, nthSize),
+    m4.cdf(client, machine, n, data, oneC, cdfPoints),
+    m4.reservoir(client, machine, n data, oneC, kSamples)
   )
 }
 

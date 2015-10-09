@@ -69,7 +69,7 @@ m1.firstRec <- function(client, machine, nodes, data) {
              cost=cost)
 }
 
-m1.rangeRead <- function(client, machine, nodes, data, n, len) {
+m1.readRange <- function(client, machine, nodes, data, n, len) {
   dataN    <- (n + len) * REC_SIZE
 
   chunk    <- m1.chunkSize(machine$mem, machine$disks)
@@ -96,6 +96,6 @@ m1.cdf <- function(client, machine, nodes, data, points) {
 }
 
 m1.reservoir <- function(client, machine, nodes, data, samples) {
-  model <- m1.rangeRead(client, machine, nodes, data, 0, samples)
+  model <- m1.readRange(client, machine, nodes, data, 0, samples)
   mutate(model, operation="reservoir", start=NA, length=samples)
 }

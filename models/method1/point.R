@@ -44,7 +44,7 @@ genAllModels <- function(n) {
   rbind(
     m1.readAll(client, machine, n, data),
     m1.firstRec(client, machine, n, data),
-    m1.rangeRead(client, machine, n, data, nth, nthSize),
+    m1.readRange(client, machine, n, data, nth, nthSize),
     m1.cdf(client, machine, n, data, cdfPoints),
     m1.reservoir(client, machine, n, data, kSamples)
   )

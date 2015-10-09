@@ -40,12 +40,12 @@ range <- start:(start+points)
 
 if (operation == "readall") {
   operation <- "ReadAll"
-  preds <- genPoints(range, function(x) m4.allModel(client, machine, x,
-                                                    data, oneC))
+  preds <- genPoints(range, function(x) m4.readAll(client, machine, x,
+                                                   data, oneC))
 } else if (operation == "first") {
   operation <- "FirstRecord"
-  preds <- genPoints(range, function(x) m4.firstModel(client, machine, x,
-                                                      data, oneC))
+  preds <- genPoints(range, function(x) m4.firstRec(client, machine, x,
+                                                    data, oneC))
 } else if (operation == "nth") {
   operation <- "NthRecord"
   nrecs <- data / REC_SIZE
@@ -58,13 +58,13 @@ if (operation == "readall") {
   } else if (nthSize < 1) {
     stop("Subset size must be greater than zero")
   }
-  preds <- genPoints(range, function(x) m4.nthModel(client, machine, x,
-                                                    data, oneC, nth, nthSize))
+  preds <- genPoints(range, function(x) m4.readRange(client, machine, x,
+                                                     data, oneC, nth, nthSize))
 } else if (operation == "cdf") {
   operation <- "CDF"
   points <- as.numeric(args[8])
-  preds  <- genPoints(range, function(x) m4.cdfModel(client, machine, x,
-                                                     data, points, oneC))
+  preds  <- genPoints(range, function(x) m4.cdf(client, machine, x,
+                                                data, oneC, points))
 }
 
 # read all vs cost
