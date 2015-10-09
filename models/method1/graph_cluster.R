@@ -8,14 +8,14 @@ source('../lib/libgraph.R')
 
 USEAGE <- strwrap("Useage: [machines file] [operation] [client i2 type]
                    [i2 type] [data size (GB)] [data points]
-                   (<cdf points> | <nth record> <subset size>)")
+                   (<cdf points> | <k samples> | <nth record> <subset size>)")
 # check args
 args <- commandArgs(trailingOnly = T)
 if (length(args) != 6 && length(args) != 7 && length(args) != 8) {
   stop(USEAGE)
 } else if (length(args) == 8 && args[2] != "nth") {
   stop(USEAGE)
-} else if (length(args) == 7 && args[2] != "cdf") {
+} else if (length(args) == 7 && args[2] != "cdf" && args[2] != "reservoir" ) {
   stop(USEAGE)
 }
 
@@ -38,10 +38,10 @@ range <- start:(start+points)
 
 if (operation == "readall") {
   operation <- "ReadAll"
-  preds <- genPoints(range, function(x) m1.allModel(client, machine, x, data))
+  preds <- genPoints(range, function(x) m1.readAll(client, machine, x, data))
 } else if (operation == "first") {
   operation <- "FirstRecord"
-  preds <- genPoints(range, function(x) m1.firstModel(client, machine, x, data))
+  preds <- genPoints(range, function(x) m1.firstRec(client, machine, x, data))
 } else if (operation == "nth") {
   operation <- "NthRecord"
   nrecs   <- data / REC_SIZE
@@ -54,13 +54,18 @@ if (operation == "readall") {
   } else if (nthSize < 1) {
     stop("Subset size must be greater than zero")
   }
-  preds <- genPoints(range, function(x) m1.nthModel(client, machine, x, data,
-                                                    nth, nthSize))
+  preds <- genPoints(range, function(x) m1.readRange(client, machine, x, data,
+                                                     nth, nthSize))
 } else if (operation == "cdf") {
   operation <- "CDF"
   cdfPoints <- as.numeric(args[7])
-  preds <- genPoints(range, function(x) m1.cdfModel(client, machine, x,
-                                                    data, cdfPoints))
+  preds <- genPoints(range, function(x) m1.cdf(client, machine, x, data,
+                                               cdfPoints))
+} else if (operation == "reservoir") {
+  operation <- "Reservoir Sampling"
+  kSamples <- as.numeric(args[7])
+  preds <- genPoints(range, function(x) m1.reservoir(client, machine, x,
+                                                     data, kSamples))
 }
 
 # read all vs cost

@@ -1,6 +1,7 @@
 #!/usr/bin/env Rscript
 suppressMessages(library(dplyr))
 
+
 # ===========================================
 # Units
 
@@ -15,6 +16,7 @@ HD_GB <- 1000 * 1000 * 1000
 S  <- 1
 M  <- 60 * S
 HR <- 60 * M
+
 
 # ===========================================
 # Machines
@@ -40,6 +42,7 @@ dataAtNode <- function(machine, nodes, data, mult) {
   ceiling(perNode)
 }
 
+
 # ===========================================
 # Record Sizes
 
@@ -47,9 +50,33 @@ REC_SIZE <- 100
 KEY_SIZE <- 10
 VAL_SIZE <- 90
 
+
 # ===========================================
 # Helpers
 
 genPoints <- function(range, f) {
   do.call("rbind", lapply(range, f))
+}
+
+toMin <- function(t) {
+  ceiling(t/M)
+}
+
+toHr <- function(t) {
+  round(t/HR,2)
+}
+
+
+# ===========================================
+# Components
+
+sequentialRead <- function(machine, data) {
+  round(data / (machine$diskio.r * machine$disks))
+}
+
+networkSend <- function(machineOut, outN, machineIn, inN, data) {
+  outBytes <- machineOut$netio * outN
+  inBytes  <- machineIn$netio * inN
+  netio    <- min(outBytes, inBytes)
+  round(data/netio)
 }

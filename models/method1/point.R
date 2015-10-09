@@ -7,10 +7,10 @@ source('./libmethod1.R')
 
 # check args
 args <- commandArgs(trailingOnly = T)
-if (length(args) != 9) {
+if (length(args) != 10) {
   stop(strwrap("Usage: [machines file] [client i2 type] [i2 type] [start nodes]
                [node points] [data size (GB)] [nth record] [subset size]
-               [cdf points]"))
+               [cdf points] [reservoir k]"))
 }
 
 machines  <- loadMachines(args[1])
@@ -22,6 +22,7 @@ data      <- as.numeric(args[6]) * HD_GB
 nth       <- as.numeric(args[7])
 nthSize   <- as.numeric(args[8])
 cdfPoints <- as.numeric(args[9])
+kSamples  <- as.numeric(args[10])
 nrecs     <- data / REC_SIZE
 
 # Validate arguments
@@ -35,16 +36,17 @@ if (nth >= nrecs | nth < 0) {
   stop("Unknown client machine type")
 } else if (nrow(machine) == 0) {
   stop("Unknown node machine type")
-} else if ( points < 1 ) {
+} else if ( points < 1 || cdfPoints < 0 || kSamples < 0 ) {
   stop("Node points must be greater than zero")
 }
 
 genAllModels <- function(n) {
   rbind(
-    m1.allModel(client, machine, n, data),
-    m1.firstModel(client, machine, n, data),
-    m1.nthModel(client, machine, n, data, nth, nthSize),
-    m1.cdfModel(client, machine, n, data, cdfPoints)
+    m1.readAll(client, machine, n, data),
+    m1.firstRec(client, machine, n, data),
+    m1.rangeRead(client, machine, n, data, nth, nthSize),
+    m1.cdf(client, machine, n, data, cdfPoints),
+    m1.reservoir(client, machine, n, data, kSamples)
   )
 }
 
