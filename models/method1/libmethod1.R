@@ -1,5 +1,7 @@
 #!/usr/bin/env Rscript
 suppressMessages(library(dplyr))
+library('methods')
+library('argparser')
 
 # LIMITATIONS:
 # - We assume reads at backends will perfectly overlap. While not too
@@ -54,7 +56,7 @@ m1.readAll <- function(client, machine, nodes, data) {
              cost=cost)
 }
 
-m1.firstRec <- function(client, machine, nodes, data) {
+m1.readFirst <- function(client, machine, nodes, data) {
   nodeData <- dataAtNode(machine, nodes, data, 1)
   timeDisk <- sequentialRead(machine, nodeData)
   time     <- timeDisk
@@ -98,4 +100,35 @@ m1.cdf <- function(client, machine, nodes, data, points) {
 m1.reservoir <- function(client, machine, nodes, data, samples) {
   model <- m1.readRange(client, machine, nodes, data, 0, samples)
   mutate(model, operation="reservoir", start=NA, length=samples)
+}
+
+m1.parseArgs <- function(graph=F) {
+  p <- arg_parser("Linear Scan B.A.D Model")
+
+  if (graph) {
+    p <- add_argument(p, "--operation",
+                      help="Operation to model [all, nth, first, cdf, reservoir]")
+    p <- add_argument(p, "--file", help="File to save graph to [pdf]",
+                      default="graph.pdf")
+  }
+  p <- add_argument(p, "--machines", help="Machine description file")
+  p <- add_argument(p, "--client", help="Client machine type", default="i2.8x")
+  p <- add_argument(p, "--node", help="Backend machine type")
+  p <- add_argument(p, "--min-cluster", help="Minimum cluster size", default=1)
+  p <- add_argument(p, "--cluster-points",
+                    help="Number of cluster sizes to model", default=1)
+  p <- add_argument(p, "--data", help="Data size (GBs)", type='numeric')
+  p <- add_argument(p, "--range-start", help="Ranged read start position",
+                    default=0)
+  p <- add_argument(p, "--range-size", help="Ranged read size", default=10000)
+  p <- add_argument(p, "--cdf", help="CDF points", default=100)
+  p <- add_argument(p, "--reservoir", help="Reservoir sampling size",
+                    default=10000)
+
+  args <- commandArgs(trailingOnly = T)
+  if (length(args) == 0) {
+    print(p)
+    stop()
+  }
+  parse_args(p)
 }

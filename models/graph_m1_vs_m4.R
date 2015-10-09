@@ -1,116 +1,77 @@
 #!/usr/bin/env Rscript
 source('lib/libmodels.R')
+source('lib/libgraph.R')
 source('method1/libmethod1.R')
 source('method4/libmethod4.R')
-suppressMessages(library(dplyr))
-library(ggplot2)
-library(ggthemr)
-library(reshape2)
 
 # ===========================================
-# Graphing
+# Arguments
 
-# for color scheme list -- https://github.com/cttobin/ggthemr
-ggthemr('fresh')
+opt       <- m4.parseArgs(graph=T)
+machines <- loadMachines(opt$machines)
+client   <- filter(machines, type==opt$client)
+machine  <- filter(machines, type==opt$node)
+data     <- opt$data * HD_GB
+oneC     <- opt$'one-client'
+maxNodes <- opt$'min-cluster' + opt$'cluster-points' - 1
 
-genPoints <- function(range, f) {
-  do.call("rbind", lapply(range, f))
-}
-
-mkFacetGraph <- function(d, title) {
-  if (is.data.frame(d) & nrow(d) > 0) {
-    pdf("graph.pdf")
-    d1 <- filter(d, variable=="cost")
-    d1$panel <- "Cost ($)"
-    d2 <- filter(d, variable=="time")
-    d2$panel <- "Time (min)"
-
-    g <- ggplot(data=d, mapping=aes(x=xv, y=yv, group=strategy, color=strategy))
-    g <- g + facet_grid(panel~., scale="free")
-    g <- g + layer(data=d1, geom=c("line"), stat="identity")
-    g <- g + layer(data=d2, geom=c("line"), stat="identity")
-    g <- g + ggtitle(title)
-    g <- g + xlab("Cluster Size")
-    g <- g + ylab("")
-    print(g)
-    dev.off()
-  }
+# cluster ranges
+m1.start <- ceiling(data / (machine$disk.size * machine$disks))
+m1.range <- m1.start:maxNodes
+m4.start <- ceiling((data * m4.DATA_MULT) / (machine$disk.size * machine$disks))
+m4.range <- m4.start:maxNodes
+if (m1.start > maxNodes || m4.start > maxNodes) {
+  stop("Not a valid cluster range size, increase cluster-points")
 }
 
 # ===========================================
 # Main
 
-USEAGE <- strwrap("Useage: [machines file] [operation] [client i2 type]
-                   [i2 type] [data size (GB)] [data points]
-                   (<nth record> | <cdf points> | <reservoir k>)")
-# check args
-args <- commandArgs(trailingOnly = T)
-if (length(args) != 6 && length(args) != 7) {
-  stop(USEAGE)
-}
-
-machines  <- loadMachines(args[1])
-operation <- args[2]
-client    <- filter(machines, type==args[3])
-machine   <- filter(machines, type==args[4])
-data      <- as.numeric(args[5]) * HD_GB
-points    <- as.numeric(args[6])
-
-# Validate arguments
-if (nrow(client) == 0) {
-  stop("Unknown client machine type")
-} else if (nrow(machine) == 0) {
-  stop("Unknown node machine type")
-}
-
-m1.start <- ceiling(data / (machine$disk.size * machine$disks))
-m1.range <- m1.start:(m1.start+points)
-
-m4.start <- ceiling((data * m4.DATA_MULT) / (machine$disk.size * machine$disks))
-m4.range <- m4.start:(m4.start+points)
-
-if (operation == "readall") {
+if (opt$operation == "all") {
   operation <- "ReadAll"
   m1.preds <- genPoints(m1.range,
                         function(x) m1.readAll(client, machine, x, data))
   m4.preds <- genPoints(m4.range,
-                        function(x) m4.readAll(machine, x, data))
-} else if (operation == "first") {
-  operation <- "FirstRecord"
+                        function(x) m4.readAll(client, machine, x, data, oneC))
+} else if (opt$operation == "first") {
+  operation <- "ReadFirst"
   m1.preds <- genPoints(m1.range,
-                        function(x) m1.firstRec(client, machine, x, data))
+                        function(x) m1.readFirst(client, machine, x, data))
   m4.preds <- genPoints(m4.range,
-                        function(x) m4.firstRec(machine, x, data))
-} else if (operation == "nth") {
-  operation <- "NthRecord"
-  nrecs <- data / REC_SIZE
-  nth   <- as.numeric(args[7])
-  if (nth >= nrecs) {
-    stop("N'th record is outside the data size")
-  }
+                        function(x) m4.readFirst(client, machine, x, data,
+                                                 oneC))
+} else if (opt$operation == "nth") {
+  operation <- "ReadRange"
   m1.preds <- genPoints(m1.range,
-                        function(x) m1.readRange(client, machine, x, data, nth))
+                        function(x) m1.readRange(client, machine, x, data,
+                                                 opt$'range-start',
+                                                 opt$'range-size'))
   m4.preds <- genPoints(m4.range,
-                        function(x) m4.readRange(machine, x, data, nth))
-} else if (operation == "cdf") {
+                        function(x) m4.readRange(client, machine, x, data, oneC,
+                                                 opt$'range-start',
+                                                 opt$'range-size'))
+} else if (opt$operation == "cdf") {
   operation <- "CDF"
   m1.preds <- genPoints(m1.range,
-                        function(x) m1.cdf(client, machine, x, data))
+                        function(x) m1.cdf(client, machine, x, data, opt$cdf))
   m4.preds <- genPoints(m4.range,
-                        function(x) m4.cdf(machine, x, data))
-} else if (operation == "reservoir") {
-  kSamples <- as.numeric(args[7])
+                        function(x) m4.cdf(client, machine, x, data, oneC,
+                                           opt$cdf))
+} else if (opt$operation == "reservoir") {
   operation <- "Reservoir Sampling"
   m1.preds <- genPoints(m1.range,
-                        function(x) m1.reservoir(client, machine, x, data, kSamples))
+                        function(x) m1.reservoir(client, machine, x, data,
+                                                 opt$reservoir))
   m4.preds <- genPoints(m4.range,
-                        function(x) m4.reservoir(client, machine, x, data, T, kSamples))
+                        function(x) m4.reservoir(client, machine, x, data, oneC,
+                                                 opt$reservoir))
 }
 
 preparePoints <- function(preds, name) {
   select(preds, nodes, time=time.total, cost) %>%
   mutate(time=time / M, strategy=name) %>%
-  melt(id.vars=c("nodes", "strategy"), variable.name="variable", value.name="yv") %>%
+  melt(id.vars=c("nodes", "strategy"),
+       variable.name="variable", value.name="yv") %>%
   select(xv=nodes, strategy, variable, yv)
 }
 
@@ -119,4 +80,5 @@ m4.points <- preparePoints(m4.preds, "Shuffle All")
 points    <- rbind(m1.points, m4.points)
 title     <- paste(client$type, "Client <->", machine$type,
                   "Cluster:", operation, "-", data / HD_GB, "GB")
-mkFacetGraph(points, title)
+mkFacetGraph(points, title, file=opt$file,
+             aaes=aes(x=xv, y=yv, group=strategy, color=strategy))

@@ -10,9 +10,9 @@ library(reshape2)
 # for color scheme list -- https://github.com/cttobin/ggthemr
 ggthemr('fresh')
 
-mkGraph <- function(d, title, y1) {
+mkGraph <- function(d, title, y1, file="graph.pdf") {
   if (is.data.frame(d) & nrow(d) > 0) {
-    pdf("graph.pdf")
+    pdf(file)
     g <- ggplot(d, aes(clarity, x=xv, y=yv, group=variable, colour=variable))
     g <- g + geom_line()
     g <- g + ggtitle(title)
@@ -23,15 +23,15 @@ mkGraph <- function(d, title, y1) {
   }
 }
 
-mkFacetGraph <- function(d, title) {
+mkFacetGraph <- function(d, title, file="graph.pdf", aaes=aes(x=xv, y=yv)) {
   if (is.data.frame(d) & nrow(d) > 0) {
-    pdf("graph.pdf")
+    pdf(file)
     d1 <- filter(d, variable=="cost")
     d1$panel <- "Cost ($)"
     d2 <- filter(d, variable=="time")
     d2$panel <- "Time (min)"
 
-    g <- ggplot(data=d, mapping=aes(x=xv, y=yv))
+    g <- ggplot(data=d, mapping=aaes)
     g <- g + facet_grid(panel~., scale="free")
     g <- g + layer(data=d1, geom=c("line"), stat="identity")
     g <- g + layer(data=d2, geom=c("line"), stat="identity")

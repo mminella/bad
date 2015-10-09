@@ -4,78 +4,53 @@ source('./libmethod1.R')
 source('../lib/libgraph.R')
 
 # ===========================================
+# Arguments
+
+opt      <- m1.parseArgs(graph=T)
+machines <- loadMachines(opt$machines)
+client   <- filter(machines, type==opt$client)
+machine  <- filter(machines, type==opt$node)
+data     <- opt$data * HD_GB
+
+# ===========================================
 # Main
 
-USEAGE <- strwrap("Useage: [machines file] [operation] [client i2 type]
-                   [i2 type] [data size (GB)] [data points]
-                   (<cdf points> | <k samples> | <nth record> <subset size>)")
-# check args
-args <- commandArgs(trailingOnly = T)
-if (length(args) != 6 && length(args) != 7 && length(args) != 8) {
-  stop(USEAGE)
-} else if (length(args) == 8 && args[2] != "nth") {
-  stop(USEAGE)
-} else if (length(args) == 7 && args[2] != "cdf" && args[2] != "reservoir" ) {
-  stop(USEAGE)
-}
+minNodes <- ceiling(data/(machine$disk.size * machine$disks))
+maxNodes <- opt$'min-cluster' + opt$'cluster-points' - 1
+range    <- minNodes:maxNodes
 
-machines  <- loadMachines(args[1])
-operation <- args[2]
-client    <- filter(machines, type==args[3])
-machine   <- filter(machines, type==args[4])
-data      <- as.numeric(args[5]) * HD_GB
-points    <- as.numeric(args[6])
-
-# Validate arguments
-if (nrow(client) == 0) {
-  stop("Unknown client machine type")
-} else if (nrow(machine) == 0) {
-  stop("Unknown node machine type")
-}
-
-start <- ceiling(data / (machine$disk.size * machine$disks))
-range <- start:(start+points)
-
-if (operation == "readall") {
+if (opt$operation == "all") {
   operation <- "ReadAll"
-  preds <- genPoints(range, function(x) m1.readAll(client, machine, x, data))
-} else if (operation == "first") {
-  operation <- "FirstRecord"
-  preds <- genPoints(range, function(x) m1.firstRec(client, machine, x, data))
-} else if (operation == "nth") {
-  operation <- "NthRecord"
-  nrecs   <- data / REC_SIZE
-  nth     <- as.numeric(args[7])
-  nthSize <- as.numeric(args[8])
-  if (nth >= nrecs | nth < 0) {
-    stop("N'th record is outside the data size")
-  } else if ((nth + nthSize) > nrecs) {
-    stop("Subset range is outside the data size")
-  } else if (nthSize < 1) {
-    stop("Subset size must be greater than zero")
-  }
-  preds <- genPoints(range, function(x) m1.readRange(client, machine, x, data,
-                                                     nth, nthSize))
-} else if (operation == "cdf") {
+  preds <- genPoints(range,
+                     function(x) m1.readAll(client, machine, x, data))
+} else if (opt$operation == "first") {
+  operation <- "ReadFirst"
+  preds <- genPoints(range,
+                     function(x) m1.readFirst(client, machine, x, data))
+} else if (opt$operation == "nth") {
+  operation <- "ReadRange"
+  preds <- genPoints(range,
+                     function(x) m1.readRange(client, machine, x, data,
+                                              opt$'range-start',
+                                              opt$'range-size'))
+} else if (opt$operation == "cdf") {
   operation <- "CDF"
-  cdfPoints <- as.numeric(args[7])
-  preds <- genPoints(range, function(x) m1.cdf(client, machine, x, data,
-                                               cdfPoints))
-} else if (operation == "reservoir") {
+  preds  <- genPoints(range,
+                      function(x) m1.cdf(client, machine, x, data, opt$cdf))
+} else if (opt$operation == "reservoir") {
   operation <- "Reservoir Sampling"
-  kSamples <- as.numeric(args[7])
-  preds <- genPoints(range, function(x) m1.reservoir(client, machine, x,
-                                                     data, kSamples))
+  preds  <- genPoints(range,
+                      function(x) m1.reservoir(client, machine, x, data,
+                                               opt$reservoir))
 }
 
 # read all vs cost
-title <- paste("LinearScan:", client$type, "Client <->", machine$type,
-               "Cluster:", operation, "-", data / HD_GB, "GB")
+title <- paste("ShuffleAll:", machine$type, "Cluster:",
+               operation, "-", data / HD_GB, "GB")
 points <-
   select(preds, nodes, time=time.total, cost) %>%
   mutate(time=time / M) %>%
   melt(id.vars=c("nodes"), variable.name="variable", value.name="yv") %>%
   select(xv=nodes, variable, yv)
 
-# mkGraph(points, title, "Cost ($) / Time (min)")
-mkFacetGraph(points, title)
+mkFacetGraph(points, title, file=opt$file)

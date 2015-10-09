@@ -66,12 +66,37 @@ toHr <- function(t) {
   round(t/HR,2)
 }
 
+toCost <- function(machine, nodes, t) {
+  billedTime <- max(toMin(t), machine$billing.mintime)
+  ceiling(billedTime / machine$billing.granularity) * machine$cost * nodes
+}
+
 
 # ===========================================
 # Components
 
-sequentialRead <- function(machine, data) {
-  round(data / (machine$diskio.r * machine$disks))
+inParallel <- function(...) {
+  max(...)
+}
+
+inSequence <- function(...) {
+  sum(...)
+}
+
+sequentialRead <- function(machine, data, disks=machine$disks) {
+  round(data / (machine$diskio.r * disks))
+}
+
+sequentialWrite <- function(machine, data, disks=machine$disks) {
+  round(data / (machine$diskio.w * disks))
+}
+
+networkOut <- function(machine, data) {
+  round(data/machine$netio)
+}
+
+networkIn <- function(machine, data) {
+  round(data/machine$netio)
 }
 
 networkSend <- function(machineOut, outN, machineIn, inN, data) {
@@ -79,4 +104,11 @@ networkSend <- function(machineOut, outN, machineIn, inN, data) {
   inBytes  <- machineIn$netio * inN
   netio    <- min(outBytes, inBytes)
   round(data/netio)
+}
+
+shuffleAll <- function(machine, nodes, nodeData) {
+  p1Net    <- round(((nodes - 1) * nodeData) / (nodes * machine$netio))
+  p1DiskR  <- round(nodeData / (machine$diskio.r * machine$disks))
+  p1DiskW  <- round(nodeData / (machine$diskio.w * machine$disks))
+  inParallel(p1Net, p1DiskR, p1DiskW)
 }
