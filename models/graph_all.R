@@ -1,4 +1,5 @@
 #!/usr/bin/env Rscript
+library(methods)
 source('lib/libmodels.R')
 source('lib/libgraph.R')
 source('method1/libmethod1.R')
