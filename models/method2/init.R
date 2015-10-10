@@ -3,30 +3,28 @@ source('../lib/libmodels.R')
 source('./libmethod2.R')
 
 # ===========================================
+# Arguments
+
+opt      <- m2.parseArgs()
+machines <- loadMachines(opt$machines)
+client   <- filter(machines, type==opt$client)
+machine  <- filter(machines, type==opt$node)
+data     <- opt$data * HD_GB
+oneC     <- opt$'one-client'
+
+# ===========================================
 # Main
 
-# check args
-args <- commandArgs(trailingOnly = T)
-if (length(args) != 5) {
-  stop(strwrap("Usage: [machines file] [client i2 type]
-	       [i2 type] [nodes] [data size (GB)]"))
+genAllModels <- function(n) {
+  rbind(
+    m2.startup(client, machine, n, data)
+  )
 }
 
-machines <- loadMachines(args[1])
-client   <- filter(machines, type==args[2])
-machine  <- filter(machines, type==args[3])
-nodes    <- as.numeric(args[4])
-data     <- as.numeric(args[5]) * HD_GB
-nrecs    <- data / REC_SIZE
-
-# Validate arguments
-if (nrow(client) == 0) {
-  stop("Unknown client machine type")
-} else if (nrow(machine) == 0) {
-  stop("Unknown node machine type")
+minNodes <- m2.minNodes(machine, data)
+maxNodes <- opt$'min-cluster' + opt$'cluster-points' - 1
+if (minNodes <= maxNodes) {
+  range <- max(minNodes,opt$'min-cluster'):maxNodes
+  options(width=200)
+  print(genPoints(range, genAllModels), row.names=FALSE)
 }
-
-# Whole model
-rbind(
-  m2.init(client, machine, nodes, data)
-)

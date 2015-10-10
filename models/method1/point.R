@@ -25,7 +25,7 @@ genAllModels <- function(n) {
   )
 }
 
-minNodes <- ceiling(data/(machine$disk.size * machine$disks))
+minNodes <- m1.minNodes(machine, data)
 maxNodes <- opt$'min-cluster' + opt$'cluster-points' - 1
 if (minNodes <= maxNodes) {
   range <- max(minNodes,opt$'min-cluster'):maxNodes

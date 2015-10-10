@@ -1,101 +1,124 @@
 #!/usr/bin/env Rscript
 suppressMessages(library(dplyr))
+library('methods')
+library('argparser')
 
 # ASSUMPTIONS:
 # - Uniform key distribution.
 
+# 8 byte point + 2 bytes disk / host ID
+INDEX_SIZE <- KEY_SIZE + 10
+
 # ===========================================
 # Model
 
-REC_ALIGNMENT <- 8
-REC_PTR_SIZE  <- 18
-
-m2.init <- function(client, machine, nodes, data) {
-  nodeData <- dataAtNode(machine, nodes, data, 1)
-  loadTime <- round(nodeData / (machine$diskio.r * machine$disks))
-
-  # Old sort method was slow and nearly linear
-  # Need to plugin new numbers for sort
+m2.startup <- function(client, machine, nodes, data) {
+  nodeData <- dataAtNode(machine, nodes, data)
+  loadTime <- sequentialRead(machine, nodeData)
+  # XXX: Old sort method was slow and nearly linear, Need to plugin new numbers
+  # for sort
   sortTime <- loadTime
-
-  loadTime + sortTime
+  inSequence(loadTime, sortTime)
 }
 
-m2.randIO <- function(machine, ios) {
-  randtime  <- ios / machine$iops.r
-  seqtime   <- ios * REC_SIZE / machine$diskio.r
-  max(randtime, seqtime)
-}
-
-m2.allModel <- function(client, machine, nodes, data) {
-  nodeData <- dataAtNode(machine, nodes, data, 1)
-
-  netio    <- min(client$netio, machine$netio * nodes)
-  timeNet  <- round(data / netio)
-
-  ios      <- nodeData / REC_SIZE
-  timeDisk <- round(m2.randIO(machine, ios))
-
-  time     <- max(timeNet, timeDisk)
-
-  timeM    <- ceiling(time / M)
-  timeH    <- round(time / HR, 2)
-
-  costTime <- max(timeM, machine$billing.mintime)
-  cost     <- ceiling(costTime / machine$billing.granularity) *
-                machine$cost * nodes
-
+m2.readAll <- function(client, machine, nodes, data, oneC, start=T) {
+  clients   <- ifelse(oneC, 1, nodes)
+  nodeData  <- dataAtNode(machine, nodes, data)
+  timeIndex <- ifelse(start, m2.startup(client, machine, nodes, data), 0)
+  timeDisk  <- randomRead(machine, nodeData / REC_SIZE, nodeData)
+  timeNet   <- networkSend(machine, nodes, client, clients, data)
+  time      <- inSequence(timeIndex, inParallel(timeNet, timeDisk))
   data.frame(operation="all", nodes=nodes, start=0, length=data/REC_SIZE,
-             time.total=time, time.min=timeM, time.hr=timeH,
-	     time.disk=0, time.net=0,
-             cost=cost)
+             time.total=time, time.min=toMin(time), time.hr=toHr(time),
+             time.index=timeIndex, time.disk=timeDisk, time.net=timeNet,
+             cost=toCost(machine, nodes, time))
 }
 
-m2.firstModel <- function(client, machine, nodes, data) {
-  nodeData <- dataAtNode(machine, nodes, data, 1)
-  timeDisk <- round(nodeData / (machine$diskio.r * machine$disks))
-  time     <- timeDisk
-
-  timeM    <- ceiling(time / M)
-  timeH    <- round(time / HR, 2)
-
-  costTime <- max(timeM, machine$billing.mintime)
-  cost     <- ceiling(costTime / machine$billing.granularity) *
-                machine$cost * nodes
-
+m2.readFirst <- function(client, machine, nodes, data, oneC, start=T) {
+  timeIndex <- ifelse(start, m2.startup(client, machine, nodes, data), 0)
+  timeDisk  <- randomRead(machine, 1, REC_SIZE)
+  timeNet   <- networkSend(machine, nodes, client, 1, REC_SIZE * nodes)
+  time      <- inSequence(timeIndex, timeNet, timeDisk)
   data.frame(operation="first", nodes=nodes, start=0, length=1,
-             time.total=timeDisk, time.min=timeM, time.hr=timeH,
-             time.disk=timeDisk, time.net=0,
-             cost=cost)
+             time.total=timeDisk, time.min=toMin(time), time.hr=toHr(time),
+             time.index=timeIndex, time.disk=timeDisk, time.net=timeNet,
+             cost=toCost(machine, nodes, time))
 }
 
-m2.nthModel <- function(client, machine, nodes, data, n) {
-  nodeData <- dataAtNode(machine, nodes, data, 1)
-
-  srchQs   <- log2(nodeData / REC_SIZE)
-  srchTime <- m2.randIO(machine, srchQs) #+ (srchQs * client$rtt)
-
-  netio    <- min(client$netio, machine$netio * nodes)
-  timeNet  <- n*REC_SIZE / netio
-
-  timeDisk <- m2.randIO(machine, nodeData / REC_SIZE)
-  time     <- max(timeNet, timeDisk) + srchTime
-
-  timeM    <- ceiling(time / M)
-  timeH    <- round(time / HR, 2)
-
-  costTime <- max(timeM, machine$billing.mintime)
-  cost     <- ceiling(costTime / machine$billing.granularity) *
-                machine$cost * nodes
-
-  data.frame(operation="nth", nodes=nodes, start=n, length=1,
-             time.total=time, time.min=timeM, time.hr=timeH,
-	     time.disk=timeDisk, time.net=timeNet,
-             cost=cost)
+m2.readRange <- function(client, machine, nodes, data, oneC, n, len, start=T) {
+  clients   <- ifelse(oneC, 1, nodes)
+  nodeRange <- max(1, len / nodes)
+  nodeData  <- dataAtNode(machine, nodes, data)
+  srchQs    <- log2(nodeData / REC_SIZE)
+  timeIndex <- ifelse(start, m2.startup(client, machine, nodes, data), 0)
+  srchTime  <- randomRead(machine, srchQs, srchQs * REC_SIZE)
+                 #+ (srchQs * client$rtt)
+  timeDisk  <- randomRead(machine, nodeRange, nodeRange * REC_SIZE)
+  timeNet   <- networkSend(machine, nodes, client, clients, len * REC_SIZE)
+  time      <- inSequence(timeIndex, srchTime, inParallel(timeNet, timeDisk))
+  data.frame(operation="nth", nodes=nodes, start=n, length=len,
+             time.total=time, time.min=toMin(time), time.hr=toHr(time),
+             time.index=timeIndex, time.disk=timeDisk, time.net=timeNet,
+             cost=toCost(machine, nodes, time))
 }
 
-m2.cdfModel <- function(client, machine, nodes, data) {
-  # TODO
-  #model <- m2.allModel(client, machine, nodes, data)
-  #mutate(model, operation="cdf", start=NA, length=100)
+m2.cdf <- function(client, machine, nodes, data, oneC, points) {
+  timeIndex <- m2.startup(client, machine, nodes, data)
+  reads <- genPoints(1:points,
+                     function(x) {
+                       n <- round(x / points * data / REC_SIZE)
+                       m2.readRange(client, machine, nodes, data, oneC,
+                                    n, 1, start=F)
+                     })
+  timeOps <- sum(reads$time.total)
+  time    <- inSequence(timeIndex, timeOps)
+  data.frame(operation="cdf", nodes=nodes, start=NA, length=points,
+             time.total=time, time.min=toMin(time), time.hr=toHr(time),
+             time.index=timeIndex, time.disk=NA, time.net=NA,
+             cost=toCost(machine, nodes, time))
+}
+
+m2.reservoir <- function(client, machine, nodes, data, oneC, samples) {
+  model <- m2.readRange(client, machine, nodes, data, oneC, 0, samples)
+  mutate(model, operation="reservoir", start=NA, length=samples)
+}
+
+m2.minNodes <- function(machine, data) {
+  minNodesDisk <- ceiling(data/(machine$disk.size * machine$disks))
+  indeSize     <- data / REC_SIZE * INDEX_SIZE
+  minNodesMem  <- ceiling(indexSize/machine$mem)
+  max(minNodesDisk, minNodesMem)
+}
+
+m2.parseArgs <- function(graph=F) {
+  p <- arg_parser("Local Index B.A.D Model")
+
+  if (graph) {
+    p <- add_argument(p, "--operation",
+                      help="Operation to model [all, nth, first, cdf, reservoir]")
+    p <- add_argument(p, "--file", help="File to save graph to [pdf]",
+                      default="graph.pdf")
+  }
+  p <- add_argument(p, "--machines", help="Machine description file")
+  p <- add_argument(p, "--client", help="Client machine type", default="i2.8x")
+  p <- add_argument(p, "--node", help="Backend machine type")
+  p <- add_argument(p, "--min-cluster", help="Minimum cluster size", default=1)
+  p <- add_argument(p, "--cluster-points",
+                    help="Number of cluster sizes to model", default=1)
+  p <- add_argument(p, "--data", help="Data size (GBs)", type='numeric')
+  p <- add_argument(p, "--one-client", help="Send results all to the client?",
+                    flag=T, default=F)
+  p <- add_argument(p, "--range-start", help="Ranged read start position",
+                    default=0)
+  p <- add_argument(p, "--range-size", help="Ranged read size", default=10000)
+  p <- add_argument(p, "--cdf", help="CDF points", default=100)
+  p <- add_argument(p, "--reservoir", help="Reservoir sampling size",
+                    default=10000)
+
+  args <- commandArgs(trailingOnly = T)
+  if (length(args) == 0) {
+    print(p)
+    stop()
+  }
+  parse_args(p)
 }

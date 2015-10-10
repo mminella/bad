@@ -3,38 +3,33 @@ source('../lib/libmodels.R')
 source('./libmethod2.R')
 
 # ===========================================
+# Arguments
+
+opt      <- m2.parseArgs()
+machines <- loadMachines(opt$machines)
+client   <- filter(machines, type==opt$client)
+machine  <- filter(machines, type==opt$node)
+data     <- opt$data * HD_GB
+oneC     <- opt$'one-client'
+
+# ===========================================
 # Main
 
-# check args
-args <- commandArgs(trailingOnly = T)
-if (length(args) != 6) {
-  stop(strwrap("Usage: [machines file] [client i2 type]
-               [i2 type] [nodes] [data size (GB)] [nth record]"))
+genAllModels <- function(n) {
+  rbind(
+    m2.readAll(client, machine, n, data, oneC),
+    m2.readFirst(client, machine, n, data, oneC),
+    m2.readRange(client, machine, n, data, oneC,
+                 opt$'range-start', opt$'range-size'),
+    m2.cdf(client, machine, n, data, oneC, opt$cdf),
+    m2.reservoir(client, machine, n, data, oneC, opt$reservoir)
+  )
 }
 
-machines <- loadMachines(args[1])
-client   <- filter(machines, type==args[2])
-machine  <- filter(machines, type==args[3])
-nodes    <- as.numeric(args[4])
-data     <- as.numeric(args[5]) * HD_GB
-nth      <- as.numeric(args[6])
-nrecs    <- data / REC_SIZE
-
-# Validate arguments
-if (nth >= nrecs) {
-  stop("N'th record is outside the data size")
-} else if (nrow(client) == 0) {
-  stop("Unknown client machine type")
-} else if (nrow(machine) == 0) {
-  stop("Unknown node machine type")
+minNodes <- m2.minNodes(machine, data)
+maxNodes <- opt$'min-cluster' + opt$'cluster-points' - 1
+if (minNodes <= maxNodes) {
+  range <- max(minNodes,opt$'min-cluster'):maxNodes
+  options(width=200)
+  print(genPoints(range, genAllModels), row.names=FALSE)
 }
-
-# XXX: This doesn't include init time
-
-# Whole model
-rbind(
-  m2.allModel(client, machine, nodes, data),
-  m2.firstModel(client, machine, nodes, data),
-  m2.nthModel(client, machine, nodes, data, nth)
-  #m2.cdfModel(client, machine, nodes, data)
-)

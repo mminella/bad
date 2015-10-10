@@ -15,7 +15,7 @@ data     <- opt$data * HD_GB
 # ===========================================
 # Main
 
-minNodes <- ceiling(data/(machine$disk.size * machine$disks))
+minNodes <- m1.minNodes(machine, data)
 maxNodes <- opt$'min-cluster' + opt$'cluster-points' - 1
 range    <- minNodes:maxNodes
 

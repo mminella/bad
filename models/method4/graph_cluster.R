@@ -16,7 +16,7 @@ oneC     <- opt$'one-client'
 # ===========================================
 # Main
 
-minNodes <- ceiling((data * m4.DATA_MULT)/(machine$disk.size * machine$disks))
+minNodes <- m4.minNodes(machine, data)
 maxNodes <- opt$'min-cluster' + opt$'cluster-points' - 1
 range    <- minNodes:maxNodes
 

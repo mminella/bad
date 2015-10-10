@@ -216,6 +216,10 @@ m4.reservoir <- function(client, machine, nodes, data, oneC, samples) {
   mutate(model, operation="reservoir", start=NA, length=samples)
 }
 
+m4.minNodes <- function(machine, data) {
+  ceiling((data * m4.DATA_MULT)/(machine$disk.size * machine$disks))
+}
+
 m4.parseArgs <- function(graph=F) {
   p <- arg_parser("Shuffle All B.A.D Model")
 

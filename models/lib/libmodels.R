@@ -34,7 +34,7 @@ loadMachines <- function(f) {
     netio = netio * MB)
 }
 
-dataAtNode <- function(machine, nodes, data, mult) {
+dataAtNode <- function(machine, nodes, data, mult=1) {
   perNode <- data / nodes
   if (perNode * mult > (machine$disk.size * machine$disks)) {
     stop("Not enough disk space for data set")
@@ -49,7 +49,6 @@ dataAtNode <- function(machine, nodes, data, mult) {
 REC_SIZE <- 100
 KEY_SIZE <- 10
 VAL_SIZE <- 90
-
 
 # ===========================================
 # Helpers
@@ -89,6 +88,12 @@ sequentialRead <- function(machine, data, disks=machine$disks) {
 
 sequentialWrite <- function(machine, data, disks=machine$disks) {
   round(data / (machine$diskio.w * disks))
+}
+
+randomRead <- function(machine, ios, data) {
+  randtime <- ios / (machine$iops.r * machine$disks)
+  seqtime  <- data / (machine$diskio.r * machine$disks)
+  round(max(randtime, seqtime))
 }
 
 networkOut <- function(machine, data) {
