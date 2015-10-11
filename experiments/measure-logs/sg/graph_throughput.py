@@ -91,9 +91,6 @@ if __name__ == '__main__':
         exp_no = logfile.rsplit('/', 3)[1]
         timestamp = timestamps[exp_no]
         with open(logfile, 'r') as f:
-            """
-            XXX: only one file for now, log taken at 7/29, 11pm
-            """
             for line in f:
                 if line[0] not in 'wr':
                     # Assuming the non-setup/log lines are not going to start
