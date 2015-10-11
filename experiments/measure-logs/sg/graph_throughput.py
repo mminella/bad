@@ -18,7 +18,8 @@ YEAR = 2015
 
 
 for root, dirs, files in os.walk(base_sg_dir):
-    if root != base_sg_dir and root[:len(base_sg_dir+'14')] != '{}14'.format(base_sg_dir):
+    if root != base_sg_dir and \
+            root[:len(base_sg_dir+'14')] != '{}14'.format(base_sg_dir):
         # We don't have a timestamp for 14.
         for filename in files:
             if filename != 'log_cpu.txt':
@@ -32,13 +33,10 @@ def make_graph(data_set):
     """
     labels_list = []
     median_values = []
-    median_timestamp = []
     colormap = plt.cm.gist_ncar
     plt.gca().set_color_cycle(
         [colormap(i) for i in numpy.linspace(0, 0.9, len(data_set))]
     )
-#    fig = plt.figure(1)
-#    ax = fig.add_subplot(111)
     for exp_name, results in data_set.iteritems():
         # show each point.
         # TODO: draw a line that is the median of each
@@ -50,18 +48,10 @@ def make_graph(data_set):
             y.append(result)
         median_values.append(numpy.median(y))
         plt.plot(x, y, 'o')
-        #y_steps = numpy.linspace(0, ((int(y[-1])/100)+1)*100, len(y))
-        #plt.ylim([0, y_steps[-1]])
         plt.ylabel('Throughput')
         plt.xlabel('Time')
         labels_list.append(exp_name)
-    #plt.plot(median_values)
-    #labels.append('Medians of each experiment run')
     plt.legend(labels_list)
-#    handles, labels = ax.get_legend_handles_labels()
-#    lgd = ax.legend(handles, labels_list, loc='upper center', bbox_to_anchor=(0.5,-0.1))
-#    ax.grid('on')
-#    fig.savefig('samplefigure', bbox_extra_artists=(lgd,), bbox_inches='tight')
     plt.show()
 
 
@@ -77,15 +67,16 @@ def get_timestamp_dict(timestamps):
                 # It is of the form "* 26 -- 8/31 -- 3am"
                 ts = line[2:]
                 exp, d, t = ts.strip().split(' -- ')
-                t = t.strip() # some extra whitespace
-                # now it is ['26', '8/31', '3am']
+                t = t.strip()  # some extra whitespace
                 month, day = d.split('/')
                 if t[-2:] == 'am':
                     hour = int(t[0])
                 elif t[-2:] == 'pm':
                     hour = int(t[0]) + 12
                 # TODO provide timezone.
-                timestamps[exp] = datetime.datetime(YEAR, int(month), int(day), hour)
+                timestamps[exp] = datetime.datetime(
+                    YEAR, int(month), int(day), hour
+                )
 
 
 if __name__ == '__main__':
