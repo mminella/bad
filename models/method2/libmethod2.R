@@ -85,7 +85,7 @@ m2.reservoir <- function(client, machine, nodes, data, oneC, samples) {
 
 m2.minNodes <- function(machine, data) {
   minNodesDisk <- ceiling(data/(machine$disk.size * machine$disks))
-  indeSize     <- data / REC_SIZE * INDEX_SIZE
+  indexSize    <- data / REC_SIZE * INDEX_SIZE
   minNodesMem  <- ceiling(indexSize/machine$mem)
   max(minNodesDisk, minNodesMem)
 }
@@ -107,7 +107,7 @@ m2.parseArgs <- function(graph=F) {
                     help="Number of cluster sizes to model", default=1)
   p <- add_argument(p, "--data", help="Data size (GBs)", type='numeric')
   p <- add_argument(p, "--one-client", help="Send results all to the client?",
-                    flag=T, default=F)
+                    flag=T)
   p <- add_argument(p, "--range-start", help="Ranged read start position",
                     default=0)
   p <- add_argument(p, "--range-size", help="Ranged read size", default=10000)

@@ -237,7 +237,7 @@ m4.parseArgs <- function(graph=F) {
                     help="Number of cluster sizes to model", default=1)
   p <- add_argument(p, "--data", help="Data size (GBs)", type='numeric')
   p <- add_argument(p, "--one-client", help="Send results all to the client?",
-                    flag=T, default=F)
+                    flag=T)
   p <- add_argument(p, "--range-start", help="Ranged read start position",
                     default=0)
   p <- add_argument(p, "--range-size", help="Ranged read size", default=10000)
