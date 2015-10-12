@@ -4,16 +4,19 @@ rm -f ${srcdir}/test/buckets/*
 
 ${srcdir}/libmeth4/meth4_node 0 9000 \
   ${srcdir}/test/meth4_node.test.conf \
+  all 0 \
   ${srcdir}/test/in.s0000.e1000.recs &
 NODE_PID1=$!
 
 ${srcdir}/libmeth4/meth4_node 1 9001 \
   ${srcdir}/test/meth4_node.test.conf \
+  all 0 \
   ${srcdir}/test/in.s1000.e2000.recs &
 NODE_PID2=$!
 
 ${srcdir}/libmeth4/meth4_node 2 9002 \
   ${srcdir}/test/meth4_node.test.conf \
+  all 0 \
   ${srcdir}/test/in.s2000.e3000.recs &
 NODE_PID3=$!
 

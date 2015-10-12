@@ -1,5 +1,6 @@
 #include <atomic>
 #include <functional>
+#include <limits>
 #include <thread>
 
 #include "config.h"
@@ -8,11 +9,13 @@
 #endif
 
 #include "exception.hh"
+#include "socket.hh"
 #include "sync_print.hh"
 #include "timestamp.hh"
 
 #include "record.hh"
 
+#include "meth4_knobs.hh"
 #include "sort.hh"
 
 using namespace std;
@@ -52,6 +55,13 @@ BucketSorter::BucketSorter( BucketSorter && other )
   other.buf_ = nullptr;
 }
 
+BucketSorter::~BucketSorter( void )
+{
+  // PERF: Reuse buffes?
+  free( buf_ );
+  buf_ = nullptr;
+}
+
 void BucketSorter::loadBucket( void )
 {
   File in( cluster_.bucket_path( bkt_ ), O_RDONLY, File::DIRECT );
@@ -76,23 +86,71 @@ void BucketSorter::saveBucket( void )
     O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR );
   out.write_all( buf_, len_ );
   out.fsync();
-  // PERF: Reuse buffes?
-  free( buf_ );
+}
+
+void BucketSorter::sendBucket( TCPSocket & sock, uint64_t records )
+{
+  auto t0 = time_now();
+  print( "send-bucket", timestamp<ms>(), bkt_, min( len_, records * Rec::SIZE ) );
+  sock.write_all( buf_, min( len_, records * Rec::SIZE ) );
+  print( "sent-bucket", timestamp<ms>(), bkt_, time_diff<ms>( t0 ) );
+}
+
+pair<uint64_t, bool> calculateOp( string op, string arg1 )
+{
+  if ( op == "all" ) {
+    return make_pair( std::numeric_limits<uint64_t>::max(), false );
+  } else if ( op == "nth" ) {
+    return make_pair( atoll( arg1.data() ), false );
+  } else if ( op == "first" ) {
+    return make_pair( 1, false );
+  } else if ( op == "all-client" ) {
+    return make_pair( std::numeric_limits<uint64_t>::max(), true );
+  } else if ( op == "nth-client" ) {
+    return make_pair( atoll( arg1.data() ), true );
+  } else if ( op == "first-client" ) {
+    return make_pair( 1, true );
+  } else {
+    throw runtime_error( "Unknown operation: " + op );
+  }
 }
 
 // Handle sorting all buckets on a single disk
-void sortDisk( const ClusterMap & cluster, size_t diskID )
+void sortDisk( const ClusterMap & cluster, size_t diskID, string op,
+               string arg1 )
 {
+  auto range = calculateOp( op, arg1 );
+  bool toClient = range.second;
+  uint64_t bktSize = cluster.bucketSizeAvg();
+
   // filter out buckets for my disk
   vector<BucketSorter> bsorters;
+  size_t diskBuckets = 0;
   for ( auto bkt : cluster.myBuckets() ) {
     if ( cluster.bucket_disk( bkt ) == diskID ) {
-      bsorters.emplace_back( cluster, bkt );
+      diskBuckets++;
+      // check in sorting range
+      if ( bkt * bktSize <= range.first ) {
+        bsorters.emplace_back( cluster, bkt );
+      }
     }
   }
 
+  print( "sort-disk", timestamp<ms>(), diskID, diskBuckets, bsorters.size() );
   if ( bsorters.size() == 0 ) {
     return;
+  }
+
+  // connect to client if needed
+  TCPSocket client;
+  if ( toClient ) {
+    print( "sending-to-client", cluster.client().to_string() );
+    TCPSocket s( IPV4 );
+    s.set_nodelay();
+    s.set_send_buffer( Knobs::NET_SND_BUF );
+    s.set_recv_buffer( Knobs::NET_RCV_BUF );
+    s.connect( cluster.client() );
+    client = move( s );
   }
 
   tdiff_t tsort = 0, tsave = 0;
@@ -111,8 +169,6 @@ void sortDisk( const ClusterMap & cluster, size_t diskID )
   }
 
   for ( size_t i = 1; i < bsorters.size(); i++ ) {
-    // wait for load of i - 1 to finish
-    tg.wait();
     // start loading of i
     tg.run([&bsorters, i, &tload]() {
       auto t0 = time_now();
@@ -120,26 +176,43 @@ void sortDisk( const ClusterMap & cluster, size_t diskID )
       tload += time_diff<ms>( t0 );
     });
 
-    // sort and save i
+    // sort i-1
     auto t0 = time_now();
     bsorters[i-1].sortBucket();
     auto t1 = time_now();
+
+    // save i-1
+    if ( toClient ) {
+      tg.run([&client, &bsorters, i, bktSize, range]() {
+        uint64_t bktLim = range.first - bsorters[i-1].id() * bktSize;
+        bsorters[i-1].sendBucket( client, bktLim );
+      });
+    }
     bsorters[i-1].saveBucket();
     auto t2 = time_now();
 
     // timings
     tsort += time_diff<ms>( t1, t0 );
     tsave += time_diff<ms>( t2, t1 );
+
+    // wait for load of i to finish, and i-1 to save
+    tg.wait();
   }
-  tg.wait();
 
   {
     // sort + save last bucket
     auto t0 = time_now();
     bsorters.back().sortBucket();
     auto t1 = time_now();
+    if ( toClient ) {
+      tg.run([&client, &bsorters, bktSize, range]() {
+        uint64_t bktLim = range.first - bsorters.back().id() * bktSize;
+        bsorters.back().sendBucket( client, bktLim );
+      });
+    }
     bsorters.back().saveBucket();
     auto t2 = time_now();
+    tg.wait();
 
     // timings
     tsort += time_diff<ms>( t1, t0 );
@@ -164,11 +237,11 @@ void sortDisk( const ClusterMap & cluster, size_t diskID )
   print( "sort-disk", timestamp<ms>(), diskID, tload, tsort, tsave );
 }
 
-Sorter::Sorter( const ClusterMap & cluster )
+Sorter::Sorter( const ClusterMap & cluster, string op, string arg1 )
 {
   vector<thread> diskSorters;
   for ( size_t i = 0; i < cluster.disks(); i++ ) {
-    diskSorters.emplace_back( sortDisk, ref( cluster ), i );
+    diskSorters.emplace_back( sortDisk, ref( cluster ), i, op, arg1 );
   }
   for ( auto & ds : diskSorters ) {
     ds.join();

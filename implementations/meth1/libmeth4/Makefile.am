@@ -1,4 +1,5 @@
 bin_PROGRAMS = \
+	meth4_client \
 	meth4_node
 
 AM_CPPFLAGS = \
@@ -12,6 +13,9 @@ LDADD = \
 	../libsort/libsort.la \
 	-lpthread \
 	$(TBB_LIBS)
+
+meth4_client_SOURCES = \
+	meth4_client.hh meth4_client.cc
 
 meth4_node_SOURCES = \
 	meth4_node.cc \

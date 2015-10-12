@@ -6,13 +6,15 @@
 
 using namespace std;
 
-vector<Address> ConfigFile::parse( string file )
+pair<Address, vector<Address>> ConfigFile::parse( string file )
 {
   FILE *fin = fopen( file.c_str(), "r" );
   if ( fin == nullptr ) {
     throw runtime_error( "Can't open cluster config file" );
   }
 
+  bool first = true;
+  Address client;
   vector<Address> cluster;
   char * line = nullptr;
   size_t llen = 0;
@@ -27,11 +29,16 @@ vector<Address> ConfigFile::parse( string file )
       } else if ( n > 1 and line[n-1] == '\n' ) {
         n -= 1;
       }
-      cluster.emplace_back( string( line, n ), IPV4 );
+      if ( first ) {
+        client = Address( string( line, n ), IPV4 );
+        first = false;
+      } else {
+        cluster.emplace_back( string( line, n ), IPV4 );
+      }
     }
   }
   free( line );
   fclose( fin );
 
-  return cluster;
+  return make_pair( client, cluster );
 }

@@ -103,6 +103,7 @@ bool NetIn::read( std::vector<block_t> & buckets )
           continue;
         }
       }
+      cluster_.bucketSize( bucketOnWire_ ) += bodyOnWire_ / Rec::SIZE;
       wireState_ = BODY;
 
     case BODY:

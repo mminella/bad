@@ -8,7 +8,7 @@
 
 namespace ConfigFile {
   /* List of addresses (including SELF) in the cluster. */
-  std::vector<Address> parse( std::string file );
+  std::pair<Address, std::vector<Address>> parse( std::string file );
 }
 
 #endif /* METH4_CONFIG_FILE_HH */

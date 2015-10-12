@@ -13,6 +13,7 @@
 #include "cluster_map.hh"
 #include "config_file.hh"
 #include "meth4_knobs.hh"
+#include "node_rcp.hh"
 #include "recv.hh"
 #include "send.hh"
 #include "sort.hh"
@@ -49,6 +50,7 @@ void debug_cluster_map( ClusterMap & cluster )
   for ( auto & a : cluster.addresses() ) {
     print( "backend", a.to_string() );
   }
+  print( "client", cluster.client().to_string() );
 }
 
 // Do in seperate block as we want destructors to run to free memory after
@@ -76,18 +78,20 @@ void phase_one( ClusterMap & cluster, string port )
   receiver.receiveLoop();
 }
 
-void phase_two( ClusterMap & cluster )
+void phase_two( ClusterMap & cluster, string op, string arg1 )
 {
-  Sorter sorter( cluster );
+  Sorter sorter( cluster, op, arg1 );
 }
 
-void run( size_t nodeID, string port, string conffile, vector<string> files )
+void run( size_t nodeID, string port, string conffile, string op, string arg1,
+  vector<string> files )
 {
   print( "start", timestamp<ms>() );
 
   // configure cluster
   ClusterMap cluster( nodeID, conffile, files );
   debug_cluster_map( cluster );
+  print( "operation", op, arg1 );
 
   // shard data into buckets
   auto t0 = time_now();
@@ -99,7 +103,7 @@ void run( size_t nodeID, string port, string conffile, vector<string> files )
   // sort each bucket
   auto t1 = time_now();
   print( "phase-two-start", timestamp<ms>() );
-  phase_two( cluster );
+  phase_two( cluster, op, arg1 );
   print( "phase-two-end", timestamp<ms>(), time_diff<ms>( t1 ) );
 
   print( "finish", timestamp<ms>(),
@@ -111,10 +115,10 @@ void run( size_t nodeID, string port, string conffile, vector<string> files )
 
 void check_usage( const int argc, const char * const argv[] )
 {
-  if ( argc < 5 ) {
+  if ( argc < 7 ) {
     // pass in hostname rather than retrieve to allow easy testing
     throw runtime_error( "Usage: " + string( argv[0] )
-      + " [node id] [port] [config file] [data files...]" );
+      + " [node id] [port] [config file] [op] [arg1] [data files...]" );
   }
 }
 
@@ -122,7 +126,8 @@ int main( int argc, char * argv[] )
 {
   try {
     check_usage( argc, argv );
-    run( atoll( argv[1] ), argv[2], argv[3], {argv+4, argv+argc} );
+    run( atoll( argv[1] ), argv[2], argv[3], argv[4], argv[5],
+      {argv+6, argv+argc} );
   } catch ( const exception & e ) {
     print_exception( e );
     return EXIT_FAILURE;

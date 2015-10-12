@@ -29,6 +29,8 @@ private:
 
   /* cluster config */
   size_t myID_;
+  std::pair<Address, std::vector<Address>> confFile_;
+  Address client_;
   std::vector<Address> backends_;
   std::vector<File> recFiles_;
   std::vector<std::string> diskPaths_;
@@ -43,6 +45,7 @@ private:
 
   /* bucket to local node mapping */
   std::vector<uint16_t> myBuckets_;
+  std::vector<uint64_t> myBktSizes_;
 
   /* helper functions */
   shards_t calculateShards( size_t buckets ) const noexcept;
@@ -88,20 +91,30 @@ public:
   /* Number of local disks available. */
   size_t disks( void ) const noexcept;
 
+  /* Address of client */
+  Address client( void ) const noexcept;
+
   /* List of addresses (including SELF) in the cluster. */
   std::vector<Address> addresses( void ) const noexcept;
 
-  /* cluster sizes. */
+  /* Cluster sizes. */
   size_t nodes( void ) const noexcept;
 
-  /* total number of buckets in cluster. */
+  /* Total number of buckets in cluster. */
   size_t buckets( void ) const noexcept;
 
-  /* map a key to a bucket. */
+  /* Map a key to a bucket. */
   uint16_t bucket( const uint8_t * key ) const noexcept;
 
   /* Maximum bucket size in bytes. */
   size_t bucketMaxSize( void ) const noexcept;
+
+  /* Number of items in a buckets (only for buckets stored locally) */
+  uint64_t bucketSize( uint16_t bkt ) const noexcept;
+  uint64_t & bucketSize( uint16_t bkt );
+
+  /* Expected bucket size */
+  uint64_t bucketSizeAvg( void ) const noexcept;
 };
 
 #endif /* METH4_CLUSTER_MAP_HH */
