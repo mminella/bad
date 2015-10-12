@@ -57,9 +57,7 @@ BucketSorter::BucketSorter( BucketSorter && other )
 
 BucketSorter::~BucketSorter( void )
 {
-  // PERF: Reuse buffes?
-  free( buf_ );
-  buf_ = nullptr;
+  freeBucket();
 }
 
 void BucketSorter::loadBucket( void )
@@ -94,6 +92,15 @@ void BucketSorter::sendBucket( TCPSocket & sock, uint64_t records )
   print( "send-bucket", timestamp<ms>(), bkt_, min( len_, records * Rec::SIZE ) );
   sock.write_all( buf_, min( len_, records * Rec::SIZE ) );
   print( "sent-bucket", timestamp<ms>(), bkt_, time_diff<ms>( t0 ) );
+}
+
+void BucketSorter::freeBucket( void )
+{
+  if ( buf_ != nullptr ) {
+    // PERF: Reuse buffes?
+    free( buf_ );
+    buf_ = nullptr;
+  }
 }
 
 pair<uint64_t, bool> calculateOp( string op, string arg1 )
@@ -136,7 +143,8 @@ void sortDisk( const ClusterMap & cluster, size_t diskID, string op,
     }
   }
 
-  print( "sort-disk", timestamp<ms>(), diskID, diskBuckets, bsorters.size() );
+  print( "sort-disk", timestamp<ms>(), diskID, diskBuckets, bsorters.size(),
+    toClient );
   if ( bsorters.size() == 0 ) {
     return;
   }
@@ -197,6 +205,7 @@ void sortDisk( const ClusterMap & cluster, size_t diskID, string op,
 
     // wait for load of i to finish, and i-1 to save
     tg.wait();
+    bsorters[i-1].freeBucket();
   }
 
   {
@@ -213,6 +222,7 @@ void sortDisk( const ClusterMap & cluster, size_t diskID, string op,
     bsorters.back().saveBucket();
     auto t2 = time_now();
     tg.wait();
+    bsorters.back().freeBucket();
 
     // timings
     tsort += time_diff<ms>( t1, t0 );
@@ -226,7 +236,12 @@ void sortDisk( const ClusterMap & cluster, size_t diskID, string op,
     bs.sortBucket();
     auto t2 = time_now();
     bs.saveBucket();
+    if ( toClient ) {
+      uint64_t bktLim = range.first - bs.id() * bktSize;
+      bs.sendBucket( client, bktLim );
+    }
     auto t3 = time_now();
+    bs.freeBucket();
 
     tload += time_diff<ms>( t1, t0 );
     tsort += time_diff<ms>( t2, t1 );

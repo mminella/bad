@@ -35,6 +35,7 @@ public:
   void sortBucket( void );
   void saveBucket( void );
   void sendBucket( TCPSocket & sock, uint64_t records );
+  void freeBucket( void );
 };
 
 class Sorter
