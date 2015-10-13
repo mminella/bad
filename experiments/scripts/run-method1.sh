@@ -13,22 +13,15 @@ LOG='~/bad.log'
 ITERS=1
 PORT=9000
 READER_OUT="/mnt/b/out"
-FILE=$1
-SAVE=$2
+SAVE=$1
+FILE=$2
 SIZE=$3
 CHUNK=$4
-CLIENT=$5
-MACHINE=$6
-N=$7
-CMDD=$8
-TARF=$9
-PG=${10}
-ZONE=${11}
+CMDD=$5
 
 # Args
-if [ $# != 11 ]; then
-  echo "runBad.sh <cluster file> <log path> <cluster data size> <chunk>
-            <client> <machine> <nodes> <cmd> <dist_tar> <pgroup> <zone>"
+if [ $# != 5 ]; then
+  echo "Usage: <log path> <cluster file> <cluster data size> <chunk> <cmd>"
   exit 1
 fi
 
@@ -49,18 +42,18 @@ fi
 # ===================================================================
 # Configuration
 
-if [ $MACHINE = "i2.xlarge" ]; then
+source ${FILE}
+
+if [ $M2_TYPE = "i2.xlarge" ]; then
   FILES_ALL="/mnt/b/recs"
-elif [ $MACHINE = "i2.2xlarge" ]; then
+elif [ $M2_TYPE = "i2.2xlarge" ]; then
   FILES_ALL="/mnt/b/recs /mnt/c/recs"
-elif [ $MACHINE = "i2.4xlarge" ]; then
+elif [ $M2_TYPE = "i2.4xlarge" ]; then
   FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs"
-elif [ $MACHINE = "i2.8xlarge" ]; then
+elif [ $M2_TYPE = "i2.8xlarge" ]; then
   FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs \
     /mnt/f/recs /mnt/g/recs /mnt/h/recs /mnt/i/recs"
 fi
-
-source ${FILE}
 
 # per-node data size
 SIZE_B=$( calc "round( ${SIZE_B} / ( ${MN} - 1 ) )" )
@@ -118,7 +111,7 @@ reader() {
 experiment() {
   for i in `seq 1 $ITERS`; do
     backends "sudo start meth1 && sudo start meth1_node NOW=\"${D}\" FILE=\"${FILES_ALL}\""
-    reader "# $(( $N - 1 )), ${SIZE}, ${CHUNK}, ${1}" \
+    reader "# $(( $MN - 1 )), ${SIZE}, ${CHUNK}, ${1}" \
       ${CHUNK_B} ${1}
     backends "sudo stop meth1"
   done

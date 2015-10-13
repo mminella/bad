@@ -13,13 +13,16 @@ LOG='~/bad.log'
 ITERS=1
 PORT=9000
 CONFFILE=m4.backends.conf
-FILE=$1
-SAVE=$2
+SAVE=$1
+FILE=$2
 SIZE=$3
+OP=$4
+ARG1=$5
+CLIENT=$#
 
 # Args
-if [ $# != 3 ]; then
-  echo "runBad.sh <cluster file> <log path> <data size>"
+if [ $# != 5 -a $# != 6 ]; then
+  echo "runBad.sh <log path> <cluster file> <data size> <op> <arg1> [<client>]"
   exit 1
 fi
 
@@ -56,6 +59,11 @@ fi
 
 BUCKETS_ALL=$( echo ${FILES_ALL} | sed 's/recs/buckets/g' )
 
+NSTART=1
+if [ $CLIENT == 6 ]; then
+  NSTART=2
+fi
+
 # ===================================================================
 # Experiment Helper Functions
 
@@ -64,11 +72,15 @@ D=$( date )
 
 # All nodes
 all() {
-  for i in `seq 1 $MN`; do
+  for i in `seq $NSTART $MN`; do
     declare MV="M${i}"
     ${SSH} ubuntu@${!MV} $1 &
   done
   wait
+}
+
+client() {
+  ${SSH} ubuntu@${M1} $1 &
 }
 
 
@@ -83,19 +95,25 @@ all "rm -rf ${BUCKETS_ALL} ${FILES_ALL} ~/bad.log"
 
 # Generate data files
 START=0
-for i in `seq 1 $MN`; do
+for i in `seq $NSTART $MN`; do
   declare MV="M${i}"
   ${SSH} ubuntu@${!MV} "gensort_all ${START} ${SIZE_B} recs" &
   START=$(( ${START} + ${SIZE_B} ))
 done
 wait
 
+# Create valid config file for cluster
+if [ $CLIENT == 6 ]; then
+  all "cat cluster.conf | grep -e \"M[0-9]=\" | cut -d'=' -f2 \
+    | sed -e \"s/\(.*\)/\1:${PORT}/\" > ${CONFFILE}"
+else
+  all "echo \"localhost:7777\" > ${CONFFILE}"
+  all "cat cluster.conf | grep -e \"M[0-9]=\" | cut -d'=' -f2 \
+    | sed -e \"s/\(.*\)/\1:${PORT}/\" >> ${CONFFILE}"
+fi
+
 # Clear buffer caches for fresh start
 all "sudo clear_buffers"
-
-# Create valid config file for cluster
-all "cat cluster.conf | grep -e \"M[0-9]=\" | cut -d'=' -f2 \
-  | sed -e \"s/\(.*\)/\1:${PORT}/\" > ${CONFFILE}"
 
 echo "
 ===================================================
@@ -107,14 +125,15 @@ Experiment setup! (${NAME})
 # Run Experiment & Copy Logs
 
 # Run
+client "meth4_client ${PORT}"
 START=0
-for i in `seq 1 $MN`; do
+for i in `seq $NSTART $MN`; do
   declare MV="M${i}"
   ${SSH} ubuntu@${!MV} \
     "echo \"# ${D}\" > ~/bad.log; \
     LD_PRELOAD=/usr/local/lib/libjemalloc.so \
-    meth4_node ${START} ${PORT} ${CONFFILE} ${FILES_ALL} \
-    >> ~/bad.log" &
+    meth4_node ${START} ${PORT} ${CONFFILE} ${OP} ${ARG1} ${FILES_ALL} \
+      >> ~/bad.log" &
   START=$(( ${START} + 1 ))
 done
 wait
