@@ -19,7 +19,7 @@ for root, dirs, files in os.walk(base_sg_dir):
             root[:len(base_sg_dir+'14')] != '{}14'.format(base_sg_dir):
         # We don't have a timestamp for 14.
         for filename in files:
-            if filename != 'log_cpu.txt':
+            if filename != 'log_cpu.txt' and filename[-3:] != 'pdf':
                 log_files.append('{}/{}'.format(root, filename))
 
 
