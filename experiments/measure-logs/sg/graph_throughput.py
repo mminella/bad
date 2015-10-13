@@ -1,12 +1,9 @@
 # Usage: `python graph_throughput.py path/to/experiments/measure_logs/sg/
 # (with the trailing '/' in the end.
 
-# TODO:
-# 1. Draw the median line.
-# 2. Fix legend to not overlap with the plot.
-
 import datetime
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import numpy
 import os
 import sys
@@ -26,31 +23,38 @@ for root, dirs, files in os.walk(base_sg_dir):
                 log_files.append('{}/{}'.format(root, filename))
 
 
-def make_graph(data_set):
+def make_graph(data_set, exp_name):
     """
     data_set: a dict of experiment setup string vs. list of experiment
     values.
     """
     labels_list = []
-    median_values = []
-    colormap = plt.cm.gist_ncar
-    plt.gca().set_color_cycle(
-        [colormap(i) for i in numpy.linspace(0, 0.9, len(data_set))]
-    )
-    for exp_name, results in data_set.iteritems():
-        # show each point.
-        # TODO: draw a line that is the median of each
-        # experiment run.
-        x = []
-        y = []
-        for timestamp, result in results:
-            x.append(timestamp)
-            y.append(result)
-        median_values.append(numpy.median(y))
-        plt.plot(x, y, 'o')
-        plt.ylabel('Throughput')
-        plt.xlabel('Time')
-        labels_list.append(exp_name)
+    x = []
+    y = []
+    timestamp_result_dict = {}
+    x_median = []
+    y_median = []
+    for timestamp, result in data_set:
+        x.append(timestamp)
+        y.append(result)
+        if timestamp_result_dict.get(timestamp):
+            timestamp_result_dict[timestamp].append(result)
+        else:
+            timestamp_result_dict[timestamp] = [result]
+    for ts, results_list in sorted(timestamp_result_dict.iteritems()):
+        x_median.append(ts)
+        y_median.append(numpy.median(results_list))
+    fig, ax = plt.subplots(1)
+    fig.autofmt_xdate()
+    plt.plot(x, y, 'o')
+    plt.plot(x_median, y_median, 'r')
+    labels_list.append(exp_name)
+    labels_list.append("Median")
+    xfmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
+    ax.xaxis.set_major_formatter(xfmt)
+
+    plt.ylabel('Throughput for {}'.format(exp_name))
+    plt.xlabel('Time')
     plt.legend(labels_list)
     plt.show()
 
@@ -79,6 +83,14 @@ def get_timestamp_dict(timestamps):
                 )
 
 
+def pick_an_experiment_to_plot(data_set):
+    exp_to_plot = ''
+    print "Please choose an experiment from the following:"
+    for exp_name in data_set.keys():
+        print exp_name
+    exp_to_plot = raw_input("Please choose an experiment from the above : ")
+    return exp_to_plot
+
 if __name__ == '__main__':
     """
     exp_result_list: A dict mapping from the exp setup
@@ -103,4 +115,6 @@ if __name__ == '__main__':
                         exp_result_dict[exp_log[0]].append(result)
                     else:
                         exp_result_dict[exp_log[0]] = [result]
-    make_graph(exp_result_dict)
+
+    exp_to_plot = pick_an_experiment_to_plot(exp_result_dict)
+    make_graph(exp_result_dict[exp_to_plot], exp_to_plot)
