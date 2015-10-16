@@ -112,8 +112,8 @@ networkSend <- function(machineOut, outN, machineIn, inN, data) {
 }
 
 shuffleAll <- function(machine, nodes, nodeData) {
-  p1Net    <- round(((nodes - 1) * nodeData) / (nodes * machine$netio))
   p1DiskR  <- round(nodeData / (machine$diskio.r * machine$disks))
+  p1Net    <- round(((nodes - 1) * nodeData) / (nodes * machine$netio))
   p1DiskW  <- round(nodeData / (machine$diskio.w * machine$disks))
   inParallel(p1Net, p1DiskR, p1DiskW)
 }
