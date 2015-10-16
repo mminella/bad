@@ -42,28 +42,6 @@ def RunParallelEveryServer(addresses, command):
     for status in status_list:
         status.wait()
 
-def BuildPingScript(addresses):
-    ping_script = open('ping.sh', 'w')
-    for index, (_, private_address) in enumerate(addresses):
-        ping_script.write(
-                'ping -c {} {} > latency_{}.log &\n'.format(
-                    config.ping_times, private_address, index))
-    ping_script.close()
-
-def DistributePingScript(addresses):
-    status_list = [
-        subprocess.Popen(
-                'rsync -e "ssh -i {key_location} {options}" -arz'
-                ' ping.sh {user}@{ip}:~/test_script/'.format(
-                    ip=public_address,
-                    user=config.user,
-                    key_location=config.key_location,
-                    options=config.ssh_options),
-                shell=True)
-        for public_address, _ in addresses]
-    for status in status_list:
-        status.wait()
-
 def BuildIperfScript(addresses):
     for index, _ in enumerate(addresses):
         iperf_script = open('iperf_{}.sh'.format(index), 'w')
@@ -78,7 +56,7 @@ def DistributeIperfScript(addresses):
     status_list = [
         subprocess.Popen(
                 'rsync -e "ssh -i {key_location} {options}" -arz'
-                ' iperf_{}.sh {user}@{ip}:~/test_script/iperf.sh'.format(
+                ' iperf_{}.sh {user}@{ip}:~/iperf.sh'.format(
                     index,
                     ip=public_address,
                     user=config.user,
@@ -109,25 +87,16 @@ if __name__ == '__main__':
     addresses = FindMachines(config.region_name, sys.argv[1])
     # Test whether ssh can succeed.
     RunSerialEveryServer(addresses, 'date')
-    # Build ping script.
-    BuildPingScript(addresses)
-    print 'Distribute ping script...'
-    # Distribute ping script.
-    DistributePingScript(addresses)
     # Build iperf script.
     BuildIperfScript(addresses)
     print 'Distribute iperf script...'
     # Distribute iperf script.
     DistributeIperfScript(addresses)
-    print 'Run ping test...'
-    # Run ping script.
-    RunParallelEveryServer(addresses, 'bash test_script/ping.sh')
-    time.sleep(config.ping_times * 1. + 10)
     print 'Run iperf test...'
     # Run iperf server.
     RunParallelEveryServer(addresses, 'screen -S iperf_server -d -m iperf -s')
     # Run iperf client.
-    RunParallelEveryServer(addresses, 'bash test_script/iperf.sh')
+    RunParallelEveryServer(addresses, 'bash iperf.sh')
     time.sleep(config.iperf_time + 10)
     print 'Collect results...'
     # Collect results.
