@@ -2,15 +2,15 @@
 SSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 SCP="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 KEY=$( hostname )
-FILE=$1
-SAVE=$2
+SAVE=$1
+FILE=$2
 N=$3
 MACHINE=$4
 ZONE=$5
 
 if [ -z "${FILE}" -o -z "${SAVE}" -o -z "${N}" -o -z "${MACHINE}" \
       -o -z "${ZONE}" ]; then
-  echo "runExperiment.sh <cluster file> <log path> <nodes> <machine> <zone>"
+  echo "runExperiment.sh <log path> <cluster file> <nodes> <machine> <zone>"
   exit 1
 fi
 
