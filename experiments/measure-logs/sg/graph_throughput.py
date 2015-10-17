@@ -1,5 +1,5 @@
 # Usage: `python graph_throughput.py path/to/experiments/measure_logs/sg/
-# (with the trailing '/' in the end.
+# (with the trailing '/' in the end)
 
 import datetime
 import matplotlib.pyplot as plt
@@ -50,13 +50,15 @@ def make_graph(data_set, exp_name):
     fig.autofmt_xdate()
     plt.boxplot(y)
     ax.xaxis_date()
-    plt.xticks(range(1, len(x)+1), x, rotation=15)
+    plt.xticks(range(1, len(x)+1), x, rotation=17)
 
     # Labels and legend
     plt.ylabel('Throughput (in MB/s)')
     plt.xlabel('Time')
     plt.legend(labels_list)
     plt.show()
+    # XXX To save a plot, instead of viewing it, replace `plt.show()` with:
+    # `plt.savefig('path/to/save/figure.pdf`)
 
 
 def get_timestamp_dict(timestamps):
