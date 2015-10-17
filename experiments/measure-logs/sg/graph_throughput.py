@@ -32,28 +32,28 @@ def make_graph(data_set, exp_name):
     x = []
     y = []
     timestamp_result_dict = {}
-    x_median = []
-    y_median = []
+
     for timestamp, result in data_set:
-        x.append(timestamp)
-        y.append(result)
+        # We now group the data as per the timestamp for every experiment run.
         if timestamp_result_dict.get(timestamp):
             timestamp_result_dict[timestamp].append(result)
         else:
             timestamp_result_dict[timestamp] = [result]
-    for ts, results_list in sorted(timestamp_result_dict.iteritems()):
-        x_median.append(ts)
-        y_median.append(numpy.median(results_list))
-    fig, ax = plt.subplots(1)
-    fig.autofmt_xdate()
-    plt.plot(x, y, 'o')
-    plt.plot(x_median, y_median, 'r')
-    labels_list.append(exp_name)
-    labels_list.append("Median")
-    xfmt = mdates.DateFormatter('%Y-%m-%d %H:%M')
-    ax.xaxis.set_major_formatter(xfmt)
 
-    plt.ylabel('Throughput for {}'.format(exp_name))
+    for ts, results_list in sorted(timestamp_result_dict.iteritems()):
+        # Make sure the data we are plotting is sorted by timestamp.
+        x.append(ts)
+        y.append(results_list)
+
+    fig, ax = plt.subplots(1)
+    labels_list.append(exp_name)
+    fig.autofmt_xdate()
+    plt.boxplot(y)
+    ax.xaxis_date()
+    plt.xticks(range(1, len(x)+1), x, rotation=15)
+
+    # Labels and legend
+    plt.ylabel('Throughput (in MB/s)')
     plt.xlabel('Time')
     plt.legend(labels_list)
     plt.show()
