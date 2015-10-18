@@ -10,6 +10,7 @@ installPackage <- function(pkg) {
   }
 }
 
+installPackage('plyr')
 installPackage('dplyr')
 installPackage('ggplot2')
 installPackage('reshape2')
