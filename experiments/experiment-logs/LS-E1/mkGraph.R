@@ -111,11 +111,15 @@ df <- melt(df, id.vars=c('size','type'))
 df$type <- revalue(df$type, c("o"="observed", "p"="predicted"))
 df <- select(df, type, variable, xv=size, yv=value)
 
+fout <- "graph.pdf"
 facetGraph(df,
-           "graph.pdf",
+           fout,
            "Linear Scan: readAll operation - 600GB",
-           "Cluster Size (nodes)")
-
-# lineDotGraph(df, "graph.pdf", "ShuffleAll: i2.1x Cluster - ReadAll - 600GB",
-#                  "Total Time (s)", "Cluster Size (nodes)",
-#                  "predicted", "observed")
+           "Cluster Size (# i2.xlarge nodes)")
+# lineDotGraph(df,
+#              fout,
+#              "ShuffleAll: i2.1x Cluster - ReadAll - 600GB",
+#              "Total Time (s)",
+#              "Cluster Size (# i2.xlarge nodes)",
+#              "predicted", "observed")
+system(paste("pdfcrop", fout, fout))

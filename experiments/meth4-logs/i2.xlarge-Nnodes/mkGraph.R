@@ -77,6 +77,9 @@ df <- read.delim(args[[1]], header=T, sep=',', strip.white=T, comment.char='#')
 df <- select(df, variable=type, xv=size, yv=total)
 df$variable <- revalue(df$variable, c("o"="observed", "p"="predicted"))
 
-lineDotGraph(df, "graph.pdf", "ShuffleAll: i2.1x Cluster - ReadAll - 600GB",
+fout <- "graph.pdf"
+lineDotGraph(df, fout, "ShuffleAll: i2.1x Cluster - ReadAll - 600GB",
                  "Total Time (s)", "Cluster Size (nodes)",
                  "predicted", "observed")
+
+system(paste("pdfcrop", fout, fout))

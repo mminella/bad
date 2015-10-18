@@ -112,8 +112,10 @@ df <- mutate(df, time=time/60) %>%
       melt(id.vars=c('size','type')) %>%
       select(type, variable, xv=size, yv=value)
 
+fout <- "graph.pdf"
 facetGraph(df,
-           "graph.pdf",
+           fout,
            "Shuffle All: readAll operation - 600GB",
-           "Cluster Size (nodes)")
+           "Cluster Size (# i2.xlarge nodes)")
+system(paste("pdfcrop", fout, fout))
 

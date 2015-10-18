@@ -3,6 +3,7 @@ library(data.table)
 library(dplyr)
 library(ggplot2)
 library(ggthemr)
+library(grid)
 library(reshape2)
 library(stringi)
 
@@ -141,9 +142,12 @@ lineDotGraph <- function(d, fout, title, yl, xl, lineVar, dotVar) {
       ggtitle(title) +
       xlab(xl) +
       ylab(yl) +
+      coord_fixed(ratio=0.08) +
       geom_point(data=d2, size=3, aes(colour=variable)) +
       guides(colour=guide_legend(override.aes=list(shape=c(16,NA),
-                                                   linetype=c(0,1))))
+                                                   linetype=c(0,1)))) +
+      theme(legend.position="top",
+            legend.title=element_blank())
     pdf(fout)
     print(g)
     dev.off()
@@ -162,17 +166,18 @@ totalAll <- rbind(totalP, totalO) %>%
   select(xv=id, yv=total, variable=type) %>%
   mutate(yv=yv/60)
 
+fout <- "graph.pdf"
 lineDotGraph(totalAll,
-             "graph.pdf",
+             fout,
              "Linear Scan: readAll operation - 1TB",
              "Time (min)",
              "Cluster Size (# i2.8xlarge nodes)",
              "predicted",
              "observed"
              )
-
 # mkGraph(totalAll,
-#         "graph.pdf",
-#         "Linear Scan: readAll operation - 4TB",
-#         "i2.8xlarge Cluster Size (# nodes)",
+#         fout,
+#         "Linear Scan: readAll operation - 1TB",
+#         "Cluster Size (# i2.8xlarge nodes)",
 #         "Time (s)")
+system(paste("pdfcrop", fout, fout))
