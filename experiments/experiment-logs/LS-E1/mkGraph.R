@@ -16,7 +16,7 @@ ggthemr('fresh')
 mkGraph <- function(d, fout, geom, title, yl, xl) {
   if (is.data.frame(d) & nrow(d) > 0) {
     pdf(fout)
-    g <- ggplot(d, aes(clarity, x=xv, y=yv, group=variable, colour=variable)) +
+    g <- ggplot(d, aes(x=xv, y=yv, group=variable, colour=variable)) +
       geom() +
       ggtitle(title) +
       xlab(xl) +
@@ -45,8 +45,8 @@ lineDotGraph <- function(d, fout, title, yl, xl, lineVar, dotVar) {
   if (is.data.frame(d) & nrow(d) > 0) {
     d1 <- filter(d, variable==lineVar)
     d2 <- filter(d, variable==dotVar)
-    pdf(fout)
-    g <- ggplot(d1, aes(clarity, x=xv, y=yv)) +
+
+    g <- ggplot(d1, aes(x=xv, y=yv)) +
       geom_line(aes(colour=variable)) +
       ggtitle(title) +
       xlab(xl) +
@@ -54,6 +54,7 @@ lineDotGraph <- function(d, fout, title, yl, xl, lineVar, dotVar) {
       geom_point(data=d2, size=3, aes(colour=variable)) +
       guides(colour=guide_legend(override.aes=list(shape=c(16,NA),
                                                    linetype=c(0,1))))
+    pdf(fout)
     print(g)
     dev.off()
   } else {
@@ -61,23 +62,35 @@ lineDotGraph <- function(d, fout, title, yl, xl, lineVar, dotVar) {
   }
 }
 
-facetGraph <- function(d, fout, title, y1, xl) {
+facetGraph <- function(d, fout, title, xl) {
   if (is.data.frame(d) & nrow(d) > 0) {
-    d1o <- filter(d, variable=="cost", type=="predicted")
-    d1$panel <- "Cost ($)"
-    d2 <- filter(d, variable=="time", type=="predicted")
-    d2$panel <- "Time (min)"
+    cost_p <- filter(d, variable=="cost", type=="predicted")
+    cost_o <- filter(d, variable=="cost", type=="observed")
+    cost_p$panel <- "Cost ($)"
+    cost_o$panel <- "Cost ($)"
+    time_p <- filter(d, variable=="time", type=="predicted")
+    time_o <- filter(d, variable=="time", type=="observed")
+    time_p$panel <- "Time (min)"
+    time_o$panel <- "Time (min)"
 
-    pdf(file)
-    g <- ggplot(data=d, mapping=aaes)
-    g <- g + facet_grid(panel~., scale="free")
-    g <- g + layer(data=d1, geom=c("line"), stat="identity")
-    g <- g + layer(data=d2, geom=c("line"), stat="identity")
-    g <- g + ggtitle(title)
-    g <- g + xlab("Cluster Size")
-    g <- g + ylab("")
+    g <- ggplot(data=d, mapping=aes(x=xv, y=yv, color=type)) +
+      facet_grid(panel~., scale="free") +
+      layer(data=time_p, geom=c("line"), stat="identity") +
+      layer(data=time_o, geom=c("point"), stat="identity", size=3) +
+      layer(data=cost_p, geom=c("line"), stat="identity") +
+      layer(data=cost_o, geom=c("point"), stat="identity", size=3) +
+      guides(colour=guide_legend(override.aes=list(shape=c(16,NA),
+                                                   linetype=c(0,1)))) +
+      theme(legend.position="top", legend.title=element_blank()) +
+      ggtitle(title) +
+      xlab(xl) +
+      ylab("")
+
+    pdf(fout)
     print(g)
     dev.off()
+  } else {
+    stop("invalid data to graph")
   }
 }
 
@@ -96,8 +109,12 @@ if (length(args) != 1) {
 df <- read.delim(args[[1]], header=T, sep=',', strip.white=T, comment.char='#')
 df <- melt(df, id.vars=c('size','type'))
 df$type <- revalue(df$type, c("o"="observed", "p"="predicted"))
+df <- select(df, type, variable, xv=size, yv=value)
 
-print(head(df))
+facetGraph(df,
+           "graph.pdf",
+           "Linear Scan: readAll operation - 600GB",
+           "Cluster Size (nodes)")
 
 # lineDotGraph(df, "graph.pdf", "ShuffleAll: i2.1x Cluster - ReadAll - 600GB",
 #                  "Total Time (s)", "Cluster Size (nodes)",
