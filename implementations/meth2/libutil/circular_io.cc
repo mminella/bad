@@ -29,9 +29,9 @@ CircularIO::CircularIO( IODevice & io, size_t blocks, int id )
 /* destructor */
 CircularIO::~CircularIO( void )
 {
-  free( buf_ );
   start_.close();
   if ( reader_.joinable() ) { reader_.join(); }
+  free( buf_ );
 }
 
 /* start reading nbytes from the io device (separate thread) */
@@ -72,7 +72,8 @@ void CircularIO::read_loop( void )
     if ( nbytes == 0 ) {
       continue;
     }
-    print( "circular-read-start", id_, ++readPass_, nbytes, timestamp<ms>() );
+    //print( "circular-read-start", id_, ++readPass_, nbytes, timestamp<ms>() 
+    //);
 
     auto ts = time_now();
     tdiff_t tt = 0;
@@ -105,6 +106,6 @@ void CircularIO::read_loop( void )
       }
     }
     auto te = time_diff<ms>( ts );
-    print( "circular-read-total", id_, readPass_, rbytes, tt, te );
+    //print( "circular-read-total", id_, readPass_, rbytes, tt, te );
   }
 }
