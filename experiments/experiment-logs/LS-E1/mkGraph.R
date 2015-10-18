@@ -61,6 +61,26 @@ lineDotGraph <- function(d, fout, title, yl, xl, lineVar, dotVar) {
   }
 }
 
+facetGraph <- function(d, fout, title, y1, xl) {
+  if (is.data.frame(d) & nrow(d) > 0) {
+    d1o <- filter(d, variable=="cost", type=="predicted")
+    d1$panel <- "Cost ($)"
+    d2 <- filter(d, variable=="time", type=="predicted")
+    d2$panel <- "Time (min)"
+
+    pdf(file)
+    g <- ggplot(data=d, mapping=aaes)
+    g <- g + facet_grid(panel~., scale="free")
+    g <- g + layer(data=d1, geom=c("line"), stat="identity")
+    g <- g + layer(data=d2, geom=c("line"), stat="identity")
+    g <- g + ggtitle(title)
+    g <- g + xlab("Cluster Size")
+    g <- g + ylab("")
+    print(g)
+    dev.off()
+  }
+}
+
 
 # ===========================================
 # main
@@ -74,9 +94,11 @@ if (length(args) != 1) {
 }
 
 df <- read.delim(args[[1]], header=T, sep=',', strip.white=T, comment.char='#')
-df <- select(df, variable=type, xv=size, yv=total)
-df$variable <- revalue(df$variable, c("o"="observed", "p"="predicted"))
+df <- melt(df, id.vars=c('size','type'))
+df$type <- revalue(df$type, c("o"="observed", "p"="predicted"))
 
-lineDotGraph(df, "graph.pdf", "ShuffleAll: i2.1x Cluster - ReadAll - 600GB",
-                 "Total Time (s)", "Cluster Size (nodes)",
-                 "predicted", "observed")
+print(head(df))
+
+# lineDotGraph(df, "graph.pdf", "ShuffleAll: i2.1x Cluster - ReadAll - 600GB",
+#                  "Total Time (s)", "Cluster Size (nodes)",
+#                  "predicted", "observed")
