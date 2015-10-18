@@ -44,7 +44,7 @@ m1.readAll <- function(client, machine, nodes, data) {
 
   timeNet  <- networkSend(machine, nodes, client, 1, data)
   timeDisk <- sequentialRead(machine, nodeData) * scans
-  time     <- timeNet + timeDisk
+  time     <- inSequence(timeNet, timeDisk)
 
   data.frame(operation="all", nodes=nodes, start=0, length=data/REC_SIZE,
              time.total=time, time.min=toMin(time), time.hr=toHr(time),
