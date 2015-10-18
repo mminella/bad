@@ -31,6 +31,8 @@ bin-dist:
 	cp scripts/setup_fs.sh dist_root/usr/bin/setup_fs
 	cp scripts/setup_all_fs.sh dist_root/usr/bin/setup_all_fs
 	cp scripts/gensort_all.sh dist_root/usr/bin/gensort_all
+	cp experiments/sortperf dist_root/usr/bin/sortperf
+	cp ../measure/random_read_meth2 dist_root/usr/bin/random_read_meth2
 	cp upstart/meth2.conf dist_root/etc/init/
 	cp upstart/meth2_node.conf dist_root/etc/init/
 	chmod 755 dist_root/usr/bin/*
