@@ -29,9 +29,9 @@ CircularIO::CircularIO( IODevice & io, size_t blocks, int id )
 /* destructor */
 CircularIO::~CircularIO( void )
 {
-  free( buf_ );
   start_.close();
   if ( reader_.joinable() ) { reader_.join(); }
+  free( buf_ );
 }
 
 /* start reading nbytes from the io device (separate thread) */
