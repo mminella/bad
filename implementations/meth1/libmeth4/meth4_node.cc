@@ -116,7 +116,6 @@ void run( size_t nodeID, string port, string conffile, string op, string arg1,
 void check_usage( const int argc, const char * const argv[] )
 {
   if ( argc < 7 ) {
-    // pass in hostname rather than retrieve to allow easy testing
     throw runtime_error( "Usage: " + string( argv[0] )
       + " [node id] [port] [config file] [op] [arg1] [data files...]" );
   }

@@ -1,0 +1,32 @@
+#!/bin/bash
+
+rm -f ${srcdir}/test/buckets/*
+
+${srcdir}/libmeth4/meth4_client 8000 &
+CLIENT_PID=$!
+
+${srcdir}/libmeth4/meth4_node 0 9000 \
+  ${srcdir}/test/meth4_node.test.conf \
+  nth-client 1000 \
+  ${srcdir}/test/in.s0000.e1000.recs &
+NODE_PID1=$!
+
+${srcdir}/libmeth4/meth4_node 1 9001 \
+  ${srcdir}/test/meth4_node.test.conf \
+  nth-client 1000 \
+  ${srcdir}/test/in.s1000.e2000.recs &
+NODE_PID2=$!
+
+${srcdir}/libmeth4/meth4_node 2 9002 \
+  ${srcdir}/test/meth4_node.test.conf \
+  nth-client 1000 \
+  ${srcdir}/test/in.s2000.e3000.recs &
+NODE_PID3=$!
+
+wait $NODE_PID1 2>/dev/null
+wait $NODE_PID2 2>/dev/null
+wait $NODE_PID3 2>/dev/null
+
+kill $CLIENT_PID 2>/dev/null
+
+exit 0
