@@ -25,9 +25,10 @@ fstream results;
 void
 measure(uint64_t nrecs_per_disk)
 {
-    auto start = time_now();
+    cout << "size: " << nrecs_per_disk << " recs/disk" << endl;
+
     // Load records
-    recs_.reserve(nrecs_per_disk * files.size());
+    auto start = time_now();
     for (size_t d = 0; d < files.size(); d++) {
 	OverlappedRecordIO<Rec::SIZE> cio(files[d]);
 
@@ -42,16 +43,15 @@ measure(uint64_t nrecs_per_disk)
     }
 
     auto loadTime = time_diff<ms>(start);
-    start = time_now();
+    cout << "load: " << loadTime << "mS" << endl;
 
     // Sort
+    start = time_now();
     rec_sort(recs_.begin(), recs_.end());
 
     auto sortTime = time_diff<ms>(start);
-
-    cout << "size: " << nrecs_per_disk << " recs/disk" << endl;
-    cout << "load: " << loadTime << "mS" << endl;
     cout << "sort: " << sortTime << "mS" << endl;
+
     results << nrecs_per_disk * files.size()
 	    << ", " << loadTime
 	    << ", " << sortTime
@@ -81,6 +81,10 @@ main(int argc, const char *argv[])
     }
 
     uint64_t maxRecs = files[0].size() / Rec::SIZE;
+    cout << "maxRecs " << maxRecs << endl;
+
+    recs_.reserve(maxRecs * files.size());
+    cout << "reserve complete" << endl;
 
     for (uint64_t nrecs = MIN_NRECS; nrecs <= maxRecs; nrecs *= 10) {
 	measure(nrecs);

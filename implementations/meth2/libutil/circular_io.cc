@@ -30,6 +30,7 @@ CircularIO::CircularIO( IODevice & io, size_t blocks, int id )
 CircularIO::~CircularIO( void )
 {
   start_.close();
+  blocks_.close();
   if ( reader_.joinable() ) { reader_.join(); }
   free( buf_ );
 }
@@ -61,51 +62,54 @@ int CircularIO::id( void ) const noexcept
 /* continually read from the device, taking commands over a channel */
 void CircularIO::read_loop( void )
 {
-  while ( true ) {
-    size_t nbytes = 0;
-    try {
-      nbytes = start_.recv();
-    } catch ( const exception & e ) {
-        return;
-    }
-
-    if ( nbytes == 0 ) {
-      continue;
-    }
-    //print( "circular-read-start", id_, ++readPass_, nbytes, timestamp<ms>() 
-    //);
-
-    auto ts = time_now();
-    tdiff_t tt = 0;
-    char * wptr_ = buf_;
-    size_t rbytes = 0;
+  try {
     while ( true ) {
-      auto t0 = time_now();
-      // should only issue disk block size reads when using O_DIRECT
-      size_t blkSize = io_.is_odirect() ? BLOCK : min( BLOCK, nbytes - rbytes );
-      size_t n = io_.read( wptr_, blkSize );
-      tt += time_diff<ms>( t0 );
+      size_t nbytes = start_.recv();
+      if ( nbytes == 0 ) {
+        continue;
+      }
+      //print( "circular-read-start", id_, ++readPass_, nbytes, timestamp<ms>() 
+      //);
 
-      if ( n > 0 ) {
-        rbytes += n;
-        blocks_.send( {wptr_, n} );
-        wptr_ += BLOCK;
-        if ( wptr_ == buf_ + bufSize_ ) {
-          wptr_ = buf_;
+      auto t0 = time_now();
+      tdiff_t tread = 0;
+      char * wptr_ = buf_;
+      size_t rbytes = 0;
+      while ( true ) {
+        auto t0 = time_now();
+        // should only issue disk block size reads when using O_DIRECT
+        size_t blkSize = io_.is_odirect()
+          ? BLOCK : min( BLOCK, nbytes - rbytes );
+        size_t n = io_.read( wptr_, blkSize );
+        tread += time_diff<ms>( t0 );
+
+        if ( n > 0 ) {
+          rbytes += n;
+          blocks_.send( {wptr_, n} );
+          wptr_ += BLOCK;
+          if ( wptr_ == buf_ + bufSize_ ) {
+            wptr_ = buf_;
+          }
+        }
+
+        if ( rbytes == nbytes ) {
+          io_cb_();
+          blocks_.send( { nullptr, 0} ); // indicate EOF
+          break;
+        } else if ( rbytes > nbytes ) {
+          throw runtime_error( "read more bytes than should have been" \
+            " available ( " + to_string( rbytes ) + " vs " +
+            to_string( nbytes ) + " )" );
         }
       }
-
-      if ( rbytes == nbytes ) {
-        io_cb_();
-        blocks_.send( { nullptr, 0} ); // indicate EOF
-        break;
-      } else if ( rbytes > nbytes ) {
-        throw runtime_error( "read more bytes than should have been" \
-          " available ( " + to_string( rbytes ) + " vs " +
-          to_string( nbytes ) + " )" );
-      }
+      auto tblocked = time_diff<ms>( t0 );
+      //print( "circular-read-total", id_, readPass_, rbytes, tread, tblocked 
+      //);
     }
-    auto te = time_diff<ms>( ts );
-    //print( "circular-read-total", id_, readPass_, rbytes, tt, te );
+  } catch ( const Channel<size_t>::closed_error & e  ) {
+    // Allow closing channel to kill thread
+    return;
+  } catch ( const Channel<block_ptr>::closed_error & e  ) {
+    return;
   }
 }
