@@ -1,0 +1,90 @@
+# Mon Sep 21 14:09:34 PDT 2015
+memory, 128926187520
+record-value, 112
+seek-chunk, 707645831
+file, 4, 526325000
+file, 5, 526325000
+file, 6, 526325000
+file, 7, 526325000
+# Mon Sep 21 16:19:04 PDT 2015
+memory, 128926187520
+record-value, 112
+seek-chunk, 707645831
+file, 4, 526325000
+file, 5, 526325000
+file, 6, 526325000
+file, 7, 526325000
+# Mon Sep 21 16:36:50 PDT 2015
+memory, 128926187520
+record-value, 112
+seek-chunk, 707645831
+file, 4, 526325000
+file, 5, 526325000
+file, 6, 526325000
+file, 7, 526325000
+# Mon Sep 21 16:54:36 PDT 2015
+memory, 128926187520
+record-value, 112
+seek-chunk, 707645831
+file, 4, 526325000
+file, 5, 526325000
+file, 6, 526325000
+file, 7, 526325000
+# Mon Sep 21 17:14:18 PDT 2015
+memory, 128926187520
+record-value, 112
+seek-chunk, 707645831
+file, 4, 526325000
+file, 5, 526325000
+file, 6, 526325000
+file, 7, 526325000
+
+read-start, 1, 0, 707645831, 33148
+circular-read-start, 4, 1, 52632500000, 40341
+circular-read-start, 6, 1, 52632500000, 40341
+circular-read-start, 5, 1, 52632500000, 40341
+circular-read-start, 7, 1, 52632500000, 40341
+circular-read-total, 7, 1, 52632500000, 110422, 147467
+circular-read-total, 6, 1, 52632500000, 110427, 147481
+circular-read-total, 4, 1, 52632500000, 110097, 147509
+circular-read-total, 5, 1, 52632500000, 110073, 147564
+linear-scan, 151727
+-sort , 46547, 30
+-merge, 42822, 30
+-last , 2074
+read, 1, 707645831, 158919
+network, 1, 1390395
+
+read-start, 2, 707645831, 707645831, 1582551
+circular-read-start, 5, 2, 52632500000, 1583968
+circular-read-start, 4, 2, 52632500000, 1583968
+circular-read-start, 6, 2, 52632500000, 1583968
+circular-read-start, 7, 2, 52632500000, 1583968
+circular-read-total, 7, 2, 52632500000, 110522, 134969
+circular-read-total, 4, 2, 52632500000, 110801, 135138
+circular-read-total, 6, 2, 52632500000, 110818, 135173
+circular-read-total, 5, 2, 52632500000, 110856, 135194
+linear-scan, 139836
+-sort , 38079, 24
+-merge, 37156, 24
+-last , 2194
+read, 2, 707645831, 141253
+network, 2, 1449621
+
+read-start, 3, 1415291662, 690008338, 3173484
+circular-read-start, 5, 3, 52632500000, 3174855
+circular-read-start, 4, 3, 52632500000, 3174855
+circular-read-start, 6, 3, 52632500000, 3174855
+circular-read-start, 7, 3, 52632500000, 3174855
+circular-read-total, 7, 3, 52632500000, 110814, 113191
+circular-read-total, 4, 3, 52632500000, 110997, 113467
+circular-read-total, 6, 3, 52632500000, 110938, 113500
+circular-read-total, 5, 3, 52632500000, 111015, 113558
+linear-scan, 116999
+-sort , 22300, 15
+-merge, 31074, 15
+-last , 916
+read, 3, 690008338, 118369
+network, 3, 1438883
+
+exit, 4760895
