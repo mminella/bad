@@ -77,4 +77,5 @@ TESTS = \
 	test/sort_node_r.test \
 	test/sort_overlap_channel.test \
 	test/sort_overlap_io.test \
-	test/meth4_node.test
+	test/meth4_node.test \
+	test/meth4_range.test
