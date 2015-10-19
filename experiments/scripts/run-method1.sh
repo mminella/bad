@@ -18,11 +18,17 @@ FILE=$2
 SIZE=$3
 CHUNK=$4
 CMDD=$5
+NOPREP=0
 
 # Args
-if [ $# != 5 ]; then
-  echo "Usage: <log path> <cluster file> <cluster data size> <chunk> <cmd>"
+if [ $# != 5 -a $# != 6 ]; then
+  echo "Usage: <log path> <cluster file> <cluster data size> <chunk> <cmd>" \
+    "[<no prep>]"
   exit 1
+fi
+
+if [ $# == 6 ]; then
+  NOPREP=1
 fi
 
 NAME=${FILE}
@@ -121,23 +127,25 @@ experiment() {
 # ===================================================================
 # Setup Experiment
 
-# Prepare disks
-all "setup_all_fs 2> /dev/null > /dev/null"
+if [ ${NOPREP} == 0 ]; then
+  # Prepare disks
+  all "setup_all_fs 2> /dev/null > /dev/null"
 
-# Generate data files
-START=0
-for i in `seq 2 $MN`; do
-  declare MV="M${i}"
-  ${SSH} ubuntu@${!MV} "gensort_all ${START} ${SIZE_B} recs" &
-  START=$(( ${START} + ${SIZE_B} ))
-done
-wait
-all "sudo clear_buffers"
+  # Generate data files
+  START=0
+  for i in `seq 2 $MN`; do
+    declare MV="M${i}"
+    ${SSH} ubuntu@${!MV} "gensort_all ${START} ${SIZE_B} recs" &
+    START=$(( ${START} + ${SIZE_B} ))
+  done
+  wait
+  all "sudo clear_buffers"
 
-echo "
-===================================================
-Experiment setup! (${NAME})
-==================================================="
+  echo "
+  ===================================================
+  Experiment setup! (${NAME})
+  ==================================================="
+fi
 
 
 # ===================================================================
