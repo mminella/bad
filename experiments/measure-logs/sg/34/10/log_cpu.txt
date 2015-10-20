@@ -1,0 +1,140 @@
+allocator, libc
+# memcpy
+serial, pinned, 1, 5309
+parallel, pinned, 2, 9740
+parallel, pinned, 3, 6711
+parallel, pinned, 4, 8547
+parallel, pinned, 5, 9771
+parallel, pinned, 6, 11627
+parallel, pinned, 7, 13043
+parallel, pinned, 8, 13761
+parallel_n, pinned, 2, 9868
+parallel_n, pinned, 3, 13215
+parallel_n, pinned, 4, 14285
+parallel_n, pinned, 5, 10563
+parallel_n, pinned, 6, 11764
+parallel_n, pinned, 7, 13333
+parallel_n, pinned, 8, 13761
+# memcmp
+serial, pinned, 1, 2282
+parallel, pinned, 2, 4219
+parallel, pinned, 3, 6321
+parallel, pinned, 4, 8389
+parallel, pinned, 5, 7874
+parallel, pinned, 6, 9074
+parallel, pinned, 7, 10593
+parallel, pinned, 8, 11933
+# malloc
+parallel, unpinned, 1, 2895
+parallel, unpinned, 2, 5624
+parallel, unpinned, 3, 8319
+parallel, unpinned, 4, 10548
+parallel, unpinned, 5, 8012
+parallel, unpinned, 6, 9416
+parallel, unpinned, 7, 10845
+parallel, unpinned, 8, 11363
+allocator, jemalloc
+# memcpy
+serial, pinned, 1, 5395
+parallel, pinned, 2, 9933
+parallel, pinned, 3, 13157
+parallel, pinned, 4, 8670
+parallel, pinned, 5, 10309
+parallel, pinned, 6, 11952
+parallel, pinned, 7, 13333
+parallel, pinned, 8, 14084
+parallel_n, pinned, 2, 9966
+parallel_n, pinned, 3, 6802
+parallel_n, pinned, 4, 8670
+parallel_n, pinned, 5, 10033
+parallel_n, pinned, 6, 11673
+parallel_n, pinned, 7, 13452
+parallel_n, pinned, 8, 13953
+# memcmp
+serial, pinned, 1, 2281
+parallel, pinned, 2, 4205
+parallel, pinned, 3, 6313
+parallel, pinned, 4, 8389
+parallel, pinned, 5, 7564
+parallel, pinned, 6, 9041
+parallel, pinned, 7, 10570
+parallel, pinned, 8, 11876
+# malloc
+parallel, unpinned, 1, 2910
+parallel, unpinned, 2, 5617
+parallel, unpinned, 3, 8278
+parallel, unpinned, 4, 7849
+parallel, unpinned, 5, 8361
+parallel, unpinned, 6, 10020
+parallel, unpinned, 7, 10615
+parallel, unpinned, 8, 11627
+allocator, tcmalloc
+# memcpy
+serial, pinned, 1, 5385
+parallel, pinned, 2, 9966
+parallel, pinned, 3, 13157
+parallel, pinned, 4, 14218
+parallel, pinned, 5, 10309
+parallel, pinned, 6, 11857
+parallel, pinned, 7, 13274
+parallel, pinned, 8, 13888
+parallel_n, pinned, 2, 9966
+parallel_n, pinned, 3, 13043
+parallel_n, pinned, 4, 9202
+parallel_n, pinned, 5, 10169
+parallel_n, pinned, 6, 11811
+parallel_n, pinned, 7, 13392
+parallel_n, pinned, 8, 13888
+# memcmp
+serial, pinned, 1, 2281
+parallel, pinned, 2, 4201
+parallel, pinned, 3, 6281
+parallel, pinned, 4, 6075
+parallel, pinned, 5, 7541
+parallel, pinned, 6, 9057
+parallel, pinned, 7, 10570
+parallel, pinned, 8, 11764
+# malloc
+parallel, unpinned, 1, 2929
+parallel, unpinned, 2, 5662
+parallel, unpinned, 3, 8264
+parallel, unpinned, 4, 10775
+parallel, unpinned, 5, 8051
+parallel, unpinned, 6, 9560
+parallel, unpinned, 7, 10615
+parallel, unpinned, 8, 11210
+allocator, tbb
+# memcpy
+serial, pinned, 1, 5319
+parallel, pinned, 2, 9933
+parallel, pinned, 3, 13157
+parallel, pinned, 4, 14285
+parallel, pinned, 5, 10344
+parallel, pinned, 6, 11857
+parallel, pinned, 7, 13274
+parallel, pinned, 8, 13953
+parallel_n, pinned, 2, 9966
+parallel_n, pinned, 3, 7299
+parallel_n, pinned, 4, 9174
+parallel_n, pinned, 5, 10380
+parallel_n, pinned, 6, 12000
+parallel_n, pinned, 7, 13392
+parallel_n, pinned, 8, 13953
+# memcmp
+serial, pinned, 1, 2282
+parallel, pinned, 2, 4212
+parallel, pinned, 3, 6313
+parallel, pinned, 4, 6067
+parallel, pinned, 5, 7575
+parallel, pinned, 6, 9074
+parallel, pinned, 7, 10548
+parallel, pinned, 8, 11990
+# malloc
+parallel, unpinned, 1, 2941
+parallel, unpinned, 2, 5662
+parallel, unpinned, 3, 8278
+parallel, unpinned, 4, 10752
+parallel, unpinned, 5, 8223
+parallel, unpinned, 6, 9380
+parallel, unpinned, 7, 10615
+parallel, unpinned, 8, 11441
