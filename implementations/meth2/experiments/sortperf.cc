@@ -86,6 +86,10 @@ main(int argc, const char *argv[])
     recs_.reserve(maxRecs * files.size());
     cout << "reserve complete" << endl;
 
+    uintptr_t first = (uintptr_t)(&recs_[0]);
+    uintptr_t second = (uintptr_t)(&recs_[1]);
+    cout << "array size " << second - first << " B/entry" << endl;
+
     for (uint64_t nrecs = MIN_NRECS; nrecs <= maxRecs; nrecs *= 10) {
 	measure(nrecs);
     }
