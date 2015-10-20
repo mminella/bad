@@ -2,7 +2,7 @@
 
 rm -f ${srcdir}/test/buckets/*
 
-${srcdir}/libmeth4/meth4_client 8000 &
+${srcdir}/libmeth4/meth4_client 8000 3 &
 CLIENT_PID=$!
 
 ${srcdir}/libmeth4/meth4_node 0 9000 \
@@ -26,7 +26,6 @@ NODE_PID3=$!
 wait $NODE_PID1 2>/dev/null
 wait $NODE_PID2 2>/dev/null
 wait $NODE_PID3 2>/dev/null
-
-kill $CLIENT_PID 2>/dev/null
+wait $CLIENT_PID 2>/dev/null
 
 exit 0
