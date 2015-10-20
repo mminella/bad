@@ -3,14 +3,15 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <time.h>
 
-#include <netdb.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <time.h>
-#include <unistd.h>
+#include <netdb.h>
 
 #include "lib.hh"
 

@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <memory>
 #include <thread>
 #include <vector>
@@ -6,6 +7,7 @@
 #include "exception.hh"
 #include "socket.hh"
 #include "sync_print.hh"
+#include "timestamp.hh"
 
 #include "config_file.hh"
 #include "meth4_client.hh"
@@ -13,20 +15,20 @@
 
 using namespace std;
 
-void runClient( TCPSocket client )
+void runNode( TCPSocket node, size_t i )
 {
   constexpr size_t bufSize = 1024 * 1024 * 2;
   unique_ptr<char> buf( new char[bufSize] );
 
-  while ( true ) {
-    client.read( buf.get(), bufSize );
-    if ( client.eof() ) {
-      return;
-    }
+  auto t0 = time_now();
+  print( "client-start", timestamp<ms>(), i );
+  while ( not node.eof() ) {
+    node.read( buf.get(), bufSize );
   }
+  print( "client-end", timestamp<ms>(), i, time_diff<ms>( t0 ) );
 }
 
-void run( string port )
+void run( string port, string backends )
 {
   TCPSocket sock{IPV4};
   sock.set_reuseaddr();
@@ -36,19 +38,24 @@ void run( string port )
   sock.bind( { "0.0.0.0", port } );
   sock.listen();
 
-  size_t i = 0;
-  while ( true ) {
-    thread t( runClient, sock.accept() );
-    t.detach();
-    print( "client", i++ );
+  // wait for all backends to connect
+  vector<thread> nodes;
+  size_t n = atoll( backends.c_str() );
+  for ( size_t i = 0; i < n; i++ ) {
+    nodes.emplace_back( runNode, sock.accept(), i );
+  }
+
+  // wait for them to finish
+  for ( auto & node : nodes ) {
+    node.join();
   }
 }
 
 void check_usage( const int argc, const char * const argv[] )
 {
-  if ( argc < 2 ) {
-    // pass in hostname rather than retrieve to allow easy testing
-    throw runtime_error( "Usage: " + string( argv[0] ) + " [port]" );
+  if ( argc < 3 ) {
+    throw runtime_error( "Usage: " + string( argv[0] )
+      + " [port] [backends*disks]" );
   }
 }
 
@@ -56,7 +63,7 @@ int main( int argc, char * argv[] )
 {
   try {
     check_usage( argc, argv );
-    run( argv[1] );
+    run( argv[1], argv[2] );
   } catch ( const exception & e ) {
     print_exception( e );
     return EXIT_FAILURE;

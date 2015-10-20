@@ -145,9 +145,6 @@ void sortDisk( const ClusterMap & cluster, size_t diskID, string op,
 
   print( "sort-disk", timestamp<ms>(), diskID, diskBuckets, bsorters.size(),
     toClient );
-  if ( bsorters.size() == 0 ) {
-    return;
-  }
 
   // connect to client if needed
   TCPSocket client;
@@ -159,6 +156,12 @@ void sortDisk( const ClusterMap & cluster, size_t diskID, string op,
     s.set_recv_buffer( Knobs::NET_RCV_BUF );
     s.connect( cluster.client() );
     client = move( s );
+  }
+
+  // exit if nothing to send (but always connect to client as it expects all
+  // backends to connect)
+  if ( bsorters.size() == 0 ) {
+    return;
   }
 
   tdiff_t tsort = 0, tsave = 0;

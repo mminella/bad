@@ -84,7 +84,9 @@ facetGraph <- function(d, fout, title, xl) {
       theme(legend.position="top", legend.title=element_blank()) +
       ggtitle(title) +
       xlab(xl) +
-      ylab("")
+      ylab("") +
+			scale_x_continuous(expand=c(0,0.5), limits=c(3,10.5)) +
+			expand_limits(x=0, y=0)
 
     pdf(fout)
     print(g)
@@ -115,7 +117,8 @@ df <- mutate(df, time=time/60) %>%
 fout <- "graph.pdf"
 facetGraph(df,
            fout,
-           "Shuffle All: readAll operation - 600GB",
+           "",
+           # "Shuffle All: readAll operation - 600GB",
            "Cluster Size (# i2.xlarge nodes)")
 system(paste("pdfcrop", fout, fout))
 

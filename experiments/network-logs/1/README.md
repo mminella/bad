@@ -1,4 +1,6 @@
-# EC2 Network Measurement
+# Network Test 1
+
+Date: July 5th
 
 Hang Qu:
 

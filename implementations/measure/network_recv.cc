@@ -6,11 +6,12 @@
 
 #include <string>
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 constexpr int BACKLOG = 128;
 constexpr size_t BLKSIZE = size_t( 1024 ) * 1024 * 10;

@@ -12,6 +12,7 @@ def cdf(data):
     percentile = {}
     percentile['10'] = numpy.percentile(numpy.array(data), 10)
     percentile['50'] = numpy.percentile(numpy.array(data), 50)
+    percentile['85'] = numpy.percentile(numpy.array(data), 90)
     percentile['90'] = numpy.percentile(numpy.array(data), 90)
     percentile['95'] = numpy.percentile(numpy.array(data), 95)
 
@@ -33,9 +34,8 @@ if __name__ == '__main__':
     for logfile in log_files:
         with open(logfile, 'r') as f:
             for line in f:
-                if line[0] not in 'wr':
-                    pass
-                else:
+                # if line.startswith("w, s, s, 10485760, 1, 0"):
+                if line[0] in "rw":
                     reading = line.split(',')
                     number_of_readings += 1
                     all_readings.append(reading)
@@ -49,15 +49,16 @@ if __name__ == '__main__':
     if unknowns != []:
         print "Could not recognize these readings: ", unknowns
     else:
-        max_read_bandwidth = max(read_logs)
-        max_write_bandwidth = max(write_logs)
-        read_cdf = cdf(read_logs)
-        write_cdf = cdf(write_logs)
-
         print "No. of readings: ", number_of_readings
-        print "Max read bandwidth: ", max_read_bandwidth, " MB/s"
-        print "Max write bandwidth: ", max_write_bandwidth, " MB/s"
-        print "CDF for reads:"
-        print_cdf(read_cdf)
-        print "CDF for writes:"
-        print_cdf(write_cdf)
+
+        if len(read_logs) != 0:
+          print "Max read bandwidth: ", max(read_logs), " MB/s"
+          print "Min read bandwidth: ", min(read_logs), " MB/s"
+          print "CDF for reads:"
+          print_cdf(cdf(read_logs))
+
+        if len(write_logs) != 0:
+          print "Max write bandwidth: ", max(write_logs), " MB/s"
+          print "Min write bandwidth: ", min(write_logs), " MB/s"
+          print "CDF for writes:"
+          print_cdf(cdf(write_logs))

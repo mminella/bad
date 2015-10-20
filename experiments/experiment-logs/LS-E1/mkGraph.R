@@ -3,6 +3,7 @@ library("plyr")
 suppressMessages(library(dplyr))
 library("ggplot2")
 library("ggthemr")
+library("grid")
 library("methods")
 library("reshape2")
 library("scales")
@@ -84,7 +85,9 @@ facetGraph <- function(d, fout, title, xl) {
       theme(legend.position="top", legend.title=element_blank()) +
       ggtitle(title) +
       xlab(xl) +
-      ylab("")
+      ylab("") +
+			scale_x_continuous(expand=c(0,0), limits=c(0,21)) +
+			expand_limits(x=0, y=0)
 
     pdf(fout)
     print(g)
@@ -114,7 +117,8 @@ df <- select(df, type, variable, xv=size, yv=value)
 fout <- "graph.pdf"
 facetGraph(df,
            fout,
-           "Linear Scan: readAll operation - 600GB",
+           "",
+           # "Linear Scan: readAll operation - 600GB",
            "Cluster Size (# i2.xlarge nodes)")
 # lineDotGraph(df,
 #              fout,
