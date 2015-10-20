@@ -43,26 +43,36 @@ fi
 
 source ${FILE}
 
-# per-node data size
-SIZE_B=$( calc "round( ${SIZE_B} / ${MN} )" )
-
-if [ $M1_TYPE = "i2.xlarge" ]; then
-  FILES_ALL="/mnt/b/recs"
-elif [ $M1_TYPE = "i2.2xlarge" ]; then
-  FILES_ALL="/mnt/b/recs /mnt/c/recs"
-elif [ $M1_TYPE = "i2.4xlarge" ]; then
-  FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs"
-elif [ $M1_TYPE = "i2.8xlarge" ]; then
-  FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs \
-    /mnt/f/recs /mnt/g/recs /mnt/h/recs /mnt/i/recs"
-fi
-
-BUCKETS_ALL=$( echo ${FILES_ALL} | sed 's/recs/buckets/g' )
-
+# client or not?
 NSTART=1
+MTYPE=${M1_TYPE}
+NODES=${MN}
 if [ $CLIENT == 6 ]; then
   NSTART=2
+  MTYPE=${M2_TYPE}
+  NODES=$(( ${MN} - 1 ))
 fi
+
+# per-node data size
+SIZE_B=$( calc "round( ${SIZE_B} / ${NODES} )" )
+
+if [ $MTYPE = "i2.xlarge" ]; then
+  FILES_ALL="/mnt/b/recs"
+  DISKS=1
+elif [ $MTYPE = "i2.2xlarge" ]; then
+  FILES_ALL="/mnt/b/recs /mnt/c/recs"
+  DISKS=2
+elif [ $MTYPE = "i2.4xlarge" ]; then
+  FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs"
+  DISKS=4
+elif [ $MTYPE = "i2.8xlarge" ]; then
+  FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs \
+    /mnt/f/recs /mnt/g/recs /mnt/h/recs /mnt/i/recs"
+  DISKS=8
+fi
+
+DISKS=$(( ${DISKS} * ${NODES} ))
+BUCKETS_ALL=$( echo ${FILES_ALL} | sed 's/recs/buckets/g' )
 
 # ===================================================================
 # Experiment Helper Functions
@@ -80,7 +90,7 @@ all() {
 }
 
 client() {
-  ${SSH} ubuntu@${M1} $1 &
+  ${SSH} ubuntu@${M1} "$1 >> ~/bad.log" &
 }
 
 
@@ -125,7 +135,7 @@ Experiment setup! (${NAME})
 # Run Experiment & Copy Logs
 
 # Run
-client "meth4_client ${PORT}"
+client "meth4_client ${PORT} 4"
 START=0
 for i in `seq $NSTART $MN`; do
   declare MV="M${i}"
