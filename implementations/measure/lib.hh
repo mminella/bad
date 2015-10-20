@@ -1,6 +1,7 @@
 #ifndef LIB_HH
 #define LIB_HH
 
+#include <fcntl.h>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
