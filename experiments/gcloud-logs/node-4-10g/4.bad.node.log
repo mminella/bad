@@ -1,0 +1,16 @@
+memory, 27397599232
+record-value, 112
+seek-chunk, 136782397
+file, 4, 25000000
+
+read-start, 1, 0, 25000000, 5159
+circular-read-start, 4, 1, 2500000000, 5358
+circular-read-total, 4, 1, 2500000000, 3995, 4094
+linear-scan, 5007
+-sort , 1616, 8
+-merge, 811, 8
+-last , 270
+read, 1, 25000000, 5206
+network, 1, 757720
+
+exit, 1016690

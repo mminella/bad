@@ -6,9 +6,9 @@
 # ===================================================================
 # Arguments
 
-SSH="ssh -o UserKnownHostsFile=/dev/null \
+SSH="ssh -i /home/quhang/.ssh/google_compute_engine -o UserKnownHostsFile=/dev/null \
   -o StrictHostKeyChecking=no -o LogLevel=ERROR"
-SCP="scp -o UserKnownHostsFile=/dev/null \
+SCP="scp -i /home/quhang/.ssh/google_compute_engine -o UserKnownHostsFile=/dev/null \
   -o StrictHostKeyChecking=no -o LogLevel=ERROR"
 KEY=$( hostname )
 LOG='~/bad.log'
