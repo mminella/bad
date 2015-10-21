@@ -118,10 +118,10 @@ def make_graph(data_set, exp_name):
     pylab.ylim([000,500])
 
     # add Amazon pessimistic line
-    plt.text(-14.5, 130, "\"Pessimistic\"", color='g')
-    plt.axhline(137, color='r', xmin=-0.2, xmax=0.1)
-    plt.text(-13.0, 448, "\"Expected\"", color='g')
+    plt.text(-13.5, 448, "\"Expected\"", color='g')
     plt.axhline(456, color='r', xmin=-0.2, xmax=0.1)
+    plt.text(-15.0, 130, "\"Pessimistic\"", color='g')
+    plt.axhline(137, color='r', xmin=-0.2, xmax=0.1)
 
     # labels and legend
     plt.ylabel('Throughput (MB/s)')
