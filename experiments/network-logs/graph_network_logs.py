@@ -64,17 +64,18 @@ def make_graph(data_set):
 
     # plot graph
     fig, ax = plt.subplots(1)
-    bp = plt.boxplot(yv)
+    bp = plt.boxplot(yv, whis=[5,95], sym='')
     plt.setp(bp['boxes'], color='black')
     plt.setp(bp['whiskers'], color='black', ls='-')
     plt.setp(bp['fliers'], color='red', marker='+')
 
     # x-axis ticks
-    plt.xticks([1, 2, 3, 4], ['July', 'August', 'September', 'October'], rotation=40)
+    plt.xticks([1, 2, 3, 4], ['2015-07-05', '2015-08-03',
+      '2015-09-12', '2015-10-16'], rotation=0)
 
     # labels and legend
-    plt.ylabel('Throughput (MBits/sec)')
-    plt.xlabel('Date of Measurement')
+    plt.ylabel('Throughput (Mb/s)')
+    plt.xlabel('Month of Measurement', labelpad=10)
 
     # Produce output
 #    plt.show()
