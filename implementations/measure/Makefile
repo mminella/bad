@@ -1,5 +1,6 @@
 CXX=c++
 CXXFLAGS=-O3 -std=c++11
+LDFLAGS=-pthread -lpthread
 BINARIES= \
 	read \
 	random_read \
@@ -20,16 +21,21 @@ BINARIES += \
 ASYNC := 1
 endif
 
+ifeq ($(UNAME_S),FreeBSD)
+CXXFLAGS += -I/usr/local/include
+LDFLAGS += -L/usr/local/lib
+endif
+
 all: $(BINARIES)
 
 memalloc_speed: memalloc_speed.cc
-	$(CXX) $(CXXFLAGS) -o $@ $< -ltbb
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $< -ltbb
 
 memcpy_speed: memcpy_speed.cc
-	$(CXX) $(CXXFLAGS) -o $@ $< -ltbb
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $< -ltbb
 
 memcmp_speed: memcmp_speed.cc
-	$(CXX) $(CXXFLAGS) -o $@ $< -ltbb
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $< -ltbb
 
 .PHONY: clean dist bin-dist
 

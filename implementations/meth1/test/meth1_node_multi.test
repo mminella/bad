@@ -3,11 +3,11 @@
 mkdir -p ${srcdir}/.test-tmp
 rm -rf ${srcdir}/.test-tmp/out
 
-${srcdir}/app/meth1_node 9000 true \
+${srcdir}/app/meth1_node 9000 \
   ${srcdir}/test/in.s0000.e1000.recs 1>/dev/null 2>&1 &
 NODE_PID1=$!
 
-${srcdir}/app/meth1_node 9001 true \
+${srcdir}/app/meth1_node 9001 \
   ${srcdir}/test/in.s1000.e2000.recs 1>/dev/null 2>&1 &
 NODE_PID2=$!
 

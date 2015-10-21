@@ -45,7 +45,7 @@ void run_cmd( Cluster & c, string out_dir, string cmd, uint64_t read_ahead )
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
     print( "\ncmd-chunk", dur );
 
-  } else if ( cmd.find_first_of( "chunk-" ) == 0 ) {
+  } else if ( cmd.find_first_of( "range-" ) == 0 ) {
     size_t i = cmd.find_last_of( '-' );
     auto siz = atol( cmd.substr( i + 1 ).c_str() );
 
@@ -53,7 +53,7 @@ void run_cmd( Cluster & c, string out_dir, string cmd, uint64_t read_ahead )
     c.Read( 0, siz );
     auto end = chrono::high_resolution_clock::now();
     auto dur = chrono::duration_cast<chrono::milliseconds>( end - start ).count();
-    print( "\ncmd-chunk", dur );
+    print( "\ncmd-range", dur, siz );
 
   } else if ( cmd == "write" ) {
     auto start = chrono::high_resolution_clock::now();

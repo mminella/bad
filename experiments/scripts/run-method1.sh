@@ -13,22 +13,34 @@ LOG='~/bad.log'
 ITERS=1
 PORT=9000
 READER_OUT="/mnt/b/out"
-FILE=$1
-SAVE=$2
+SAVE=$1
+FILE=$2
 SIZE=$3
 CHUNK=$4
-CLIENT=$5
-MACHINE=$6
-N=$7
-CMDD=$8
-TARF=$9
-PG=${10}
-ZONE=${11}
+CMDD=$5
+NOPREP=0
 
 # Args
-if [ $# != 11 ]; then
-  echo "runBad.sh <cluster file> <log path> <size> <chunk> <client> <machine>
-            <nodes> <cmd> <dist_tar> <pgroup> <zone>"
+if [ $# != 5 -a $# != 6 ]; then
+  echo "Usage: <log path> <cluster file> <cluster data size> <chunk> <cmd>" \
+    "[<no prep>]"
+  exit 1
+fi
+
+if [ $# == 6 ]; then
+  NOPREP=1
+fi
+
+NAME=${FILE}
+SIZE_B=$( calc "round( $SIZE * 1000 * 1000 * 1000 / 100 )" )
+CHUNK_B=$( calc "round( $CHUNK * 1024 * 1024 * 1024 / 100 )" )
+
+# Validate
+if [ ! -f ${FILE} ]; then
+  echo "Cluster config (${FILE}) not found!"
+  exit 1
+elif [ ! ${SIZE_B} -gt 0 ]; then
+  echo "Invalid data set size!"
   exit 1
 fi
 
@@ -36,22 +48,22 @@ fi
 # ===================================================================
 # Configuration
 
-NAME=${FILE}
-SIZE_B=$( calc "round( $SIZE * 1000 * 1000 * 1000 / 100 )" )
-CHUNK_B=$( calc "round( $CHUNK * 1024 * 1024 * 1024 / 100 )" )
+source ${FILE}
 
-if [ $MACHINE = "i2.xlarge" ]; then
+if [ $M2_TYPE = "i2.xlarge" ]; then
   FILES_ALL="/mnt/b/recs"
-elif [ $MACHINE = "i2.2xlarge" ]; then
+elif [ $M2_TYPE = "i2.2xlarge" ]; then
   FILES_ALL="/mnt/b/recs /mnt/c/recs"
-elif [ $MACHINE = "i2.4xlarge" ]; then
+elif [ $M2_TYPE = "i2.4xlarge" ]; then
   FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs"
-elif [ $MACHINE = "i2.8xlarge" ]; then
+elif [ $M2_TYPE = "i2.8xlarge" ]; then
   FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs \
     /mnt/f/recs /mnt/g/recs /mnt/h/recs /mnt/i/recs"
 fi
 
-source ${FILE}
+# per-node data size
+SIZE_B=$( calc "round( ${SIZE_B} / ( ${MN} - 1 ) )" )
+
 
 # ===================================================================
 # Experiment Helper Functions
@@ -105,7 +117,7 @@ reader() {
 experiment() {
   for i in `seq 1 $ITERS`; do
     backends "sudo start meth1 && sudo start meth1_node NOW=\"${D}\" FILE=\"${FILES_ALL}\""
-    reader "# $(( $N - 1 )), ${SIZE}, ${CHUNK}, ${1}" \
+    reader "# $(( $MN - 1 )), ${SIZE}, ${CHUNK}, ${1}" \
       ${CHUNK_B} ${1}
     backends "sudo stop meth1"
   done
@@ -115,27 +127,36 @@ experiment() {
 # ===================================================================
 # Setup Experiment
 
-# Prepare disks
-all "setup_all_fs 2> /dev/null > /dev/null"
+if [ ${NOPREP} == 0 ]; then
+  D=$(date)
+  echo "==================================================="
+  echo "Setting up experiment: ${D}"
 
-# Generate data files
-START=0
-for i in `seq 2 $MN`; do
-  declare MV="M${i}"
-  ${SSH} ubuntu@${!MV} "gensort_all ${START} ${SIZE_B} recs" &
-  START=$(( ${START} + ${SIZE_B} ))
-done
-wait
-all "sudo clear_buffers"
+  # Prepare disks
+  all "setup_all_fs 2> /dev/null > /dev/null"
 
-echo "
-===================================================
-Experiment setup! (${NAME})
-==================================================="
+  # Generate data files
+  START=0
+  for i in `seq 2 $MN`; do
+    declare MV="M${i}"
+    ${SSH} ubuntu@${!MV} "gensort_all ${START} ${SIZE_B} recs" &
+    START=$(( ${START} + ${SIZE_B} ))
+  done
+  wait
+  all "sudo clear_buffers"
+
+  echo "Experiment setup! (${NAME})
+  ===================================================
+  "
+fi
 
 
 # ===================================================================
 # Run Experiment & Copy Logs
+
+D=$(date)
+echo "==================================================="
+echo "Running experiment: ${D}"
 
 # Run experiment
 experiment ${CMDD}
@@ -156,9 +177,7 @@ scp ubuntu@$M1:~/bad.log $SAVE/1.bad.log
 # ===================================================================
 # Finish Experiment
 
-echo "
-===================================================
-Experiment [${FILE}] done!
+echo "Experiment [${FILE}] done!
 ===================================================
 "
 

@@ -16,7 +16,8 @@ bin_PROGRAMS = \
 	sort_chunked_files \
 	sort_chunked_multi \
 	sort_chunked_overlap \
-	sort_chunked_vec
+	sort_chunked_vec \
+	test_rand
 
 AM_CPPFLAGS = \
 	-D_REENTRANT \
@@ -56,3 +57,4 @@ sort_chunked_files_SOURCES = sort_chunked_files.cc
 sort_chunked_multi_SOURCES = sort_chunked_multi.cc
 sort_chunked_overlap_SOURCES = sort_chunked_overlap.cc
 sort_chunked_vec_SOURCES = sort_chunked_vec.cc
+test_rand_SOURCES = test_rand.cc

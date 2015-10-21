@@ -1,0 +1,75 @@
+Thu Sep 24 19:41:35 PDT 2015
+start, 0
+myid, 2
+disks, 1
+disk-path, /mnt/b
+in-files, 1
+mybuckets, 9
+local-bucket, 2, 0, 0
+local-bucket, 5, 1, 0
+local-bucket, 8, 2, 0
+local-bucket, 11, 3, 0
+local-bucket, 14, 4, 0
+local-bucket, 17, 5, 0
+local-bucket, 20, 6, 0
+local-bucket, 23, 7, 0
+local-bucket, 26, 8, 0
+buckets, 27
+bucket, 0, 0
+bucket, 1, 1
+bucket, 2, 2
+bucket, 3, 0
+bucket, 4, 1
+bucket, 5, 2
+bucket, 6, 0
+bucket, 7, 1
+bucket, 8, 2
+bucket, 9, 0
+bucket, 10, 1
+bucket, 11, 2
+bucket, 12, 0
+bucket, 13, 1
+bucket, 14, 2
+bucket, 15, 0
+bucket, 16, 1
+bucket, 17, 2
+bucket, 18, 0
+bucket, 19, 1
+bucket, 20, 2
+bucket, 21, 0
+bucket, 22, 1
+bucket, 23, 2
+bucket, 24, 0
+bucket, 25, 1
+bucket, 26, 2
+nodes, 3
+backend, 172.30.0.37:9000
+backend, 172.30.0.39:9000
+backend, 172.30.0.38:9000
+phase-one-start, 13
+p0, listen, 0.0.0.0:9000
+disk, 0, /mnt/b, 9
+p1, disk-start, 14
+p0, connect, 172.30.0.37:9000
+p0, connect, 172.30.0.39:9000
+p0, connect, 172.30.0.38:9000
+p1, netout-start, 10015
+p0, new-connection, 172.30.0.37:37017
+p0, new-connection, 172.30.0.39:55266
+p0, new-connection, 172.30.0.38:42096
+p1, send-start, 10015
+p1, recv-start, 10016
+circular-read-start, 3, 1, 133333333300, 10016
+circular-read-total, 3, 1, 133333333300, 368937, 843785
+p1, disk-done, 873512, 863496
+p1, netout-done, 1029348, 1019333, 1017316
+p1, recv-end, 1030480, 1020464
+p1, send-end, 1030480, 1020465
+p1, disk-drained, 1030508, 1030494, 14
+p1, disk-write, 1030509, 1030494, 631030
+p1, disk-end, 1030509, 1030495
+phase-one-end, 1030509, 1030496
+phase-two-start, 1030509
+sort-disk, 1579086, 0, 40318, 252036, 292179
+phase-two-end, 1579086, 548577
+finish, 1579086, 1569073

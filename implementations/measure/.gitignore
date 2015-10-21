@@ -9,6 +9,7 @@ memcpy_speed
 network_recv
 network_send
 random_read
+random_read_meth2
 random_write
 read
 write

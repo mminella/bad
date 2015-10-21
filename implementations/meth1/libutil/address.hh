@@ -33,7 +33,7 @@ private:
 public:
   /* constructors */
   Address();
-  Address( const IPVersion ipv );
+  explicit Address( const IPVersion ipv );
   Address( const raw & addr, const size_t size );
   Address( const sockaddr & addr, const size_t size );
 

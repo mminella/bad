@@ -28,7 +28,7 @@ Cluster::Cluster( vector<Address> nodes, uint64_t chunkSize )
   , bufSize_{0}
 {
   for ( auto & n : nodes ) {
-    clients_.push_back( n );
+    clients_.push_back( Client( n ) );
   }
 
   if ( chunkSize_ == 0 and clients_.size() >= 1 ) {
@@ -86,15 +86,16 @@ void Cluster::Read( uint64_t pos, uint64_t size )
     auto & c = clients_.front();
     BufferedIO bio( c.socket() );
     uint64_t totalSize = Size();
-    if ( pos < totalSize ) {
-      size = min( totalSize - pos, size );
-      for ( uint64_t i = pos; i < pos + size; i += chunkSize_ ) {
-        uint64_t n = min( chunkSize_, pos + size - i );
-        c.sendRead( i, n );
-        auto nrecs = c.recvRead();
-        for ( uint64_t j = 0; j < nrecs; j++ ) {
-          bio.read_buf_all( Rec::SIZE );
-        }
+    if ( pos >= totalSize ) {
+      throw runtime_error( "start position outside of range" );
+    }
+    uint64_t end = min( totalSize, pos + size );
+    for ( uint64_t i = pos; i < end; i += chunkSize_ ) {
+      uint64_t n = min( chunkSize_, end - i );
+      c.sendRead( i, n );
+      auto nrecs = c.recvRead();
+      for ( uint64_t j = 0; j < nrecs; j++ ) {
+        bio.read_buf_all( Rec::SIZE );
       }
     }
   } else {
@@ -108,11 +109,13 @@ void Cluster::Read( uint64_t pos, uint64_t size )
       files.back()->sendSize();
     }
 
-    uint64_t totalSize = 0;
-
     // prep -- size
+    uint64_t totalSize = 0;
     for ( auto f : files ) {
       totalSize += f->recvSize();
+    }
+    if ( pos >= totalSize ) {
+      throw runtime_error( "start position outside of range" );
     }
     uint64_t end = min( totalSize, pos + size );
     print( "\n" );
@@ -125,7 +128,7 @@ void Cluster::Read( uint64_t pos, uint64_t size )
     // prep -- 1st record
     for ( auto f : files ) {
       f->nextRecord();
-      pq.push( {f} );
+      pq.push( RemoteFilePtr( f ) );
     }
 
     // read to end records
@@ -146,10 +149,10 @@ void Cluster::Read( uint64_t pos, uint64_t size )
 
 void Cluster::ReadAll( void )
 {
-  static uint64_t pass = 0;
-
   if ( clients_.size() == 1 ) {
     // optimize for 1 node
+    static uint64_t pass = 0;
+
     auto & c = clients_.front();
     BufferedIO bio( c.socket() );
     uint64_t size = Size();
@@ -173,11 +176,10 @@ void Cluster::ReadAll( void )
       files.back()->sendSize();
     }
 
-    uint64_t size = 0;
-
     // prep -- size
+    uint64_t totalSize = 0;
     for ( auto f : files ) {
-      size += f->recvSize();
+      totalSize += f->recvSize();
     }
     print( "\n" );
 
@@ -189,11 +191,11 @@ void Cluster::ReadAll( void )
     // prep -- 1st record
     for ( auto f : files ) {
       f->nextRecord();
-      pq.push( {f} );
+      pq.push( RemoteFilePtr( f ) );
     }
 
     // read all records
-    for ( uint64_t i = 0; i < size; i++ ) {
+    for ( uint64_t i = 0; i < totalSize; i++ ) {
       RemoteFilePtr f = pq.top();
       pq.pop();
       if ( !f.eof() ) {
@@ -277,7 +279,7 @@ void Cluster::WriteAll( File out )
     // prep -- 1st record
     for ( auto f : files ) {
       f->nextRecord();
-      pq.push( {f} );
+      pq.push( RemoteFilePtr( f ) );
     }
 
     // read all records

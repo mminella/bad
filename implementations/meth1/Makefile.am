@@ -1,18 +1,29 @@
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = libutil libsort libmeth1 app experiments
+SUBDIRS = libutil libsort libmeth1 libmeth4 app experiments
 
-.PHONY: format check-all bin-dist recs-1gb recs-10gb recs-30gb
+.PHONY: format check-all cppcheck bin-dist recs-1gb recs-10gb recs-30gb
 
 format:
 	@list='$(SUBDIRS)'; for subdir in $$list; do \
      find $$subdir -iregex '.*\.\(cc\|hh\)$$' -exec clang-format -i {} +; \
-	 done
+	done
 
 check-all:
 	@make clean
 	@scan-build ./configure
 	@scan-build make
+
+cppcheck:
+	@cppcheck --std=c++11 \
+		--enable=warning \
+		--enable=performance \
+		--enable=portability \
+		--enable=style \
+		. 2> cppcheck.err 1>/dev/null
+	@echo "Finished! (check cppcheck.err)..."
+	@echo ""
+	@head cppcheck.err
 
 bin-dist:
 	rm -Rf dist_root
@@ -27,6 +38,8 @@ bin-dist:
 	cp app/meth1_node_test_first dist_root/usr/bin/meth1_node_test_first
 	cp app/meth1_node_test_r dist_root/usr/bin/meth1_node_test_r
 	cp app/meth1_node_test_rw dist_root/usr/bin/meth1_node_test_rw
+	cp libmeth4/meth4_client dist_root/usr/bin/meth4_client
+	cp libmeth4/meth4_node dist_root/usr/bin/meth4_node
 	cp scripts/clear_buffers.sh dist_root/usr/bin/clear_buffers
 	cp scripts/setup_fs.sh dist_root/usr/bin/setup_fs
 	cp scripts/setup_all_fs.sh dist_root/usr/bin/setup_all_fs
@@ -63,4 +76,6 @@ TESTS = \
 	test/sort_node_multi.test \
 	test/sort_node_r.test \
 	test/sort_overlap_channel.test \
-	test/sort_overlap_io.test
+	test/sort_overlap_io.test \
+	test/meth4_node.test \
+	test/meth4_range.test

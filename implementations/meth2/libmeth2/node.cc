@@ -10,6 +10,7 @@
 #include "exception.hh"
 #include "file.hh"
 #include "buffered_io.hh"
+#include "circular_io_rec.hh"
 #include "linux_compat.hh"
 #include "overlapped_rec_io.hh"
 #include "socket.hh"
@@ -36,6 +37,7 @@ Node::Node( vector<string> files, string port )
 {
     for (string &f : files) {
 	data_.emplace_back(f.c_str(), O_RDONLY);
+	files_.push_back(f);
     }
 }
 
@@ -45,14 +47,12 @@ void Node::Initialize( void )
     // Load records
     recs_.reserve(Size());
     for (size_t d = 0; d < data_.size(); d++) {
-	BufferedIO fdi(data_[d]);
+	OverlappedRecordIO<Rec::SIZE> cio(data_[d]);
 	size_t nrecs = data_[d].size() / Rec::SIZE;
 
+	cio.rewind();
 	for (uint64_t i = 0; i < nrecs; i++) {
-	    const uint8_t *rec = (const uint8_t *)fdi.read_buf(Rec::SIZE).first;
-	    if (fdi.eof()) {
-		throw runtime_error("Premature EOF");
-	    }
+	    const uint8_t *rec = (const uint8_t *)cio.next_record();
 	    recs_.emplace_back(/*key*/rec,
 			       /*loc*/i * Rec::SIZE + Rec::KEY_LEN,
 			       /*host*/0,

@@ -22,7 +22,7 @@ class CircularIO
 {
 public:
   static constexpr size_t BLOCK = Knobs::IO_BLOCK;
-  static constexpr size_t ALIGNMENT = 4096;
+  static constexpr size_t ALIGNMENT = IODevice::ODIRECT_ALIGN;
 
   using block_ptr = std::pair<const char *, size_t>;
 

@@ -1,0 +1,64 @@
+# Fri Sep 25 01:54:08 PDT 2015
+start, 0
+myid, 9
+memory, 32170233856
+disks, 1
+disk-path, /mnt/b
+in-files, 1
+file-size, 60000000000
+total-size, 60000000000
+bucket-size, 15011375100
+mybuckets, 4
+local-bucket, 9, 1, 0
+local-bucket, 18, 2, 0
+local-bucket, 27, 3, 0
+local-bucket, 36, 4, 0
+buckets, 36
+bucket, 0, 0
+bucket, 1, 1
+bucket, 2, 2
+bucket, 3, 3
+bucket, 4, 4
+bucket, 5, 5
+bucket, 6, 6
+bucket, 7, 7
+bucket, 8, 8
+bucket, 9, 0
+bucket, 10, 1
+bucket, 11, 2
+bucket, 12, 3
+bucket, 13, 4
+bucket, 14, 5
+bucket, 15, 6
+bucket, 16, 7
+bucket, 17, 8
+bucket, 18, 0
+bucket, 19, 1
+bucket, 20, 2
+bucket, 21, 3
+bucket, 22, 4
+bucket, 23, 5
+bucket, 24, 6
+bucket, 25, 7
+bucket, 26, 8
+bucket, 27, 0
+bucket, 28, 1
+bucket, 29, 2
+bucket, 30, 3
+bucket, 31, 4
+bucket, 32, 5
+bucket, 33, 6
+bucket, 34, 7
+bucket, 35, 8
+nodes, 9
+backend, 172.30.0.210:9000
+backend, 172.30.0.211:9000
+backend, 172.30.0.212:9000
+backend, 172.30.0.213:9000
+backend, 172.30.0.208:9000
+backend, 172.30.0.209:9000
+backend, 172.30.0.206:9000
+backend, 172.30.0.207:9000
+backend, 172.30.0.205:9000
+phase-one-start, 62
+p0, listen, 0.0.0.0:9000

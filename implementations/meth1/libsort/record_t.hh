@@ -62,7 +62,7 @@ public:
   Record( void ) noexcept {}
 
   /* Construct a min or max record. */
-  Record( Rec::limit_t lim ) noexcept
+  explicit Record( Rec::limit_t lim ) noexcept
     : val_{Rec::alloc_val()}
   {
     if ( lim == Rec::MAX ) {
@@ -75,7 +75,7 @@ public:
   /* Construct from c string read from disk */
   Record( const uint8_t * s, uint64_t loc = 0 ) { copy( s, loc ); }
   Record( const char * s, uint64_t loc = 0 ) { copy( (uint8_t *) s, loc ); }
-  Record( const RecordPtr & rptr )
+  explicit Record( const RecordPtr & rptr )
   {
     copy( rptr.key(), rptr.val(), rptr.loc() );
   }

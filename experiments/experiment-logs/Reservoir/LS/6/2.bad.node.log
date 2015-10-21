@@ -1,0 +1,44 @@
+# Mon Oct 19 05:09:28 PDT 2015
+memory, 32170233856
+record-value, 112
+seek-chunk, 171511808
+file, 4, 1666666667
+
+read-start, 1, 0, 171511808, 11122
+circular-read-start, 4, 1, 166666666700, 12782
+circular-read-total, 4, 1, 166666666700, 361840, 370724
+linear-scan, 372093
+-sort , 43747, 47
+-merge, 25128, 47
+-last , 1367
+read, 1, 171511808, 373754
+network, 1, 196893
+
+read-start, 2, 171511808, 171511808, 581775
+circular-read-start, 4, 2, 166666666700, 582122
+circular-read-total, 4, 2, 166666666700, 335270, 344756
+linear-scan, 345521
+-sort , 42095, 46
+-merge, 24707, 46
+-last , 763
+read, 2, 171511808, 345868
+network, 2, 199360
+
+read-start, 3, 343023616, 171511808, 1127044
+circular-read-start, 4, 3, 166666666700, 1127392
+circular-read-total, 4, 3, 166666666700, 335336, 345157
+linear-scan, 346156
+-sort , 40508, 44
+-merge, 23290, 44
+-last , 997
+read, 3, 171511808, 346504
+network, 3, 194954
+
+read-start, 4, 514535424, 171511808, 1668507
+circular-read-start, 4, 4, 166666666700, 1668856
+circular-read-total, 4, 4, 166666666700, 335512, 345341
+linear-scan, 346336
+-sort , 38760, 42
+-merge, 22540, 42
+-last , 993
+read, 4, 171511808, 346686

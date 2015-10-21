@@ -2,26 +2,23 @@
 
 # Install R packages needed for models.
 
-MIRRORS <- c('https://cran.cnr.berkeley.edu/')
+MIRRORS <- c('http://cran.cnr.berkeley.edu/')
 
-if ( !require('dplyr') ) {
-  install.packages('dplyr', repos=MIRRORS)
+installPackage <- function(pkg) {
+  if (!require(pkg, character.only=T)) {
+    install.packages(pkg, repos=MIRRORS)
+  }
 }
 
-if ( !require('ggplot2') ) {
-  install.packages('ggplot2', repos=MIRRORS)
-}
-
-if ( !require('reshape2') ) {
-  install.packages('reshape2', repos=MIRRORS)
-}
-
-if ( !require('devtools') ) {
-  install.packages('devtools', repos=MIRRORS)
-}
+installPackage('plyr')
+installPackage('dplyr')
+installPackage('ggplot2')
+installPackage('reshape2')
+installPackage('devtools')
+installPackage('argparser')
 
 if ( !require('ggthemr') ) {
   library('devtools')
-  devtools::install_github('ggthemr', 'cttobin')
+  devtools::install_github('cttobin/ggthemr')
 }
 

@@ -3,6 +3,7 @@ library(data.table)
 library(dplyr)
 library(ggplot2)
 library(ggthemr)
+library(grid)
 library(reshape2)
 library(stringi)
 
@@ -118,16 +119,40 @@ clusters <-
 # for color scheme list -- https://github.com/cttobin/ggthemr
 ggthemr('fresh')
 
-mkGraph <- function(file, data, title, xl, yl) {
+mkGraph <- function(data, file, title, xl, yl) {
   if (is.data.frame(data) & nrow(data) > 0) {
     pdf(file)
-    g <- ggplot(data, aes(clarity, x=xv, y=yv, group=type, colour=type))
+    g <- ggplot(data, aes(x=xv, y=yv, group=variable, colour=variable))
     g <- g + geom_line()
     g <- g + ggtitle(title)
     g <- g + xlab(xl)
     g <- g + ylab(yl)
     print(g)
     dev.off()
+  }
+}
+
+lineDotGraph <- function(d, fout, title, yl, xl, lineVar, dotVar) {
+  if (is.data.frame(d) & nrow(d) > 0) {
+    d1 <- filter(d, variable==lineVar)
+    d2 <- filter(d, variable==dotVar)
+
+    g <- ggplot(d1, aes(x=xv, y=yv, group=variable, color=variable)) +
+      geom_line() +
+      ggtitle(title) +
+      xlab(xl) +
+      ylab(yl) +
+      coord_fixed(ratio=0.08) +
+      geom_point(data=d2, size=3, aes(colour=variable)) +
+      guides(colour=guide_legend(override.aes=list(shape=c(16,NA),
+                                                   linetype=c(0,1)))) +
+      theme(legend.position="top",
+            legend.title=element_blank())
+    pdf(fout)
+    print(g)
+    dev.off()
+  } else {
+    stop("invalid data to graph")
   }
 }
 
@@ -138,7 +163,21 @@ totalP <-
 totalO <- mutate(cmdRead, total=total/MS, type="observed")
 
 totalAll <- rbind(totalP, totalO) %>%
-  select(xv=id, yv=total, type)
+  select(xv=id, yv=total, variable=type) %>%
+  mutate(yv=yv/60)
 
-mkGraph("total.pdf", totalAll, "Linear Scan: Read all Records",
-        "I2.8xlarge Cluster Size (# nodes)", "Time (s)")
+fout <- "graph.pdf"
+lineDotGraph(totalAll,
+             fout,
+             "Linear Scan: readAll operation - 1TB",
+             "Time (min)",
+             "Cluster Size (# i2.8xlarge nodes)",
+             "predicted",
+             "observed"
+             )
+# mkGraph(totalAll,
+#         fout,
+#         "Linear Scan: readAll operation - 1TB",
+#         "Cluster Size (# i2.8xlarge nodes)",
+#         "Time (s)")
+system(paste("pdfcrop", fout, fout))

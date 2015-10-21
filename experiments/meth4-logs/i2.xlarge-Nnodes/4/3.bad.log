@@ -1,0 +1,96 @@
+# Thu Sep 24 23:32:10 PDT 2015
+start, 0
+myid, 2
+memory, 32170233856
+disks, 1
+disk-path, /mnt/b
+in-files, 1
+file-size, 150000000000
+total-size, 150000000000
+bucket-size, 15011375100
+mybuckets, 10
+local-bucket, 2, 0, 0
+local-bucket, 6, 1, 0
+local-bucket, 10, 2, 0
+local-bucket, 14, 3, 0
+local-bucket, 18, 4, 0
+local-bucket, 22, 5, 0
+local-bucket, 26, 6, 0
+local-bucket, 30, 7, 0
+local-bucket, 34, 8, 0
+local-bucket, 38, 9, 0
+buckets, 40
+bucket, 0, 0
+bucket, 1, 1
+bucket, 2, 2
+bucket, 3, 3
+bucket, 4, 0
+bucket, 5, 1
+bucket, 6, 2
+bucket, 7, 3
+bucket, 8, 0
+bucket, 9, 1
+bucket, 10, 2
+bucket, 11, 3
+bucket, 12, 0
+bucket, 13, 1
+bucket, 14, 2
+bucket, 15, 3
+bucket, 16, 0
+bucket, 17, 1
+bucket, 18, 2
+bucket, 19, 3
+bucket, 20, 0
+bucket, 21, 1
+bucket, 22, 2
+bucket, 23, 3
+bucket, 24, 0
+bucket, 25, 1
+bucket, 26, 2
+bucket, 27, 3
+bucket, 28, 0
+bucket, 29, 1
+bucket, 30, 2
+bucket, 31, 3
+bucket, 32, 0
+bucket, 33, 1
+bucket, 34, 2
+bucket, 35, 3
+bucket, 36, 0
+bucket, 37, 1
+bucket, 38, 2
+bucket, 39, 3
+nodes, 4
+backend, 172.30.0.214:9000
+backend, 172.30.0.213:9000
+backend, 172.30.0.212:9000
+backend, 172.30.0.211:9000
+phase-one-start, 13
+p0, listen, 0.0.0.0:9000
+disk, 0, /mnt/b, 10
+p1, disk-start, 13
+p0, connect, 172.30.0.214:9000
+p0, connect, 172.30.0.213:9000
+p0, connect, 172.30.0.212:9000
+p0, connect, 172.30.0.211:9000
+p1, netout-start, 10014
+p0, new-connection, 172.30.0.212:58346
+p0, new-connection, 172.30.0.214:54229
+p0, new-connection, 172.30.0.213:37199
+p0, new-connection, 172.30.0.211:57024
+p1, send-start, 10104
+p1, recv-start, 10104
+circular-read-start, 3, 1, 150000000000, 10104
+circular-read-total, 3, 1, 150000000000, 417120, 1100099
+p1, disk-done, 1135294, 1125189
+p1, netout-done, 1308980, 1298965, 1296782
+p1, recv-end, 1321137, 1311032
+p1, send-end, 1321137, 1311032
+p1, disk-drained, 1321168, 1321155, 20
+p1, disk-write, 1321168, 1321154, 717142
+p1, disk-end, 1321169, 1321155
+phase-one-end, 1321169, 1311156
+phase-two-start, 1321169
+sort-disk, 1862610, 0, 46265, 211420, 325750
+phase-two-end, 1862611, 541441
+finish, 1862611, 1852598

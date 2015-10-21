@@ -3,7 +3,7 @@
 mkdir -p ${srcdir}/.test-tmp
 rm -rf ${srcdir}/.test-tmp/out
 
-${srcdir}/app/meth1_node 9000 true \
+${srcdir}/app/meth1_node 9000 \
   ${srcdir}/test/in.s0000.e1000.recs &
 NODE_PID=$!
 

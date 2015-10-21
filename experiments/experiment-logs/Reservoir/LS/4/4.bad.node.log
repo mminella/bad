@@ -1,0 +1,78 @@
+# Sun Oct 18 23:52:54 PDT 2015
+memory, 32170233856
+record-value, 112
+seek-chunk, 171511808
+file, 4, 250000000
+
+read-start, 1, 0, 171511808, 2480
+circular-read-start, 4, 1, 25000000000, 4093
+circular-read-total, 4, 1, 25000000000, 50693, 52172
+linear-scan, 53374
+-sort , 17617, 20
+-merge, 10743, 20
+-last , 795
+read, 1, 171511808, 54987
+# Mon Oct 19 00:02:07 PDT 2015
+memory, 32170233856
+record-value, 112
+seek-chunk, 171511808
+file, 4, 2500000000
+
+read-start, 1, 0, 171511808, 3618
+circular-read-start, 4, 1, 250000000000, 5254
+circular-read-total, 4, 1, 250000000000, 502357, 516337
+linear-scan, 517598
+-sort , 49400, 53
+-merge, 27598, 53
+-last , 1259
+read, 1, 171511808, 519233
+network, 1, 195618
+
+read-start, 2, 171511808, 171511808, 718473
+circular-read-start, 4, 2, 250000000000, 718824
+circular-read-total, 4, 2, 250000000000, 501923, 515809
+linear-scan, 517026
+-sort , 48301, 52
+-merge, 27154, 52
+-last , 1216
+read, 2, 171511808, 517377
+network, 2, 197758
+
+read-start, 3, 343023616, 171511808, 1433642
+circular-read-start, 4, 3, 250000000000, 1433989
+circular-read-total, 4, 3, 250000000000, 502075, 516153
+linear-scan, 517253
+-sort , 47380, 51
+-merge, 26907, 51
+-last , 1098
+read, 3, 171511808, 517600
+network, 3, 196019
+
+read-start, 4, 514535424, 171511808, 2147305
+circular-read-start, 4, 4, 250000000000, 2147658
+circular-read-total, 4, 4, 250000000000, 502005, 515821
+linear-scan, 516724
+-sort , 46430, 50
+-merge, 26281, 50
+-last , 901
+read, 4, 171511808, 517077
+network, 4, 197158
+
+read-start, 5, 686047232, 171511808, 2861566
+circular-read-start, 4, 5, 250000000000, 2861914
+circular-read-total, 4, 5, 250000000000, 502016, 516009
+linear-scan, 516578
+-sort , 44950, 49
+-merge, 25426, 49
+-last , 567
+read, 5, 171511808, 516926
+network, 5, 196977
+
+read-start, 6, 857559040, 171511808, 3575474
+circular-read-start, 4, 6, 250000000000, 3575822
+circular-read-total, 4, 6, 250000000000, 501950, 515874
+linear-scan, 517032
+-sort , 43821, 47
+-merge, 24860, 47
+-last , 1156
+read, 6, 171511808, 517380
