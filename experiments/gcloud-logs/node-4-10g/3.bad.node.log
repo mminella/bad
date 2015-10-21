@@ -3,14 +3,11 @@ record-value, 112
 seek-chunk, 136782397
 file, 4, 25000000
 
-read-start, 1, 0, 25000000, 6086
-circular-read-start, 4, 1, 2500000000, 6276
-circular-read-total, 4, 1, 2500000000, 4049, 4147
-linear-scan, 4904
--sort , 1600, 8
--merge, 815, 8
--last , 267
-read, 1, 25000000, 5094
-network, 1, 1006339
-
-exit, 1017744
+read-start, 1, 0, 25000000, 3224
+circular-read-start, 4, 1, 2500000000, 3459
+circular-read-total, 4, 1, 2500000000, 7870, 7985
+linear-scan, 8604
+-sort , 2744, 8
+-merge, 1136, 8
+-last , 438
+read, 1, 25000000, 8839
