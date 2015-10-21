@@ -21,25 +21,22 @@ size_t block_size = 512;
 size_t num_block;
 size_t *random_block;
 size_t offset;
-mutex lk;
-condition_variable cv;
 
 void
 IOWorker()
 {
   void * data;
-  if (posix_memalign((void **)&data, ALIGN, block_size) != 0) {
+  if (posix_memalign((void **)&data, /*PGSIZE*/4096, block_size) != 0) {
     exit(1);
   }
   while (true) {
     size_t idx;
-    lk.lock();
-    idx = offset;
-    offset++;
-    lk.unlock();
+
+    idx = __sync_fetch_and_add(&offset, 1);
     if (idx >= num_block) {
       break;
     }
+
     ssize_t r = pread(fd, data, block_size, random_block[idx] * block_size);
     if ( r == -1 ) {
       perror("pread:");
@@ -55,13 +52,11 @@ Benchmark(int oio)
 {
   vector<thread> threads;
 
+  // Start
+  offset = 0;
   for (int i = 0; i < oio; i++) {
     threads.emplace_back(&IOWorker);
   }
-  offset = 0;
-
-  // Start
-  cv.notify_all();
 
   struct timespec time_start, time_end;
   get_timespec(&time_start);

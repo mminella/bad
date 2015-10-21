@@ -14,6 +14,15 @@ slow; random reads are basically impossible.
 make
 ```
 
+To package up the binaries, use:
+
+``` sh
+make bin-dist
+```
+
+Which will generate a file `bad.tar.gz` which can be unpacked on a server (to
+`/`) to install.
+
 ## Authors
 
 This library is written and maintained by David Terei <dterei@cs.stanford.edu>.

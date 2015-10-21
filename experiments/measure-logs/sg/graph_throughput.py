@@ -114,16 +114,22 @@ def make_graph(data_set, exp_name):
     # y-axis range
     pylab.ylim([000,500])
 
+    # add Amazon pessimistic line
+    plt.text(-14.5, 130, "\"Pessimistic\"", color='g')
+    plt.axhline(137, color='r', xmin=-0.2, xmax=0.1)
+    plt.text(-13.0, 448, "\"Expected\"", color='g')
+    plt.axhline(456, color='r', xmin=-0.2, xmax=0.1)
+
     # labels and legend
     plt.ylabel('Throughput (MB/s)')
-    plt.xlabel('Date of Measurment')
-    plt.title('Sequential Disk IO Measurements')
+    plt.xlabel('Date of Measurement')
+    # plt.title('Sequential Disk IO Measurements')
     # plt.legend([exp_name])
 
     # Produce output
     # XXX To save a plot, instead of viewing it, replace `plt.show()` with:
     # plt.show()
-    plt.savefig(FILE_OUT)
+    plt.savefig(FILE_OUT, bbox_inches='tight', pad_inches=2)
 
 def pick_an_experiment_to_plot(experiments):
     for name in experiments.keys():

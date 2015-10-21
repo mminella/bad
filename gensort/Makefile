@@ -15,28 +15,35 @@ else
 LIBRT=
 endif
 
+ifeq ($(UNAME_S),Linux)
+LIBRT += -ldl
+endif
+ifeq ($(UNAME_S),Darwin)
+LIBRT += -ldl
+endif
+
 all: gensort valsort
 
 ifeq ($(USE_SUMP_PUMP),1)
 # {
 gensort: gensort.c rand16.o rand16.h sump.o
-	gcc -g $(CFLAGS) -o gensort -DSUMP_PUMP gensort.c rand16.o sump.o -lz -lpthread -ldl $(LIBRT)
+	$(CC) -g $(CFLAGS) -o gensort -DSUMP_PUMP gensort.c rand16.o sump.o -lz -lpthread $(LIBRT)
 
 valsort: valsort.c rand16.o rand16.h sump.o
-	gcc -g $(CFLAGS) -o valsort -DSUMP_PUMP valsort.c rand16.o sump.o -lz -lpthread -ldl $(LIBRT)
+	$(CC) -g $(CFLAGS) -o valsort -DSUMP_PUMP valsort.c rand16.o sump.o -lz -lpthread $(LIBRT)
 
 sump.o: sump.c sump.h
-	gcc -g $(BITS) -Wall -Wno-char-subscripts -c -DSUMP_PUMP_NO_SORT sump.c
+	$(CC) -g $(BITS) -Wall -Wno-char-subscripts -c -DSUMP_PUMP_NO_SORT sump.c
 # }
 else
 # {
 gensort: gensort.c rand16.o rand16.h
-	gcc -g $(CFLAGS) -o gensort gensort.c rand16.o -lz
+	$(CC) -g $(CFLAGS) -o gensort gensort.c rand16.o -lz
 
 valsort: valsort.c rand16.o rand16.h
-	gcc -g $(CFLAGS) -o valsort valsort.c rand16.o -lz
+	$(CC) -g $(CFLAGS) -o valsort valsort.c rand16.o -lz
 # }
 endif
 
 rand16.o: rand16.c rand16.h
-	gcc -g $(CFLAGS) -c rand16.c
+	$(CC) -g $(CFLAGS) -c rand16.c

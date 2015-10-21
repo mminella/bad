@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 import os
 dir_name = 'inter_32_to_32'
 for ip_dir in os.listdir(dir_name):

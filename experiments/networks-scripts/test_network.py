@@ -101,3 +101,4 @@ if __name__ == '__main__':
     print 'Collect results...'
     # Collect results.
     CollectResults(addresses)
+    RunParallelEveryServer(addresses, 'screen -S iperf_server -X quit')

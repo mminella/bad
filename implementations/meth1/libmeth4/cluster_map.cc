@@ -96,7 +96,7 @@ ClusterMap::ClusterMap( size_t myID, string configFile,
   , preShards_{precomputeFirstByte( shards_ )}
   , myBuckets_{calcMyBuckets( myID, backends_.size(), disks_,
                              bucketsPerNode_ * backends_.size() )}
-  , myBktSizes_{myBuckets_.size()}
+  , myBktSizes_(myBuckets_.size(), 0)
 {
   if ( ( bucketsPerNode_ * nodes() ) > UINT16_MAX ) {
     throw runtime_error( "Can't have that many buckets" );
