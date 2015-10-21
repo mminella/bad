@@ -128,6 +128,10 @@ experiment() {
 # Setup Experiment
 
 if [ ${NOPREP} == 0 ]; then
+  D=$(date)
+  echo "==================================================="
+  echo "Setting up experiment: ${D}"
+
   # Prepare disks
   all "setup_all_fs 2> /dev/null > /dev/null"
 
@@ -141,15 +145,18 @@ if [ ${NOPREP} == 0 ]; then
   wait
   all "sudo clear_buffers"
 
-  echo "
+  echo "Experiment setup! (${NAME})
   ===================================================
-  Experiment setup! (${NAME})
-  ==================================================="
+  "
 fi
 
 
 # ===================================================================
 # Run Experiment & Copy Logs
+
+D=$(date)
+echo "==================================================="
+echo "Running experiment: ${D}"
 
 # Run experiment
 experiment ${CMDD}
@@ -170,9 +177,7 @@ scp ubuntu@$M1:~/bad.log $SAVE/1.bad.log
 # ===================================================================
 # Finish Experiment
 
-echo "
-===================================================
-Experiment [${FILE}] done!
+echo "Experiment [${FILE}] done!
 ===================================================
 "
 

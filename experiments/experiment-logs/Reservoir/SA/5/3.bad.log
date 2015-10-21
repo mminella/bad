@@ -1,0 +1,149 @@
+# Tue Oct 20 18:03:06 PDT 2015
+start, 0
+myid, 1
+memory, 32170233856
+disks, 1
+disk-path, /mnt/b
+in-files, 1
+file-size, 200000000000
+total-size, 200000000000
+bucket-size, 15011375100
+mybuckets, 14
+local-bucket, 1, 0, 0
+local-bucket, 6, 1, 0
+local-bucket, 11, 2, 0
+local-bucket, 16, 3, 0
+local-bucket, 21, 4, 0
+local-bucket, 26, 5, 0
+local-bucket, 31, 6, 0
+local-bucket, 36, 7, 0
+local-bucket, 41, 8, 0
+local-bucket, 46, 9, 0
+local-bucket, 51, 10, 0
+local-bucket, 56, 11, 0
+local-bucket, 61, 12, 0
+local-bucket, 66, 13, 0
+buckets, 70
+bucket, 0, 0
+bucket, 1, 1
+bucket, 2, 2
+bucket, 3, 3
+bucket, 4, 4
+bucket, 5, 0
+bucket, 6, 1
+bucket, 7, 2
+bucket, 8, 3
+bucket, 9, 4
+bucket, 10, 0
+bucket, 11, 1
+bucket, 12, 2
+bucket, 13, 3
+bucket, 14, 4
+bucket, 15, 0
+bucket, 16, 1
+bucket, 17, 2
+bucket, 18, 3
+bucket, 19, 4
+bucket, 20, 0
+bucket, 21, 1
+bucket, 22, 2
+bucket, 23, 3
+bucket, 24, 4
+bucket, 25, 0
+bucket, 26, 1
+bucket, 27, 2
+bucket, 28, 3
+bucket, 29, 4
+bucket, 30, 0
+bucket, 31, 1
+bucket, 32, 2
+bucket, 33, 3
+bucket, 34, 4
+bucket, 35, 0
+bucket, 36, 1
+bucket, 37, 2
+bucket, 38, 3
+bucket, 39, 4
+bucket, 40, 0
+bucket, 41, 1
+bucket, 42, 2
+bucket, 43, 3
+bucket, 44, 4
+bucket, 45, 0
+bucket, 46, 1
+bucket, 47, 2
+bucket, 48, 3
+bucket, 49, 4
+bucket, 50, 0
+bucket, 51, 1
+bucket, 52, 2
+bucket, 53, 3
+bucket, 54, 4
+bucket, 55, 0
+bucket, 56, 1
+bucket, 57, 2
+bucket, 58, 3
+bucket, 59, 4
+bucket, 60, 0
+bucket, 61, 1
+bucket, 62, 2
+bucket, 63, 3
+bucket, 64, 4
+bucket, 65, 0
+bucket, 66, 1
+bucket, 67, 2
+bucket, 68, 3
+bucket, 69, 4
+nodes, 5
+backend, 172.30.0.76:9000
+backend, 172.30.0.77:9000
+backend, 172.30.0.75:9000
+backend, 172.30.0.78:9000
+backend, 172.30.0.132:9000
+client, 172.30.0.105:9000
+operation, nth-client, 3758096384
+phase-one-start, 21
+p0, listen, 0.0.0.0:9000
+disk, 0, /mnt/b, 14
+p1, disk-start, 21
+p0, connect, 172.30.0.76:9000
+p0, connect, 172.30.0.77:9000
+p0, connect, 172.30.0.75:9000
+p0, connect, 172.30.0.78:9000
+p0, connect, 172.30.0.132:9000
+p1, netout-start, 10023
+p0, new-connection, 172.30.0.76:48930
+p0, new-connection, 172.30.0.132:51892
+p0, new-connection, 172.30.0.75:59974
+p0, new-connection, 172.30.0.77:41233
+p0, new-connection, 172.30.0.78:51494
+p1, send-start, 10182
+p1, recv-start, 10183
+circular-read-start, 3, 1, 200000000000, 10183
+circular-read-total, 3, 1, 200000000000, 547442, 1634597
+p1, disk-done, 1677621, 1667438
+p1, netout-done, 1851532, 1841509, 1839247
+p1, recv-end, 1868264, 1858080
+p1, send-end, 1868264, 1858081
+p1, disk-drained, 1868282, 1868261, 7
+p1, disk-write, 1868283, 1868260, 898419
+p1, disk-end, 1868283, 1868261
+phase-one-end, 1868283, 1858262
+phase-two-start, 1868283
+sort-disk, 1868283, 0, 14, 6, 1
+sending-to-client, 172.30.0.105:9000
+send-bucket, 1902351, 1, 14286418500
+sent-bucket, 2064577, 1, 162226
+send-bucket, 2092213, 6, 14286014300
+sent-bucket, 2254366, 6, 162153
+send-bucket, 2280675, 11, 14286669200
+sent-bucket, 2442898, 11, 162222
+send-bucket, 2468389, 16, 14285852600
+sent-bucket, 2630548, 16, 162159
+send-bucket, 2655961, 21, 14286975700
+sent-bucket, 2818226, 21, 162264
+send-bucket, 2843515, 26, 4371982200
+sent-bucket, 2890401, 26, 46886
+sort-disk, 2890437, 0, 25986, 159020, 189109
+phase-two-end, 2890437, 1022154
+finish, 2890437, 2880416

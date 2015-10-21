@@ -52,8 +52,7 @@ m2.readRange <- function(client, machine, nodes, data, oneC, n, len, start=T) {
   srchQs    <- log2(nodeData / REC_SIZE)
   timeIndex <- ifelse(start, m2.startup(client, machine, nodes, data), 0)
   # Search orchestrated by client requires approximately log requests
-  srchTime  <- 0
-		#+ (srchQs * client$rtt)
+  srchTime  <- (srchQs * client$rtt) / 1000
   timeDisk  <- randomRead(machine, nodeRange, nodeRange * REC_SIZE)
   timeNet   <- networkSend(machine, nodes, client, clients, len * REC_SIZE)
   time      <- inSequence(timeIndex, srchTime, inParallel(timeNet, timeDisk))
