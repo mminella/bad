@@ -74,8 +74,8 @@ def make_graph(data_set):
       '2015-09-12', '2015-10-16'], rotation=0)
 
     # labels and legend
-    plt.ylabel('Throughput (Mb/s)')
-    plt.xlabel('Month of Measurement', labelpad=10)
+    plt.ylabel('Total Outgoing Throughput Per-Node (Mbits/s)')
+    plt.xlabel('Date of Measurement', labelpad=10)
 
     # Produce output
 #    plt.show()
