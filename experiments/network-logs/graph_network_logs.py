@@ -4,8 +4,11 @@
 
 import datetime
 import matplotlib.pyplot as plt
+import numpy as np
 import os
+import pylab
 import sys
+from textwrap import wrap
 
 
 # constants
@@ -51,6 +54,16 @@ def GetData(directory, workers):
         stats.append(sum(bandwidth_array))
     return stats
 
+def print_summary(data_set):
+    allPoints = [item for sublist in data_set for item in sublist]
+    print "Samples:", len(allPoints)
+    print "Mean:", np.mean(allPoints)
+    print "Median:", np.median(allPoints)
+    print "Std:", np.std(allPoints)
+    print "Min:", np.min(allPoints)
+    print "Max:", np.max(allPoints)
+    print "5th: ", np.percentile(allPoints, 5)
+    print "10th: ", np.percentile(allPoints, 10)
 
 def make_graph(data_set):
     """
@@ -62,6 +75,9 @@ def make_graph(data_set):
     for timestamp, results in data_set.iteritems():
         yv.append(results)
 
+    # print summary
+    print_summary(yv)
+
     # plot graph
     fig, ax = plt.subplots(1)
     bp = plt.boxplot(yv, whis=[5,95], sym='')
@@ -69,12 +85,21 @@ def make_graph(data_set):
     plt.setp(bp['whiskers'], color='black', ls='-')
     plt.setp(bp['fliers'], color='red', marker='+')
 
+    # add Amazon pessimistic line
+    plt.text(-0.2, 9450, "\"Expected\"", color='g')
+    plt.axhline(9600, color='r', xmin=-0.2, xmax=0.05)
+    plt.text(-0.3, 8302, "\"Pessimistic\"", color='g')
+    plt.axhline(8002, color='r', xmin=-0.2, xmax=0.05)
+
+    # y-axis range
+    pylab.ylim([0,11000])
+
     # x-axis ticks
     plt.xticks([1, 2, 3, 4], ['2015-07-05', '2015-08-03',
       '2015-09-12', '2015-10-16'], rotation=0)
 
     # labels and legend
-    plt.ylabel('Total Outgoing Throughput Per-Node (Mbits/s)')
+    plt.ylabel("\n".join(wrap('Total Outgoing Throughput Per-Node (Mbits/s)', 24)))
     plt.xlabel('Date of Measurement', labelpad=10)
 
     # Produce output
