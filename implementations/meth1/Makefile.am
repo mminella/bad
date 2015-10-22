@@ -43,6 +43,7 @@ bin-dist:
 	cp scripts/clear_buffers.sh dist_root/usr/bin/clear_buffers
 	cp scripts/setup_fs.sh dist_root/usr/bin/setup_fs
 	cp scripts/setup_all_fs.sh dist_root/usr/bin/setup_all_fs
+	cp scripts/setup_gfs.sh dist_root/usr/bin/setup_gfs
 	cp scripts/gensort_all.sh dist_root/usr/bin/gensort_all
 	cp upstart/meth1.conf dist_root/etc/init/
 	cp upstart/meth1_node.conf dist_root/etc/init/
