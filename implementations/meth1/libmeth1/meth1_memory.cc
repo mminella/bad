@@ -63,18 +63,31 @@ size_t calc_value_size( void )
 /* figure out max chunk size available */
 uint64_t calc_record_space( void )
 {
-  // XXX: we should really do this at the backend node, not the client, but the
-  // RPC interface isn't really setup that way.
   static_assert( sizeof( uint64_t ) >= sizeof( size_t ), "uint64_t >= size_t" );
 
-  uint64_t memFree = memory_exists();
-  print( "memory", memFree );
+  uint64_t memExists = memory_exists();
+  uint64_t memFree = memExists;
   uint64_t val_len = calc_value_size();
 
-  // remove fixed buffers
+  // remove OS space
+  if ( Knobs::MEM_RESERVE > memFree ) {
+    throw runtime_error( "Not enough memory" );
+  }
   memFree -= Knobs::MEM_RESERVE;
-  memFree -= ( Knobs::IO_BUFFER_NETW * Rec::SIZE * 2 );
-  memFree -= ( CircularIO::BLOCK * Knobs::DISK_BLOCKS * num_of_disks() );
+
+  // remove net buffers
+  uint64_t bufSizes = ( Knobs::IO_BUFFER_NETW * Rec::SIZE * 2 );
+  if ( bufSizes > memFree ) {
+    throw runtime_error( "Not enough memory" );
+  }
+  memFree -= bufSizes;
+
+  // remove disk buffers
+  bufSizes = ( CircularIO::BLOCK * Knobs::DISK_BLOCKS * num_of_disks() );
+  if ( bufSizes > memFree ) {
+    throw runtime_error( "Not enough memory" );
+  }
+  memFree -= bufSizes;
 
   // divisor for r2 & r3 merge buffers
   uint64_t div1 = uint64_t( 2 ) * uint64_t( sizeof( Node::RR ) ) + val_len;
@@ -85,6 +98,9 @@ uint64_t calc_record_space( void )
   // divide by sort + merge buffers
   memFree /= ( div1 + div2 );
 
+  if ( memFree > memExists ) {
+    throw runtime_error( "Bad memory calculation" );
+  }
   return memFree;
 }
 
