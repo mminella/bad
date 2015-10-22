@@ -18,9 +18,9 @@ oneC     <- opt$'one-client'
 maxNodes <- opt$'min-cluster' + opt$'cluster-points' - 1
 
 # cluster ranges
-m1.range <- m1.minNodes(machine,data):maxNodes
-m2.range <- m2.minNodes(machine,data):maxNodes
-m4.range <- m4.minNodes(machine,data):maxNodes
+m1.range <- max(m1.minNodes(machine,data), opt$'min-cluster'):maxNodes
+m2.range <- max(m2.minNodes(machine,data), opt$'min-cluster'):maxNodes
+m4.range <- max(m4.minNodes(machine,data), opt$'min-cluster'):maxNodes
 if ( m1.range[[1]] > maxNodes || m2.range[[1]] > maxNodes || m4.range[[1]] > maxNodes ) {
   stop("Not a valid cluster range size, increase cluster-points")
 }
