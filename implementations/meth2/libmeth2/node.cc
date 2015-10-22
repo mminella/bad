@@ -172,13 +172,13 @@ Node::RecV Node::Read( uint64_t pos, uint64_t size )
   Node::RecV recs;
 
   //if (size < 100) {
-  if (true) {
+  if (size < 64) {
     recs = linear_scan( pos , size );
   } else {
     if (pos + size > recs_.size()) {
 	size = recs_.size() - pos;
     }
-    recs.reserve(size);
+    recs.resize(size);
     Circular_AIO caio(data_, recs_);
     caio.begin(&recs, pos, size);
     caio.wait();

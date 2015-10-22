@@ -1,4 +1,4 @@
-bin_PROGRAMS = index1 index2 index3 index4 index5 index6 index7 sortperf
+bin_PROGRAMS = index1 index2 index3 index4 index5 index6 index7 sortperf use_mem
 
 AM_CPPFLAGS = \
 	-D_REENTRANT \
@@ -27,4 +27,4 @@ index5_SOURCES = index5.cc
 index6_SOURCES = index6.cc
 index7_SOURCES = index7.cc
 sortperf_SOURCES = sortperf.cc
-
+use_mem_SOURCES = use_mem.cc

@@ -31,7 +31,7 @@ Circular_AIO::Circular_AIO(vector<File> &dev, vector<RecordLoc> &recs_)
 {
     requestExit = false;
 
-    for (size_t i = 0; i < (dev.size() * AIO_MAX_THREADS_PER_DISK); i++) {
+    for (size_t i = 0; i < 16; i++) { //(dev.size() * AIO_MAX_THREADS_PER_DISK); i++) {
 	threads.emplace_back(&Circular_AIO::ioThread, this);
     }
 }
@@ -91,21 +91,16 @@ Circular_AIO::ioProcess()
 	uint64_t off;
 
 	// Check and update position
-	{
-	    std::lock_guard<std::mutex> lock(posMutex);
-
-	    if (pos >= size)
-		return;
-
-	    off = pos++;
-	}
+	off = __sync_fetch_and_add(&pos, 1);
+	if (off >= size)
+	    return;
 
 	uint8_t buf[Rec::VAL_LEN];
 	RecordLoc &r = recs_[start+off];
 
 	io_[r.disk()].pread_all((char *)&buf, Rec::VAL_LEN, r.loc());
 
-	(*out)[off] = Node::RR(recs_[off], buf);
+	(*out)[off] = std::move(Node::RR(r, buf));
     }
 }
 

@@ -101,9 +101,9 @@ int main(int argc, char* argv[]) {
 
   FillRandomPermutation(random_block, num_block);
 
-  for (int oio = 1; oio <= 64; oio *= 2) {
-    Benchmark(oio);
-  }
+  //for (int oio = 1; oio <= 64; oio *= 2) {
+    Benchmark(16);
+  //}
 
   if (close(fd) != 0) {
     perror("Failed when closing.");

@@ -49,9 +49,13 @@ int run( int argc, char * argv[] )
   cout << "Size: " << size << endl;
   uint64_t points = stoul( argv[1] );
 
+  auto start = time_now();
   for (uint64_t i = 0; i < points; i++) {
       c.Read(size * i / points, 1);
   }
+  auto stop = time_now();
+  auto diff = time_diff<ms>(start);
+  cout << "Time: " << diff << "mS" << endl;
 
   return EXIT_SUCCESS;
 }
