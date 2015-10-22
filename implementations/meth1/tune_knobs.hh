@@ -27,7 +27,7 @@ namespace Knobs {
   static constexpr uint64_t CLIENT_WRITE_BUFFER = 1024 * 100; // 10MB
 
   /* Memory to leave unused for OS and other misc purposes. */
-  static constexpr uint64_t MEM_RESERVE = 1;
+  static constexpr uint64_t MEM_RESERVE = uint64_t(500) * 1024 * 1024;
 
   /* How much smaller ( 1 / SORT_MERGE_RATIO ) should the sort buffer be than
    * the merge buffer? */
