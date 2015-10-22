@@ -17,7 +17,7 @@ m2.startup <- function(client, machine, nodes, data) {
   loadTime <- sequentialRead(machine, nodeData)
   # XXX: Old sort method was slow and nearly linear, Need to plugin new numbers
   # for sort
-  sortTime <- loadTime
+  sortTime <- machine$psort * (nodeData / (REC_SIZE*1000*1000))
   inSequence(loadTime, sortTime)
 }
 
