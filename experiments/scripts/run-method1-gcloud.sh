@@ -6,23 +6,22 @@
 # ===================================================================
 # Arguments
 
-SSH="ssh -i /home/quhang/.ssh/google_compute_engine -o UserKnownHostsFile=/dev/null \
+SSH="ssh -o UserKnownHostsFile=/dev/null \
   -o StrictHostKeyChecking=no -o LogLevel=ERROR"
-SCP="scp -i /home/quhang/.ssh/google_compute_engine -o UserKnownHostsFile=/dev/null \
+SCP="scp -o UserKnownHostsFile=/dev/null \
   -o StrictHostKeyChecking=no -o LogLevel=ERROR"
+USERNAME=ubuntu
 KEY=$( hostname )
 LOG='~/bad.log'
 ITERS=1
 PORT=9000
-READER_OUT="~/data/out"
+READER_OUT="/mnt/b/out"
 SAVE=$1
 FILE=$2
 SIZE=$3
 CHUNK=$4
 CMDD=$5
 NOPREP=0
-SORT_INPUT="~/data/recs"
-USER_NAME="quhang"
 
 # Args
 if [ $# != 5 -a $# != 6 ]; then
@@ -54,6 +53,17 @@ fi
 
 source ${FILE}
 
+if [ $M2_TYPE = "i2.xlarge" ]; then
+  FILES_ALL="/mnt/b/recs"
+elif [ $M2_TYPE = "i2.2xlarge" ]; then
+  FILES_ALL="/mnt/b/recs /mnt/c/recs"
+elif [ $M2_TYPE = "i2.4xlarge" ]; then
+  FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs"
+elif [ $M2_TYPE = "i2.8xlarge" ]; then
+  FILES_ALL="/mnt/b/recs /mnt/c/recs /mnt/d/recs /mnt/e/recs \
+    /mnt/f/recs /mnt/g/recs /mnt/h/recs /mnt/i/recs"
+fi
+
 # per-node data size
 SIZE_B=$( calc "round( ${SIZE_B} / ( ${MN} - 1 ) )" )
 
@@ -76,7 +86,7 @@ done
 # Backend nodes
 BACKENDS=""
 for i in `seq 2 $MN`; do
-  declare MV="M${i}"
+  declare MV="M${i}_INTERNAL"
   BACKENDS="${!MV}:${PORT} ${BACKENDS}"
 done
 
@@ -84,7 +94,7 @@ done
 all() {
   for i in `seq 1 $MN`; do
     declare MV="M${i}"
-    ${SSH} ${USER_NAME}@${!MV} $1
+    ${SSH} ${USERNAME}@${!MV} $1
   done
 }
 
@@ -92,7 +102,7 @@ all() {
 backends() {
   for i in `seq 2 $MN`; do
     declare MV="M${i}"
-    ${SSH} ${USER_NAME}@${!MV} $1
+    ${SSH} ${USERNAME}@${!MV} $1
   done
 }
 
@@ -101,21 +111,18 @@ backends() {
 # 2 - chunk size
 # 3 - op
 reader() {
-  ${SSH} ${USER_NAME}@${M1} "echo \"# ${D}\" >> ${LOG}; echo '$1' >> ${LOG};" \
-    "~/bad/implementations/meth1/app/meth1_client $2 ${READER_OUT} $3 ${BACKENDS} 2>> ${LOG} >> ${LOG}"
+  ${SSH} ${USERNAME}@${M1} "echo \"# ${D}\" >> ${LOG}; echo '$1' >> ${LOG};" \
+    "meth1_client $2 ${READER_OUT} $3 ${BACKENDS} 2>> ${LOG} >> ${LOG}"
 }
 
 # Run an experiment (start + run + stop method)
 # 1 - op
 experiment() {
-  all "rm -f ${LOG}"
-  backends "killall meth1_node"
-  all "killall methd1_client"
   for i in `seq 1 $ITERS`; do
-    backends "LD_PRELOAD=/usr/local/lib/libjemalloc.so ~/bad/implementations/meth1/app/meth1_node ${PORT} ${SORT_INPUT} 2>> ${LOG} >> ${LOG} &"
+    backends "sudo start meth1 && sudo start meth1_node NOW=\"${D}\" FILE=\"${FILES_ALL}\""
     reader "# $(( $MN - 1 )), ${SIZE}, ${CHUNK}, ${1}" \
       ${CHUNK_B} ${1}
-    backends "killall meth1_node"
+    backends "sudo stop meth1"
   done
 }
 
@@ -124,30 +131,35 @@ experiment() {
 # Setup Experiment
 
 if [ ${NOPREP} == 0 ]; then
+  D=$(date)
+  echo "==================================================="
+  echo "Setting up experiment: ${D}"
+
   # Prepare disks
-  all "mkdir -p ~/data"
-  all "sudo /usr/share/google/safe_format_and_mount -m \"mkfs.ext4 -F\" /dev/disk/by-id/google-local-ssd-0 ~/data"
-  all "sudo chmod a+w ~/data"
+  all "sudo setup_gfs 2> /dev/null > /dev/null"
 
   # Generate data files
   START=0
   for i in `seq 2 $MN`; do
     declare MV="M${i}"
-    ${SSH} ${USER_NAME}@${!MV} "rm -f ${SORT_INPUT}; ~/bad/gensort/gensort -b${START} -t4 ${SIZE_B} ${SORT_INPUT},buf" &
+    ${SSH} ${USERNAME}@${!MV} "gensort -t4 -b${START} ${SIZE_B} /mnt/b/recs,buf" &
     START=$(( ${START} + ${SIZE_B} ))
   done
   wait
-  all "sudo ~/bad/implementations/meth1/scripts/clear_buffers.sh"
+  all "sudo clear_buffers"
 
-  echo "
+  echo "Experiment setup! (${NAME})
   ===================================================
-  Experiment setup! (${NAME})
-  ==================================================="
+  "
 fi
 
 
 # ===================================================================
 # Run Experiment & Copy Logs
+
+D=$(date)
+echo "==================================================="
+echo "Running experiment: ${D}"
 
 # Run experiment
 experiment ${CMDD}
@@ -158,19 +170,17 @@ mkdir -p $SAVE
 # Copy bad-node.log
 for i in `seq 2 $MN`; do
   declare MV="M${i}"
-  ${SCP} "${USER_NAME}@${!MV}:~/bad.log" $SAVE/${i}.bad.node.log
+  ${SCP} "${USERNAME}@${!MV}:~/bad-node.log" $SAVE/${i}.bad.node.log
 done
 
 # Copy bad.log
-${SCP} ${USER_NAME}@$M1:~/bad.log $SAVE/1.bad.log
+${SCP} ${USERNAME}@$M1:~/bad.log $SAVE/1.bad.log
 
 
 # ===================================================================
 # Finish Experiment
 
-echo "
-===================================================
-Experiment [${FILE}] done!
+echo "Experiment [${FILE}] done!
 ===================================================
 "
 

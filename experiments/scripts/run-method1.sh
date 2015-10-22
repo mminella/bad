@@ -8,6 +8,9 @@
 
 SSH="ssh -o UserKnownHostsFile=/dev/null \
   -o StrictHostKeyChecking=no -o LogLevel=ERROR"
+SCP="scp -o UserKnownHostsFile=/dev/null \
+  -o StrictHostKeyChecking=no -o LogLevel=ERROR"
+USERNAME=ubuntu
 KEY=$( hostname )
 LOG='~/bad.log'
 ITERS=1
@@ -91,7 +94,7 @@ done
 all() {
   for i in `seq 1 $MN`; do
     declare MV="M${i}"
-    ${SSH} ubuntu@${!MV} $1
+    ${SSH} ${USER_NAME}@${!MV} $1
   done
 }
 
@@ -99,7 +102,7 @@ all() {
 backends() {
   for i in `seq 2 $MN`; do
     declare MV="M${i}"
-    ${SSH} ubuntu@${!MV} $1
+    ${SSH} ${USER_NAME}@${!MV} $1
   done
 }
 
@@ -108,7 +111,7 @@ backends() {
 # 2 - chunk size
 # 3 - op
 reader() {
-  ${SSH} ubuntu@${M1} "echo \"# ${D}\" >> ${LOG}; echo '$1' >> ${LOG};" \
+  ${SSH} ${USERNAME}@${M1} "echo \"# ${D}\" >> ${LOG}; echo '$1' >> ${LOG};" \
     "meth1_client $2 ${READER_OUT} $3 ${BACKENDS} 2>> ${LOG} >> ${LOG}"
 }
 
@@ -139,7 +142,7 @@ if [ ${NOPREP} == 0 ]; then
   START=0
   for i in `seq 2 $MN`; do
     declare MV="M${i}"
-    ${SSH} ubuntu@${!MV} "gensort_all ${START} ${SIZE_B} recs" &
+    ${SSH} ${USERNAME}@${!MV} "gensort_all ${START} ${SIZE_B} recs" &
     START=$(( ${START} + ${SIZE_B} ))
   done
   wait
@@ -167,11 +170,11 @@ mkdir -p $SAVE
 # Copy bad-node.log
 for i in `seq 2 $MN`; do
   declare MV="M${i}"
-  scp "ubuntu@${!MV}:~/bad-node.log" $SAVE/${i}.bad.node.log
+  ${SCP} "${USERNAME}@${!MV}:~/bad-node.log" $SAVE/${i}.bad.node.log
 done
 
 # Copy bad.log
-scp ubuntu@$M1:~/bad.log $SAVE/1.bad.log
+${SCP} ${USERNAME}@$M1:~/bad.log $SAVE/1.bad.log
 
 
 # ===================================================================
