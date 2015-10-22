@@ -7,7 +7,7 @@ library('argparser')
 # - Uniform key distribution.
 
 # 8 byte point + 2 bytes disk / host ID
-INDEX_SIZE <- KEY_SIZE + 10
+INDEX_SIZE <- KEY_SIZE + 22
 
 # ===========================================
 # Model
