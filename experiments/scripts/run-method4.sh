@@ -97,6 +97,10 @@ client() {
 # ===================================================================
 # Setup Experiment
 
+D=$(date)
+echo "==================================================="
+echo "Setting up experiment: ${D}"
+
 # Prepare disks
 all "setup_all_fs 2> /dev/null > /dev/null"
 
@@ -125,14 +129,16 @@ fi
 # Clear buffer caches for fresh start
 all "sudo clear_buffers"
 
-echo "
-===================================================
-Experiment setup! (${NAME})
+echo "Experiment setup! (${NAME})
 ==================================================="
 
 
 # ===================================================================
 # Run Experiment & Copy Logs
+
+D=$(date)
+echo "==================================================="
+echo "Running experiment: ${D}"
 
 # Run
 client "meth4_client ${PORT} 4"
@@ -162,8 +168,6 @@ wait
 # ===================================================================
 # Finish Experiment
 
-echo "
-===================================================
-Experiment [${FILE}] done!
+echo "Experiment [${FILE}] done!
 ===================================================
 "

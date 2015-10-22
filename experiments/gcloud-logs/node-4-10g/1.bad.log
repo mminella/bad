@@ -1,0 +1,29 @@
+# Wed Oct 21 15:57:12 PDT 2015
+# 4, 10, 0, read
+max-chunk, 3, 1, 136782397, 0
+chunk-size, 136782397, 5239
+disks, 1
+
+size, 3, 2, 25000000, 0
+size, 4, 1, 25000000, 0
+size, 5, 1, 25000000, 1
+size, 6, 1, 25000000, 1
+
+
+read-start, 3, 1, 0, 25000000, 39
+read-start, 4, 1, 0, 25000000, 39
+read-start, 5, 1, 0, 25000000, 39
+read-start, 6, 1, 0, 25000000, 39
+read-wait, 3, 1, 0
+read, 3, 1, 0, 25000000, 5197
+circular-read-start, 3, 1, 2500000000, 5237
+read-wait, 4, 1, 5418
+read, 4, 1, 0, 25000000, 6115
+circular-read-start, 4, 1, 2500000000, 6155
+read-wait, 5, 1, 6371
+read, 5, 1, 0, 25000000, 8844
+circular-read-start, 5, 1, 2500000000, 8884
+read-wait, 6, 1, 9223
+read, 6, 1, 0, 25000000, 9223
+circular-read-start, 6, 1, 2500000000, 9263
+circular-read-total, 4, 1, 2500000000, 8309, 27628
