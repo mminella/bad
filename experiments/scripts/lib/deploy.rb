@@ -62,8 +62,7 @@ class Deploy
     Net::SCP.start(@hostname, @user, @ssh_opts).upload!(@tarfile, HOME)
 
     Net::SSH.start(@hostname, @user, @ssh_opts) do |ssh|
-      ssh.root!
-        "tar xvzf #{HOME}/#{@tarfile} --no-same-owner --no-overwrite-dir -C /"
+      ssh.root! "tar xvzf #{HOME}/#{@tarfile} --no-same-owner --no-overwrite-dir -C /"
     end
   end
 
