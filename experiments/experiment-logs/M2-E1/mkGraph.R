@@ -86,8 +86,8 @@ facetGraph <- function(d, fout, title, xl) {
       ggtitle(title) +
       xlab(xl) +
       ylab("") +
-			scale_x_continuous(expand=c(0,0), limits=c(0,17)) +
-			expand_limits(x=0, y=0)
+      scale_x_continuous(expand=c(0,0), limits=c(0,17)) +
+      expand_limits(x=0, y=0)
 
     pdf(fout)
     print(g)
@@ -119,7 +119,7 @@ facetGraph(df,
            fout,
            "",
            # "Linear Scan: readAll operation - 600GB",
-	   "Cluster Size - 80 GB Per Node")
+           "Cluster Size (# i2.xlarge nodes) - 80 GB Per Node")
 # lineDotGraph(df,
 #              fout,
 #              "ShuffleAll: i2.1x Cluster - ReadAll - 600GB",
