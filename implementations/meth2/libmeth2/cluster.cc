@@ -235,13 +235,15 @@ void Cluster::Read( uint64_t pos, uint64_t len )
     mystl::priority_queue_min<RemoteFile> pq{clients_.size()};
     uint64_t size = Size() - pos;
 
+    //cout << __builtin_readcyclecounter() << endl;
+
     // Ensure we read the correct number of records
     if (size > len)
 	size = len;
 
     // prep -- size
     for ( auto & c : clients_ ) {
-      RemoteFile f( c, (chunkSize_ > len) ? len : chunkSize_ );
+      RemoteFile f( c, (chunkSize_ > len) ? (len + 1) : chunkSize_ );
       f.sendSize();
       files.push_back( f );
     }

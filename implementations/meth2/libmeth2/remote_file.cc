@@ -21,6 +21,11 @@ RemoteFile::drain()
 	    c_->readRecord();
 	} while (onWire_ > 0);
     }
+
+    if (buf_ != nullptr) {
+	delete buf_;
+	buf_ = nullptr;
+    }
 }
 
 void RemoteFile::nextChunk( uint64_t chunkN )

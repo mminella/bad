@@ -92,6 +92,7 @@ void Node::Run( void )
           cout << "Client EOF" << endl;
           break;
         }
+	//cout << __builtin_readcyclecounter() << endl;
         switch ( str[0] ) {
         case 0:
           RPC_Read( client );
@@ -122,6 +123,8 @@ void Node::RPC_Read( BufferedIO_O<TCPSocket> & client )
 
   //cout << pos << ", " << amt << endl;
 
+  //cout << "READ: " << pos << " " << amt << endl;
+
   RecV recs;
   if ( pos < Size() ) {
     recs = Read( pos, amt );
@@ -142,6 +145,8 @@ void Node::RPC_IRead( BufferedIO_O<TCPSocket> & client )
   const char * str = client.read_buf_all( 2 * sizeof( uint64_t ) ).first;
   uint64_t pos = *( reinterpret_cast<const uint64_t *>( str ) );
   uint64_t amt = *( reinterpret_cast<const uint64_t *>( str ) + 1 );
+
+  //cout << "IREAD: " << pos << " " << amt << endl;
 
   if (pos > Size()) {
       amt = 0;
