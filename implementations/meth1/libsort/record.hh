@@ -3,6 +3,7 @@
 
 #include <algorithm>
 
+#include "sync_print.hh"
 #include "tune_knobs.hh"
 
 #include "record_common.hh"
@@ -33,8 +34,10 @@ inline void rec_sort( R first, R last )
 #endif
 
 #ifdef HAVE_BOOST_SORT_SPREADSORT_STRING_SORT_HPP
+  print( "*** using slow sort (boost) ***" );
   boost::sort::spreadsort::string_sort( first, last );
 #else
+  print( "*** using super slow sort ***" );
   sort( first, last, std::less<typename std::iterator_traits<R>::value_type>() );
 #endif
 }
