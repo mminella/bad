@@ -87,7 +87,7 @@ facetGraph <- function(d, fout, title, xl) {
       ggtitle(title) +
       xlab(xl) +
       ylab("") +
-			scale_x_continuous(expand=c(0,0), limits=c(0,10.5)) +
+			scale_x_continuous(expand=c(0,0), limits=c(0,13)) +
 			expand_limits(x=0, y=0)
 
     pdf(fout)
@@ -115,12 +115,10 @@ df <- read.delim(args[[1]], header=T, sep=',', strip.white=T, comment.char='#') 
       melt(id.vars=c('size','method', 'type'))
 
 df$type <- revalue(df$type, c("o"="Observed", "p"="Predicted"))
-df$method <- revalue(df$method, c("ls"="LinearScan", "sa"="ShuffleAll"))
+df$method <- revalue(df$method, c("ls"="LinearScan", "sa"="ShuffleAll", "li"="LocalIndex"))
 
 df <- select(df, method, type, variable, xv=size, yv=value) %>%
       mutate(tt=paste(method, type, sep=' '))
-
-print(head(df))
 
 fout <- "graph.pdf"
 facetGraph(df,
