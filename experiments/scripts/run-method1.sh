@@ -94,7 +94,7 @@ done
 all() {
   for i in `seq 1 $MN`; do
     declare MV="M${i}"
-    ${SSH} ${USER_NAME}@${!MV} $1
+    ${SSH} ${USERNAME}@${!MV} $1
   done
 }
 
@@ -102,7 +102,7 @@ all() {
 backends() {
   for i in `seq 2 $MN`; do
     declare MV="M${i}"
-    ${SSH} ${USER_NAME}@${!MV} $1
+    ${SSH} ${USERNAME}@${!MV} $1
   done
 }
 
