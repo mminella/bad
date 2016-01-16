@@ -67,6 +67,9 @@ dist: $(BINARIES)
 	cp drop_cache.sh dist_root/usr/bin/drop_cache
 	cp setup_fs.sh dist_root/usr/bin/setup_fs
 	cp run_experiment.sh dist_root/usr/bin/run_experiment
+	chmod 755 dist_root/usr
+	chmod 755 dist_root/usr/bin
+	chmod 755 dist_root/usr/bin/*
 	tar cvzf measure.tar.gz -C dist_root .
 
 bin-dist: dist
