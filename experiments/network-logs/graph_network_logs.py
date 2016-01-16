@@ -24,14 +24,15 @@ base_dir = sys.argv[1]
 if not base_dir.endswith('/'):
   base_dir += '/'
 
-
 def GetData(directory, workers):
+    return GetData_(list(), directory, workers)
+
+def GetData_(stats, directory, workers):
     """
     The `-` in network-scripts is stopping it from being
     import a module from where import we could import
     GetData. Copying this as is for now from draw_summary.py
     """
-    stats = list()
     for rank in range(0, workers):
         dir_name = os.path.join(directory, 'result_{}'.format(rank))
         assert os.path.exists(dir_name)
@@ -72,8 +73,8 @@ def make_graph(data_set):
     """
     # group by timestamp
     yv = []
-    for timestamp, results in data_set.iteritems():
-        yv.append(results)
+    for timestamp in sorted(data_set.keys()):
+        yv.append(data_set[timestamp])
 
     # print summary
     print_summary(yv)
@@ -95,8 +96,12 @@ def make_graph(data_set):
     pylab.ylim([0,11000])
 
     # x-axis ticks
-    plt.xticks([1, 2, 3, 4], ['2015-07-05', '2015-08-03',
-      '2015-09-12', '2015-10-16'], rotation=0)
+    plt.xticks(
+        [1, 2, 3, 4, 5, 6],
+        # TODO: Add new measurements here...
+        ['2015-07-05', '2015-08-03', '2015-09-12', '2015-10-16', '2015-11-12',
+          '2015-12-20'],
+        rotation=30)
 
     # labels and legend
     plt.ylabel("\n".join(wrap('Total Outgoing Throughput Per-Node (Mbits/s)', 24)))
@@ -141,8 +146,25 @@ def get_sep_data(ts_bandwidths_data, timestamp):
 
 
 def get_oct_data(ts_bandwidths_data, timestamp):
-    ts_bandwidths_dict[timestamp] = GetData('{}4/sample_1'.format(base_dir), 32)
+    stats = list()
+    GetData_(stats, '{}4/sample_1'.format(base_dir), 32)
+    GetData_(stats, '{}4/sample_2'.format(base_dir), 32)
+    GetData_(stats, '{}4/sample_3'.format(base_dir), 32)
+    ts_bandwidths_dict[timestamp] = stats
 
+def get_nov_data(ts_bandwidths_data, timestamp):
+    stats = list()
+    GetData_(stats, '{}5/sample_1'.format(base_dir), 16)
+    GetData_(stats, '{}5/sample_2'.format(base_dir), 16)
+    GetData_(stats, '{}5/sample_3'.format(base_dir), 16)
+    ts_bandwidths_dict[timestamp] = stats
+
+def get_dec_data(ts_bandwidths_data, timestamp):
+    stats = list()
+    GetData_(stats, '{}6/sample_1'.format(base_dir), 16)
+    GetData_(stats, '{}6/sample_2'.format(base_dir), 16)
+    GetData_(stats, '{}6/sample_3'.format(base_dir), 16)
+    ts_bandwidths_dict[timestamp] = stats
 
 if __name__ == '__main__':
     """
@@ -152,10 +174,14 @@ if __name__ == '__main__':
     ts_bandwidths_dict = {}
     # Using timestamps in case we need to do something smart with the results
     # in future.
+
+    # TODO: Add new measurements here...
     get_jul_data(ts_bandwidths_dict, datetime.datetime(YEAR, 7, 1))
     get_aug_data(ts_bandwidths_dict, datetime.datetime(YEAR, 8, 1))
     get_sep_data(ts_bandwidths_dict, datetime.datetime(YEAR, 9, 1))
     get_oct_data(ts_bandwidths_dict, datetime.datetime(YEAR, 10, 1))
+    get_nov_data(ts_bandwidths_dict, datetime.datetime(YEAR, 11, 1))
+    get_dec_data(ts_bandwidths_dict, datetime.datetime(YEAR, 12, 1))
 
     # plot an experiment
     make_graph(ts_bandwidths_dict)
