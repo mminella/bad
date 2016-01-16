@@ -11,7 +11,12 @@ collect results.
 
 ## Dependency
 
-Iperf and rsync needs to be installed on every machine.
+Running `test_network.py`
+* Python 2
+* boto package
+
+Cluster:
+* Iperf and rsync needs to be installed on every machine.
 
 ## Potential bug
 

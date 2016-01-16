@@ -1,14 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 import boto.ec2
 import subprocess
 import sys
 import config
 import time
 
-def FindMachines(region_name, placement_group):
+def FindMachines(access_key, secret, region_name, placement_group):
     """Return the ip addresses of all the servers in one region.
     """
-    connection = boto.ec2.connect_to_region(region_name)
+    connection = boto.ec2.connect_to_region(region_name,
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret)
     assert connection, 'Connection failed.'
     addresses = [(instance.ip_address, instance.private_ip_address)
                  for instance in connection.get_only_instances()
@@ -84,7 +86,8 @@ if __name__ == '__main__':
     if len(sys.argv) != 2:
         print 'usage: {} [placement group]'
         quit()
-    addresses = FindMachines(config.region_name, sys.argv[1])
+    addresses = FindMachines(config.aws_access_key, config.aws_secret,
+        config.region_name, sys.argv[1])
     # Test whether ssh can succeed.
     RunSerialEveryServer(addresses, 'date')
     # Build iperf script.
