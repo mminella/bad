@@ -12,7 +12,6 @@ from textwrap import wrap
 
 
 # constants
-YEAR = 2015
 FILE_OUT = 'graph.pdf'
 
 # check usage
@@ -97,10 +96,10 @@ def make_graph(data_set):
 
     # x-axis ticks
     plt.xticks(
-        [1, 2, 3, 4, 5, 6],
+        [1, 2, 3, 4, 5, 6, 7],
         # TODO: Add new measurements here...
         ['2015-07-05', '2015-08-03', '2015-09-12', '2015-10-16', '2015-11-12',
-          '2015-12-20'],
+          '2015-12-20', '2016-01-15'],
         rotation=30)
 
     # labels and legend
@@ -166,6 +165,13 @@ def get_dec_data(ts_bandwidths_data, timestamp):
     GetData_(stats, '{}6/sample_3'.format(base_dir), 16)
     ts_bandwidths_dict[timestamp] = stats
 
+def get_jan_data(ts_bandwidths_data, timestamp):
+    stats = list()
+    GetData_(stats, '{}7/sample_1'.format(base_dir), 16)
+    GetData_(stats, '{}7/sample_2'.format(base_dir), 16)
+    GetData_(stats, '{}7/sample_3'.format(base_dir), 16)
+    ts_bandwidths_dict[timestamp] = stats
+
 if __name__ == '__main__':
     """
     exp_result_list: A dict mapping from the exp setup
@@ -176,12 +182,13 @@ if __name__ == '__main__':
     # in future.
 
     # TODO: Add new measurements here...
-    get_jul_data(ts_bandwidths_dict, datetime.datetime(YEAR, 7, 1))
-    get_aug_data(ts_bandwidths_dict, datetime.datetime(YEAR, 8, 1))
-    get_sep_data(ts_bandwidths_dict, datetime.datetime(YEAR, 9, 1))
-    get_oct_data(ts_bandwidths_dict, datetime.datetime(YEAR, 10, 1))
-    get_nov_data(ts_bandwidths_dict, datetime.datetime(YEAR, 11, 1))
-    get_dec_data(ts_bandwidths_dict, datetime.datetime(YEAR, 12, 1))
+    get_jul_data(ts_bandwidths_dict, datetime.datetime(2015,  7, 1))
+    get_aug_data(ts_bandwidths_dict, datetime.datetime(2015,  8, 1))
+    get_sep_data(ts_bandwidths_dict, datetime.datetime(2015,  9, 1))
+    get_oct_data(ts_bandwidths_dict, datetime.datetime(2015, 10, 1))
+    get_nov_data(ts_bandwidths_dict, datetime.datetime(2015, 11, 1))
+    get_dec_data(ts_bandwidths_dict, datetime.datetime(2015, 12, 1))
+    get_jan_data(ts_bandwidths_dict, datetime.datetime(2016,  1, 1))
 
     # plot an experiment
     make_graph(ts_bandwidths_dict)
