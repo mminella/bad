@@ -19,6 +19,6 @@ installPackage('argparser')
 
 if ( !require('ggthemr') ) {
   library('devtools')
-  devtools::install_github('cttobin/ggthemr')
+  devtools::install_github('sainathadapa/ggthemr')
 }
 
