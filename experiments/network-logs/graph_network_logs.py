@@ -86,9 +86,9 @@ def make_graph(data_set):
     plt.setp(bp['fliers'], color='red', marker='+')
 
     # add Amazon pessimistic line
-    plt.text(-0.2, 9450, "\"Expected\"", color='g')
+    plt.text(-0.6, 9450, "\"Expected\"", color='g')
     plt.axhline(9600, color='r', xmin=-0.2, xmax=0.05)
-    plt.text(-0.3, 8302, "\"Pessimistic\"", color='g')
+    plt.text(-0.8, 8302, "\"Pessimistic\"", color='g')
     plt.axhline(8002, color='r', xmin=-0.2, xmax=0.05)
 
     # y-axis range
