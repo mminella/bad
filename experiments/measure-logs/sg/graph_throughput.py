@@ -12,7 +12,6 @@ import pylab
 import sys
 
 # constants
-YEAR = 2015
 TIMESTAMP_FILE = '{}README.md'
 FILE_OUT = 'graph.pdf'
 
@@ -50,13 +49,13 @@ def load_timestamps(root_dir):
             # It is of the form "* 26 -- 8/31 -- 3am"
             exp, d, t = line[2:].strip().split(' -- ')
             t = t.strip()
-            month, day = d.split('/')
+            year, month, day = d.split('/')
             if t[-2:] == 'am':
                 hour = int(t[0:len(t)-2]) % 12
             elif t[-2:] == 'pm':
                 hour = int(t[0:len(t)-2]) % 12 + 12
             timestamps[exp] = datetime.datetime(
-                YEAR, int(month), int(day), hour
+                int(year), int(month), int(day), hour
             )
     return timestamps
 
@@ -110,7 +109,7 @@ def make_graph(data_set, exp_name):
     ax.xaxis_date()
 
     # x-axis ticks
-    xsubset = range(0, len(xv), 10)
+    xsubset = range(0, len(xv), 20)
     xlabels = [xv[i] for i in xsubset]
     plt.xticks(xsubset, xlabels, rotation=40)
 
@@ -118,9 +117,9 @@ def make_graph(data_set, exp_name):
     pylab.ylim([000,500])
 
     # add Amazon pessimistic line
-    plt.text(-13.5, 448, "\"Expected\"", color='g')
+    plt.text(-26.5, 448, "\"Expected\"", color='g')
     plt.axhline(456, color='r', xmin=-0.2, xmax=0.1)
-    plt.text(-15.0, 130, "\"Pessimistic\"", color='g')
+    plt.text(-30.5, 130, "\"Pessimistic\"", color='g')
     plt.axhline(137, color='r', xmin=-0.2, xmax=0.1)
 
     # labels and legend
@@ -135,10 +134,13 @@ def make_graph(data_set, exp_name):
     plt.savefig(FILE_OUT, bbox_inches='tight', pad_inches=2)
 
 def pick_an_experiment_to_plot(experiments):
-    for name in experiments.keys():
-        print name
-    exp_to_plot = raw_input("Please choose an experiment from the above : ")
-    return exp_to_plot
+    # XXX: switch out to allow dynamic selection
+    # for name in experiments.keys():
+    #     print name
+    # exp_to_plot = raw_input("Please choose an experiment from the above : ")
+    # return exp_to_plot
+    print "Using experiment: r, a, s, 1048576, 15, 1"
+    return 'r, a, s, 1048576, 15, 1'
 
 if __name__ == '__main__':
     """
