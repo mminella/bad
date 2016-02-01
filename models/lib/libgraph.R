@@ -12,12 +12,15 @@ ggthemr('fresh')
 
 mkGraph <- function(d, title, y1, file="graph.pdf") {
   if (is.data.frame(d) & nrow(d) > 0) {
+    # Construct graph
+    g <- ggplot(d, aes(clarity, x=xv, y=yv, group=variable, colour=variable)) +
+      geom_line() +
+      ggtitle(title) +
+      xlab("Cluster Size") +
+      ylab(y1)
+
+    # Output PDF
     pdf(file)
-    g <- ggplot(d, aes(clarity, x=xv, y=yv, group=variable, colour=variable))
-    g <- g + geom_line()
-    g <- g + ggtitle(title)
-    g <- g + xlab("Cluster Size")
-    g <- g + ylab(y1)
     print(g)
     dev.off()
   }
@@ -25,20 +28,22 @@ mkGraph <- function(d, title, y1, file="graph.pdf") {
 
 mkFacetGraph <- function(d, title, file="graph.pdf", aaes=aes(x=xv, y=yv)) {
   if (is.data.frame(d) & nrow(d) > 0) {
-    pdf(file)
-    d1 <- filter(d, variable=="time")
-    d1$panel <- "Time (min)"
-    d2 <- filter(d, variable=="cost")
-    d2$panel <- "Cost ($)"
+    # Set panel ordering and title
+    d$variable <- factor(d$variable, levels=c("time", "cost"))
+    d$variable <- revalue(d$variable, c("time"="Time (min)", "cost"="Cost ($)"))
 
-    g <- ggplot(data=d, mapping=aaes) +
-      facet_grid(panel~., scale="free") +
-      layer(data=d1, geom=c("line"), stat="identity") +
-      layer(data=d2, geom=c("line"), stat="identity") +
+    # Construct graph
+    g <- ggplot(d, aaes) +
+      geom_line() +
+      facet_grid(variable ~ ., scale="free", switch="y") +
       ggtitle(title) +
       xlab("Cluster Size (# i2.xlarge nodes)") +
       ylab("") +
       theme(legend.position="top", legend.title=element_blank())
+      # theme(plot.margin=unit(c(0,0.5,0,0), units="lines"))
+
+    # Output PDF
+    pdf(file)
     print(g)
     dev.off()
   }
