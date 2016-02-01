@@ -64,14 +64,16 @@ m2.readRange <- function(client, machine, nodes, data, oneC, n, len, start=T) {
 
 m2.cdf <- function(client, machine, nodes, data, oneC, points) {
   timeIndex <- m2.startup(client, machine, nodes, data)
-  reads <- genPoints(1:points,
-                     function(x) {
-                       n <- round(x / points * data / REC_SIZE)
-                       m2.readRange(client, machine, nodes, data, oneC,
-                                    n, 1, start=F)
-                     })
-  timeOps <- sum(reads$time.total)
-  time    <- inSequence(timeIndex, timeOps)
+
+  timeOps <- 0
+  for(x in seq.int(1, points)) {
+    n <- round(x / points * data / REC_SIZE)
+    timeOps <- timeOps +
+      m2.readRange(client, machine, nodes, data, oneC, n, 1, start=F)$time.total
+
+  }
+
+  time <- inSequence(timeIndex, timeOps)
   data.frame(operation="cdf", nodes=nodes, start=NA, length=points,
              time.total=time, time.min=toMin(time), time.hr=toHr(time),
              time.index=timeIndex, time.disk=NA, time.net=NA,
