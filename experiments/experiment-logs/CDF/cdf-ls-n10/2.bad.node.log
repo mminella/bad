@@ -1,0 +1,38 @@
+# Sun Jan 31 18:47:49 PST 2016
+meth1_node: relocation error: meth1_node: symbol _ZTVNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEEE, version GLIBCXX_3.4.21 not defined in file libstdc++.so.6 with link time reference
+# Sun Jan 31 22:26:56 PST 2016
+meth1_node: relocation error: meth1_node: symbol _ZTVNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEEE, version GLIBCXX_3.4.21 not defined in file libstdc++.so.6 with link time reference
+# Sun Jan 31 23:30:22 PST 2016
+meth1_node: relocation error: meth1_node: symbol _ZTVNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEEE, version GLIBCXX_3.4.21 not defined in file libstdc++.so.6 with link time reference
+# Sun Jan 31 23:40:54 PST 2016
+record-value, 112
+seek-chunk, 168172367
+file, 4, 300000000
+
+exit, 17414
+# Sun Jan 31 23:45:34 PST 2016
+record-value, 112
+seek-chunk, 168172367
+file, 4, 300000000
+
+read-start, 1, 0, 168172367, 17100
+circular-read-start, 4, 1, 30000000000, 18636
+circular-read-total, 4, 1, 30000000000, 60663, 62357
+linear-scan, 63432
+-sort , 19179, 23
+-merge, 14014, 23
+-last , 754
+read, 1, 168172367, 64968
+network, 1, 193906
+
+read-start, 2, 168172367, 131827633, 276016
+circular-read-start, 4, 2, 30000000000, 276278
+circular-read-total, 4, 2, 30000000000, 60564, 62384
+linear-scan, 63650
+-sort , 9355, 15
+-merge, 7261, 15
+-last , 216
+read, 2, 131827633, 63912
+network, 2, 148482
+
+exit, 488775

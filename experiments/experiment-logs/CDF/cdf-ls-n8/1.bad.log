@@ -1,0 +1,273 @@
+# Sun Jan 31 18:47:49 PST 2016
+# 10, 300, 0, cdf
+meth1_client: relocation error: meth1_client: symbol _ZTVNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEEE, version GLIBCXX_3.4.21 not defined in file libstdc++.so.6 with link time reference
+# Sun Jan 31 22:26:56 PST 2016
+# 10, 300, 0, cdf
+meth1_client: relocation error: meth1_client: symbol _ZTVNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEEE, version GLIBCXX_3.4.21 not defined in file libstdc++.so.6 with link time reference
+# Sun Jan 31 23:30:22 PST 2016
+# 10, 300, 0, cdf
+meth1_client: relocation error: meth1_client: symbol _ZTVNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEEE, version GLIBCXX_3.4.21 not defined in file libstdc++.so.6 with link time reference
+# Sun Jan 31 23:40:54 PST 2016
+# 10, 300, 0, cdf
+max-chunk, 3, 1, 168172367, 0
+chunk-size, 168172367, 2454
+disks, 8
+
+# Sun Jan 31 23:45:34 PST 2016
+# 10, 300, 0, read
+max-chunk, 3, 1, 168172367, 0
+chunk-size, 168172367, 2454
+disks, 8
+
+size, 3, 2, 300000000, 0
+size, 4, 1, 300000000, 0
+size, 5, 1, 300000000, 0
+size, 6, 1, 300000000, 0
+size, 7, 1, 300000000, 0
+size, 8, 1, 300000000, 0
+size, 9, 1, 300000000, 0
+size, 10, 1, 300000000, 0
+size, 11, 1, 300000000, 0
+size, 12, 1, 300000000, 0
+
+
+read-start, 3, 1, 0, 168172367, 32
+read-start, 4, 1, 0, 168172367, 32
+read-start, 5, 1, 0, 168172367, 32
+read-start, 6, 1, 0, 168172367, 32
+read-start, 7, 1, 0, 168172367, 32
+read-start, 8, 1, 0, 168172367, 32
+read-start, 9, 1, 0, 168172367, 32
+read-start, 10, 1, 0, 168172367, 32
+read-start, 11, 1, 0, 168172367, 32
+read-start, 12, 1, 0, 168172367, 32
+read-wait, 3, 1, 0
+read, 3, 1, 0, 168172367, 65466
+circular-read-start, 3, 1, 16817236700, 65498
+read-wait, 4, 1, 65624
+read, 4, 1, 0, 168172367, 68744
+circular-read-start, 4, 1, 16817236700, 68776
+read-wait, 5, 1, 68964
+read, 5, 1, 0, 168172367, 68964
+circular-read-start, 5, 1, 16817236700, 68996
+read-wait, 6, 1, 68965
+read, 6, 1, 0, 168172367, 68965
+circular-read-start, 6, 1, 16817236700, 68998
+read-wait, 7, 1, 68969
+read, 7, 1, 0, 168172367, 68969
+circular-read-start, 7, 1, 16817236700, 69001
+read-wait, 8, 1, 68972
+read, 8, 1, 0, 168172367, 68972
+circular-read-start, 8, 1, 16817236700, 69004
+read-wait, 9, 1, 68975
+read, 9, 1, 0, 168172367, 68975
+circular-read-start, 9, 1, 16817236700, 69008
+read-wait, 10, 1, 68979
+read, 10, 1, 0, 168172367, 68979
+circular-read-start, 10, 1, 16817236700, 69011
+read-wait, 11, 1, 68982
+read, 11, 1, 0, 168172367, 68982
+circular-read-start, 11, 1, 16817236700, 69014
+read-wait, 12, 1, 68985
+read, 12, 1, 0, 168172367, 68985
+circular-read-start, 12, 1, 16817236700, 69017
+read-start, 3, 2, 168172367, 131827633, 255315
+circular-read-total, 3, 1, 16817236700, 1021, 189817
+read-start, 5, 2, 168172367, 131827633, 258610
+circular-read-total, 5, 1, 16817236700, 2803, 189613
+read-start, 7, 2, 168172367, 131827633, 258628
+read-start, 11, 2, 168172367, 131827633, 258634
+circular-read-total, 11, 1, 16817236700, 2225, 189620
+circular-read-total, 7, 1, 16817236700, 626, 189638
+read-start, 9, 2, 168172367, 131827633, 258651
+circular-read-total, 9, 1, 16817236700, 2956, 189643
+read-start, 4, 2, 168172367, 131827633, 258651
+circular-read-total, 4, 1, 16817236700, 1690, 189876
+read-start, 10, 2, 168172367, 131827633, 258659
+circular-read-total, 10, 1, 16817236700, 2789, 189650
+read-start, 12, 2, 168172367, 131827633, 258946
+circular-read-total, 12, 1, 16817236700, 3608, 189928
+read-start, 8, 2, 168172367, 131827633, 259185
+circular-read-total, 8, 1, 16817236700, 4206, 190180
+read-wait, 3, 2, 4265
+read-start, 6, 2, 168172367, 131827633, 259586
+circular-read-total, 6, 1, 16817236700, 5041, 190588
+read, 3, 2, 168172367, 131827633, 64026
+circular-read-start, 3, 2, 13182763300, 319341
+read-wait, 6, 2, 59907
+read, 6, 2, 168172367, 131827633, 63860
+circular-read-start, 6, 2, 13182763300, 323447
+read-wait, 11, 2, 64959
+read, 11, 2, 168172367, 131827633, 64959
+circular-read-start, 11, 2, 13182763300, 323593
+read-wait, 12, 2, 64648
+read, 12, 2, 168172367, 131827633, 64648
+circular-read-start, 12, 2, 13182763300, 323595
+read-wait, 7, 2, 64969
+read, 7, 2, 168172367, 131827633, 64969
+circular-read-start, 7, 2, 13182763300, 323598
+read-wait, 9, 2, 64952
+read, 9, 2, 168172367, 131827633, 64952
+circular-read-start, 9, 2, 13182763300, 323604
+read-wait, 8, 2, 64422
+read, 8, 2, 168172367, 131827633, 64422
+circular-read-start, 8, 2, 13182763300, 323607
+read-wait, 10, 2, 64952
+read, 10, 2, 168172367, 131827633, 64952
+circular-read-start, 10, 2, 13182763300, 323611
+read-wait, 4, 2, 64963
+read, 4, 2, 168172367, 131827633, 64963
+circular-read-start, 4, 2, 13182763300, 323615
+read-wait, 5, 2, 65018
+read, 5, 2, 168172367, 131827633, 65018
+circular-read-start, 5, 2, 13182763300, 323628
+circular-read-total, 3, 2, 13182763300, 2269, 149699
+circular-read-total, 7, 2, 13182763300, 1918, 147766
+circular-read-total, 12, 2, 13182763300, 1650, 147774
+circular-read-total, 10, 2, 13182763300, 2004, 147767
+circular-read-total, 9, 2, 13182763300, 2206, 147775
+circular-read-total, 4, 2, 13182763300, 924, 147767
+circular-read-total, 5, 2, 13182763300, 1922, 147765
+circular-read-total, 8, 2, 13182763300, 1662, 147806
+circular-read-total, 11, 2, 13182763300, 1907, 147894
+circular-read-total, 6, 2, 13182763300, 2517, 148120
+
+cmd-read, 471670
+# Sun Jan 31 23:57:33 PST 2016
+# 8, 300, 0, read
+max-chunk, 3, 1, 168172367, 0
+chunk-size, 168172367, 3068
+disks, 8
+
+size, 3, 2, 375000000, 0
+size, 4, 1, 375000000, 0
+size, 5, 1, 375000000, 0
+size, 6, 1, 375000000, 0
+size, 7, 1, 375000000, 0
+size, 8, 1, 375000000, 0
+size, 9, 1, 375000000, 0
+size, 10, 1, 375000000, 0
+
+
+read-start, 3, 1, 0, 168172367, 27
+read-start, 4, 1, 0, 168172367, 27
+read-start, 5, 1, 0, 168172367, 27
+read-start, 6, 1, 0, 168172367, 27
+read-start, 7, 1, 0, 168172367, 27
+read-start, 8, 1, 0, 168172367, 27
+read-start, 9, 1, 0, 168172367, 27
+read-start, 10, 1, 0, 168172367, 27
+read-wait, 3, 1, 0
+read, 3, 1, 0, 168172367, 80873
+circular-read-start, 3, 1, 16817236700, 80901
+read-wait, 4, 1, 81028
+read, 4, 1, 0, 168172367, 81028
+circular-read-start, 4, 1, 16817236700, 81055
+read-wait, 5, 1, 81029
+read, 5, 1, 0, 168172367, 81029
+circular-read-start, 5, 1, 16817236700, 81057
+read-wait, 6, 1, 81033
+read, 6, 1, 0, 168172367, 81033
+circular-read-start, 6, 1, 16817236700, 81060
+read-wait, 7, 1, 81041
+read, 7, 1, 0, 168172367, 81041
+circular-read-start, 7, 1, 16817236700, 81068
+read-wait, 8, 1, 81043
+read, 8, 1, 0, 168172367, 81379
+circular-read-start, 8, 1, 16817236700, 81407
+read-wait, 9, 1, 81570
+read, 9, 1, 0, 168172367, 81570
+circular-read-start, 9, 1, 16817236700, 81598
+read-wait, 10, 1, 81574
+read, 10, 1, 0, 168172367, 81574
+circular-read-start, 10, 1, 16817236700, 81602
+read-start, 5, 2, 168172367, 168172367, 270679
+circular-read-total, 5, 1, 16817236700, 1758, 189623
+read-start, 4, 2, 168172367, 168172367, 270683
+circular-read-total, 4, 1, 16817236700, 2296, 189627
+read-start, 7, 2, 168172367, 168172367, 270700
+circular-read-total, 7, 1, 16817236700, 2255, 189632
+read-start, 3, 2, 168172367, 168172367, 270709
+circular-read-total, 3, 1, 16817236700, 1714, 189807
+read-start, 6, 2, 168172367, 168172367, 270734
+circular-read-total, 6, 1, 16817236700, 1717, 189673
+read-start, 9, 2, 168172367, 168172367, 271215
+circular-read-total, 9, 1, 16817236700, 1189, 189618
+read-start, 10, 2, 168172367, 168172367, 271563
+circular-read-total, 10, 1, 16817236700, 3053, 189961
+read-wait, 3, 2, 1073
+read-start, 8, 2, 168172367, 168172367, 271796
+circular-read-total, 8, 1, 16817236700, 3083, 190388
+read, 3, 2, 168172367, 168172367, 79272
+circular-read-start, 3, 2, 16817236700, 349981
+read-wait, 6, 2, 79392
+read, 6, 2, 168172367, 168172367, 79392
+circular-read-start, 6, 2, 16817236700, 350126
+read-wait, 10, 2, 78570
+read, 10, 2, 168172367, 168172367, 79106
+circular-read-start, 10, 2, 16817236700, 350669
+read-wait, 9, 2, 79603
+read, 9, 2, 168172367, 168172367, 79603
+circular-read-start, 9, 2, 16817236700, 350818
+read-wait, 8, 2, 79024
+read, 8, 2, 168172367, 168172367, 80109
+circular-read-start, 8, 2, 16817236700, 351906
+read-wait, 5, 2, 81420
+read, 5, 2, 168172367, 168172367, 81420
+circular-read-start, 5, 2, 16817236700, 352100
+read-wait, 4, 2, 81419
+read, 4, 2, 168172367, 168172367, 81419
+circular-read-start, 4, 2, 16817236700, 352102
+read-wait, 7, 2, 81404
+read, 7, 2, 168172367, 168172367, 81404
+circular-read-start, 7, 2, 16817236700, 352105
+read-start, 3, 3, 336344734, 38655266, 539787
+circular-read-total, 3, 2, 16817236700, 1114, 189805
+read-start, 6, 3, 336344734, 38655266, 539799
+circular-read-total, 6, 2, 16817236700, 987, 189674
+read-start, 9, 3, 336344734, 38655266, 540444
+circular-read-total, 9, 2, 16817236700, 682, 189631
+read-start, 10, 3, 336344734, 38655266, 540477
+circular-read-total, 10, 2, 16817236700, 1107, 189807
+read-start, 5, 3, 336344734, 38655266, 541713
+circular-read-total, 5, 2, 16817236700, 1125, 189612
+read-start, 7, 3, 336344734, 38655266, 541721
+circular-read-total, 7, 2, 16817236700, 1441, 189616
+read-start, 8, 3, 336344734, 38655266, 541878
+circular-read-total, 8, 2, 16817236700, 1571, 189972
+read-wait, 6, 3, 2111
+read-start, 4, 3, 336344734, 38655266, 541927
+circular-read-total, 4, 2, 16817236700, 1367, 189824
+read, 6, 3, 336344734, 38655266, 77642
+circular-read-start, 6, 3, 3865526600, 617441
+read-wait, 3, 3, 77802
+read, 3, 3, 336344734, 38655266, 77802
+circular-read-start, 3, 3, 3865526600, 617589
+read-wait, 7, 3, 75871
+read, 7, 3, 336344734, 38655266, 77687
+circular-read-start, 7, 3, 3865526600, 619409
+read-wait, 10, 3, 79080
+read, 10, 3, 336344734, 38655266, 79080
+circular-read-start, 10, 3, 3865526600, 619558
+read-wait, 5, 3, 77846
+read, 5, 3, 336344734, 38655266, 77846
+circular-read-start, 5, 3, 3865526600, 619559
+read-wait, 9, 3, 79117
+read, 9, 3, 336344734, 38655266, 79117
+circular-read-start, 9, 3, 3865526600, 619561
+read-wait, 8, 3, 77684
+read, 8, 3, 336344734, 38655266, 78159
+circular-read-start, 8, 3, 3865526600, 620038
+read-wait, 4, 3, 78293
+read, 4, 3, 336344734, 38655266, 78293
+circular-read-start, 4, 3, 3865526600, 620220
+circular-read-total, 3, 3, 3865526600, 302, 40494
+circular-read-total, 6, 3, 3865526600, 449, 40663
+circular-read-total, 5, 3, 3865526600, 491, 40483
+circular-read-total, 10, 3, 3865526600, 594, 40485
+circular-read-total, 9, 3, 3865526600, 662, 40488
+circular-read-total, 7, 3, 3865526600, 1197, 40666
+circular-read-total, 4, 3, 3865526600, 651, 40476
+circular-read-total, 8, 3, 3865526600, 773, 40697
+
+cmd-read, 660841

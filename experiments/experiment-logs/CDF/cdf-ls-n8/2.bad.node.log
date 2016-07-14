@@ -1,0 +1,74 @@
+# Sun Jan 31 18:47:49 PST 2016
+meth1_node: relocation error: meth1_node: symbol _ZTVNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEEE, version GLIBCXX_3.4.21 not defined in file libstdc++.so.6 with link time reference
+# Sun Jan 31 22:26:56 PST 2016
+meth1_node: relocation error: meth1_node: symbol _ZTVNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEEE, version GLIBCXX_3.4.21 not defined in file libstdc++.so.6 with link time reference
+# Sun Jan 31 23:30:22 PST 2016
+meth1_node: relocation error: meth1_node: symbol _ZTVNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEEE, version GLIBCXX_3.4.21 not defined in file libstdc++.so.6 with link time reference
+# Sun Jan 31 23:40:54 PST 2016
+record-value, 112
+seek-chunk, 168172367
+file, 4, 300000000
+
+exit, 17414
+# Sun Jan 31 23:45:34 PST 2016
+record-value, 112
+seek-chunk, 168172367
+file, 4, 300000000
+
+read-start, 1, 0, 168172367, 17100
+circular-read-start, 4, 1, 30000000000, 18636
+circular-read-total, 4, 1, 30000000000, 60663, 62357
+linear-scan, 63432
+-sort , 19179, 23
+-merge, 14014, 23
+-last , 754
+read, 1, 168172367, 64968
+network, 1, 193906
+
+read-start, 2, 168172367, 131827633, 276016
+circular-read-start, 4, 2, 30000000000, 276278
+circular-read-total, 4, 2, 30000000000, 60564, 62384
+linear-scan, 63650
+-sort , 9355, 15
+-merge, 7261, 15
+-last , 216
+read, 2, 131827633, 63912
+network, 2, 148482
+
+exit, 488775
+# Sun Jan 31 23:57:33 PST 2016
+record-value, 112
+seek-chunk, 168172367
+file, 4, 375000000
+
+read-start, 1, 0, 168172367, 14494
+circular-read-start, 4, 1, 37500000000, 16081
+circular-read-total, 4, 1, 37500000000, 75801, 77884
+linear-scan, 78871
+-sort , 21872, 26
+-merge, 15694, 26
+-last , 984
+read, 1, 168172367, 80458
+network, 1, 191042
+
+read-start, 2, 168172367, 168172367, 286033
+circular-read-start, 4, 2, 37500000000, 286369
+circular-read-total, 4, 2, 37500000000, 75374, 77439
+linear-scan, 78770
+-sort , 14576, 17
+-merge, 10660, 17
+-last , 1329
+read, 2, 168172367, 79106
+network, 2, 189765
+
+read-start, 3, 336344734, 38655266, 554950
+circular-read-start, 4, 3, 37500000000, 555029
+circular-read-total, 4, 3, 37500000000, 75278, 77221
+linear-scan, 77383
+-sort , 2628, 13
+-merge, 1818, 13
+-last , 160
+read, 3, 38655266, 77462
+network, 3, 42072
+
+exit, 675343

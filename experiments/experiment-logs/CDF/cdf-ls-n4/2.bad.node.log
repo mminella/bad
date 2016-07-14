@@ -1,0 +1,130 @@
+# Sun Jan 31 18:47:49 PST 2016
+meth1_node: relocation error: meth1_node: symbol _ZTVNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEEE, version GLIBCXX_3.4.21 not defined in file libstdc++.so.6 with link time reference
+# Sun Jan 31 22:26:56 PST 2016
+meth1_node: relocation error: meth1_node: symbol _ZTVNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEEE, version GLIBCXX_3.4.21 not defined in file libstdc++.so.6 with link time reference
+# Sun Jan 31 23:30:22 PST 2016
+meth1_node: relocation error: meth1_node: symbol _ZTVNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEEE, version GLIBCXX_3.4.21 not defined in file libstdc++.so.6 with link time reference
+# Sun Jan 31 23:40:54 PST 2016
+record-value, 112
+seek-chunk, 168172367
+file, 4, 300000000
+
+exit, 17414
+# Sun Jan 31 23:45:34 PST 2016
+record-value, 112
+seek-chunk, 168172367
+file, 4, 300000000
+
+read-start, 1, 0, 168172367, 17100
+circular-read-start, 4, 1, 30000000000, 18636
+circular-read-total, 4, 1, 30000000000, 60663, 62357
+linear-scan, 63432
+-sort , 19179, 23
+-merge, 14014, 23
+-last , 754
+read, 1, 168172367, 64968
+network, 1, 193906
+
+read-start, 2, 168172367, 131827633, 276016
+circular-read-start, 4, 2, 30000000000, 276278
+circular-read-total, 4, 2, 30000000000, 60564, 62384
+linear-scan, 63650
+-sort , 9355, 15
+-merge, 7261, 15
+-last , 216
+read, 2, 131827633, 63912
+network, 2, 148482
+
+exit, 488775
+# Sun Jan 31 23:57:33 PST 2016
+record-value, 112
+seek-chunk, 168172367
+file, 4, 375000000
+
+read-start, 1, 0, 168172367, 14494
+circular-read-start, 4, 1, 37500000000, 16081
+circular-read-total, 4, 1, 37500000000, 75801, 77884
+linear-scan, 78871
+-sort , 21872, 26
+-merge, 15694, 26
+-last , 984
+read, 1, 168172367, 80458
+network, 1, 191042
+
+read-start, 2, 168172367, 168172367, 286033
+circular-read-start, 4, 2, 37500000000, 286369
+circular-read-total, 4, 2, 37500000000, 75374, 77439
+linear-scan, 78770
+-sort , 14576, 17
+-merge, 10660, 17
+-last , 1329
+read, 2, 168172367, 79106
+network, 2, 189765
+
+read-start, 3, 336344734, 38655266, 554950
+circular-read-start, 4, 3, 37500000000, 555029
+circular-read-total, 4, 3, 37500000000, 75278, 77221
+linear-scan, 77383
+-sort , 2628, 13
+-merge, 1818, 13
+-last , 160
+read, 3, 38655266, 77462
+network, 3, 42072
+
+exit, 675343
+# Mon Feb 1 00:19:18 PST 2016
+record-value, 112
+seek-chunk, 168172367
+file, 4, 750000000
+
+read-start, 1, 0, 168172367, 7568
+circular-read-start, 4, 1, 75000000000, 9091
+circular-read-total, 4, 1, 75000000000, 151228, 155810
+linear-scan, 156851
+-sort , 30763, 36
+-merge, 21310, 36
+-last , 1039
+read, 1, 168172367, 158375
+network, 1, 190889
+
+read-start, 2, 168172367, 168172367, 356866
+circular-read-start, 4, 2, 75000000000, 357200
+circular-read-total, 4, 2, 75000000000, 150728, 155222
+linear-scan, 156578
+-sort , 27601, 32
+-merge, 19351, 32
+-last , 1353
+read, 2, 168172367, 156913
+network, 2, 189751
+
+read-start, 3, 336344734, 168172367, 703578
+circular-read-start, 4, 3, 75000000000, 703915
+circular-read-total, 4, 3, 75000000000, 150654, 155235
+linear-scan, 156693
+-sort , 23465, 28
+-merge, 16343, 28
+-last , 457
+read, 3, 168172367, 157030
+network, 3, 189766
+
+read-start, 4, 504517101, 168172367, 1050415
+circular-read-start, 4, 4, 75000000000, 1050757
+circular-read-total, 4, 4, 75000000000, 150594, 155093
+linear-scan, 155949
+-sort , 16979, 20
+-merge, 12092, 20
+-last , 854
+read, 4, 168172367, 156291
+network, 4, 189756
+
+read-start, 5, 672689468, 77310532, 1396521
+circular-read-start, 4, 5, 75000000000, 1396679
+circular-read-total, 4, 5, 75000000000, 150560, 154995
+linear-scan, 155739
+-sort , 5498, 15
+-merge, 4045, 15
+-last , 127
+read, 5, 77310532, 155898
+network, 5, 90003
+
+exit, 1642621
